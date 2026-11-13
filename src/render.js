@@ -45,12 +45,30 @@ export function render404(content) {
   return buildNotFound({ profile: content.profile, locales: LOCALES, content });
 }
 
-// 保存内容：写 KV，并重新生成三种语言的 HTML 缓存
+export const PREV_KEY = "content:prev";
+
+// 保存内容：先留一份上一版（供撤销），写 KV，并重新生成三种语言的 HTML
 export async function saveContent(env, content) {
+  try {
+    const current = await env.CONTENT.get(CONTENT_KEY, "json");
+    if (current) await env.CONTENT.put(PREV_KEY, JSON.stringify(current));
+  } catch {
+    /* 备份失败不影响保存 */
+  }
+  // 版本号用于 ETag，保存即变化
+  content._rev = String(Date.now());
   await env.CONTENT.put(CONTENT_KEY, JSON.stringify(content));
   await Promise.all(
     LOCALES.map((lang) => env.CONTENT.put(htmlKey(lang), renderLocale(lang, content)))
   );
+}
+
+export async function loadPrevious(env) {
+  try {
+    return await env.CONTENT.get(PREV_KEY, "json");
+  } catch {
+    return null;
+  }
 }
 
 // 取某个语言的 HTML：优先 KV 缓存，缺失时现渲染并写回

@@ -20,6 +20,7 @@ import {
   loadImage,
   saveImage,
   deleteImage,
+  loadPrevious,
 } from "./render.js";
 import { sharedSchema, localeSchema } from "../scripts/schema.mjs";
 import { loginPage, editorPage } from "./admin/pages.js";
@@ -33,7 +34,39 @@ const FAIL_WINDOW = 15 * 60; // 15 分钟
 const enc = new TextEncoder();
 const IMAGE_ID = /^[a-zA-Z0-9_-]{4,48}$/;
 
-// ---- 工具 ----------------------------------------------------------------
+// 统一安全响应头
+const SECURITY_HEADERS = {
+  "strict-transport-security": "max-age=31536000; includeSubDomains",
+  "referrer-policy": "strict-origin-when-cross-origin",
+  "permissions-policy": "camera=(), microphone=(), geolocation=()",
+  "x-frame-options": "DENY",
+  "cross-origin-opener-policy": "same-origin",
+  "content-security-policy":
+    "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; font-src 'self'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'",
+};
+
+// 给任意响应补上安全头（静态资源也走这里）
+function harden(res) {
+  const out = new Response(res.body, res);
+  for (const [k, v] of Object.entries(SECURITY_HEADERS)) out.headers.set(k, v);
+  return out;
+}
+
+// 按文件头识别真实图片类型，避免 iOS 上 canvas 回退成 PNG 却标成 WebP
+function sniffImageType(buffer) {
+  const b = new Uint8Array(buffer.slice(0, 12));
+  if (b[0] === 0x89 && b[1] === 0x50 && b[2] === 0x4e && b[3] === 0x47) return "image/png";
+  if (b[0] === 0xff && b[1] === 0xd8 && b[2] === 0xff) return "image/jpeg";
+  if (
+    b[0] === 0x52 && b[1] === 0x49 && b[2] === 0x46 && b[3] === 0x46 &&
+    b[8] === 0x57 && b[9] === 0x45 && b[10] === 0x42 && b[11] === 0x50
+  ) {
+    return "image/webp";
+  }
+  return null;
+}
+
+// ---- 工具 --------------------------------------------------------------
 const html = (body, status = 200, extra = {}) =>
   new Response(body, {
     status,
@@ -41,6 +74,7 @@ const html = (body, status = 200, extra = {}) =>
       "content-type": "text/html;charset=utf-8",
       "cache-control": "no-store",
       "x-content-type-options": "nosniff",
+      ...SECURITY_HEADERS,
       ...extra,
     },
   });
@@ -48,7 +82,11 @@ const html = (body, status = 200, extra = {}) =>
 const json = (data, status = 200) =>
   new Response(JSON.stringify(data), {
     status,
-    headers: { "content-type": "application/json;charset=utf-8", "cache-control": "no-store" },
+    headers: {
+      "content-type": "application/json;charset=utf-8",
+      "cache-control": "no-store",
+      ...SECURITY_HEADERS,
+    },
   });
 
 function parseCookies(header) {
@@ -84,9 +122,21 @@ function safeEqual(a, b) {
   return diff === 0;
 }
 
+// 会话签名密钥绑定「密码哈希 + 吊销纪元」：改密码或点「退出所有设备」都会让旧 Cookie 失效
+async function sessionKey(env) {
+  const hash = await getPasswordHash(env);
+  let epoch = "0";
+  try {
+    epoch = (await env.CONTENT.get("admin:epoch")) || "0";
+  } catch {
+    /* 忽略 */
+  }
+  return `${env.SESSION_SECRET || "insecure-dev-secret"}|${hash}|${epoch}`;
+}
+
 async function makeSession(env) {
   const exp = Math.floor(Date.now() / 1000) + SESSION_TTL;
-  const sig = await hmac(env.SESSION_SECRET || "insecure-dev-secret", String(exp));
+  const sig = await hmac(await sessionKey(env), String(exp));
   return `${exp}.${sig}`;
 }
 
@@ -97,7 +147,7 @@ async function isAuthed(request, env) {
   const [exp, sig] = value.split(".");
   if (!exp || !sig) return false;
   if (Number(exp) < Math.floor(Date.now() / 1000)) return false;
-  const expected = await hmac(env.SESSION_SECRET, exp);
+  const expected = await hmac(await sessionKey(env), exp);
   return safeEqual(sig, expected);
 }
 
@@ -222,12 +272,12 @@ async function handleApi(request, env, url) {
 
   if (path === "/api/avatar" && request.method === "POST") {
     if (!isTrustedMutation(request)) return json({ error: "forbidden" }, 403);
-    const type = request.headers.get("content-type") || "";
-    if (!/^image\/(webp|png|jpeg)$/.test(type)) return json({ error: "unsupported type" }, 415);
     const bytes = await request.arrayBuffer();
     if (bytes.byteLength > 2 * 1024 * 1024) return json({ error: "too large" }, 413);
+    const type = sniffImageType(bytes);
+    if (!type) return json({ error: "unsupported type" }, 415);
     await saveAvatar(env, bytes, type);
-    return json({ ok: true });
+    return json({ ok: true, type });
   }
 
   if (path === "/api/avatar" && request.method === "DELETE") {
@@ -243,17 +293,68 @@ async function handleApi(request, env, url) {
     if (!IMAGE_ID.test(id)) return json({ error: "invalid id" }, 400);
 
     if (request.method === "POST") {
-      const type = request.headers.get("content-type") || "";
-      if (!/^image\/(webp|png|jpeg)$/.test(type)) return json({ error: "unsupported type" }, 415);
       const bytes = await request.arrayBuffer();
       if (bytes.byteLength > 2 * 1024 * 1024) return json({ error: "too large" }, 413);
+      const type = sniffImageType(bytes);
+      if (!type) return json({ error: "unsupported type" }, 415);
       await saveImage(env, id, bytes, type);
-      return json({ ok: true, src: `/img/${id}` });
+      return json({ ok: true, src: `/img/${id}`, type });
     }
     if (request.method === "DELETE") {
       await deleteImage(env, id);
       return json({ ok: true });
     }
+  }
+
+  // 导出当前内容（备份）
+  if (path === "/api/export" && request.method === "GET") {
+    const content = await loadContent(env);
+    return new Response(JSON.stringify(content, null, 2), {
+      headers: {
+        "content-type": "application/json;charset=utf-8",
+        "content-disposition": `attachment; filename="content-${new Date().toISOString().slice(0, 10)}.json"`,
+        "cache-control": "no-store",
+        ...SECURITY_HEADERS,
+      },
+    });
+  }
+
+  // 导入内容（覆盖）
+  if (path === "/api/import" && request.method === "POST") {
+    if (!isTrustedMutation(request)) return json({ error: "forbidden" }, 403);
+    const body = await request.json().catch(() => null);
+    const content = body && body.content;
+    if (!content || !content.locales || !content.profile) return json({ error: "invalid content" }, 400);
+    for (const lang of LOCALES) {
+      if (!content.locales[lang]) return json({ error: `missing locale ${lang}` }, 400);
+    }
+    await saveContent(env, content);
+    return json({ ok: true });
+  }
+
+  // 撤销上一次保存
+  if (path === "/api/restore" && request.method === "POST") {
+    if (!isTrustedMutation(request)) return json({ error: "forbidden" }, 403);
+    const prev = await loadPrevious(env);
+    if (!prev) return json({ error: "没有可恢复的版本" }, 404);
+    await saveContent(env, prev);
+    return json({ ok: true });
+  }
+
+  // 退出所有设备（吊销所有会话）
+  if (path === "/api/logout-all" && request.method === "POST") {
+    if (!isTrustedMutation(request)) return json({ error: "forbidden" }, 403);
+    const epoch = Number((await env.CONTENT.get("admin:epoch")) || 0) + 1;
+    await env.CONTENT.put("admin:epoch", String(epoch));
+    return new Response(JSON.stringify({ ok: true }), {
+      status: 200,
+      headers: {
+        "content-type": "application/json",
+        "set-cookie": cookieHeader("", 0),
+        "cache-control": "no-store",
+        ...SECURITY_HEADERS,
+      },
+    });
   }
 
   // 修改后台密码：校验当前密码后写入 KV，之后无需再动终端
@@ -278,9 +379,10 @@ async function handleApi(request, env, url) {
 async function handleAvatar(request, env, url) {
   const stored = await loadAvatar(env);
   if (stored) {
+    const realType = sniffImageType(stored.body) || stored.type;
     return new Response(stored.body, {
       headers: {
-        "content-type": stored.type,
+        "content-type": realType,
         "cache-control": "public, max-age=300",
         "x-content-type-options": "nosniff",
       },
@@ -322,7 +424,7 @@ export default {
       if (!img) return new Response("Not found", { status: 404 });
       return new Response(img.body, {
         headers: {
-          "content-type": img.type,
+          "content-type": sniffImageType(img.body) || img.type,
           "cache-control": "public, max-age=86400",
           "x-content-type-options": "nosniff",
         },
@@ -354,13 +456,23 @@ export default {
     const m = path.match(/^\/(en|fr|zh)\/$/);
     if (m) {
       const content = await loadContent(env);
+      const etag = `W/"${content._rev || "0"}-${m[1]}"`;
+      if (request.headers.get("if-none-match") === etag) {
+        return new Response(null, {
+          status: 304,
+          headers: { etag, "cache-control": "public, max-age=0, must-revalidate", ...SECURITY_HEADERS },
+        });
+      }
       const page = await getHtml(env, m[1], content);
-      return html(page, 200, { "cache-control": "no-cache" });
+      return html(page, 200, {
+        etag,
+        "cache-control": "public, max-age=0, must-revalidate",
+      });
     }
 
     // 静态资源
     if (path.startsWith("/assets/") || path === "/robots.txt" || path === "/sitemap.xml" || path === "/favicon.ico") {
-      return env.ASSETS.fetch(request);
+      return harden(await env.ASSETS.fetch(request));
     }
 
     // 404

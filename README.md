@@ -101,6 +101,29 @@ npm run deploy     # 构建 + 生成 PDF + 部署
 
 共享标签页的「外观」可改主色（浅色 / 深色两套）、正文字号（12–18）、卡片圆角（0–20）。保存后立即生效，留空则用默认值。
 
+### 备份与撤销
+
+共享标签页底部：
+
+| 按钮 | 作用 |
+|---|---|
+| 导出 JSON | 下载当前全部内容，建议定期备份 |
+| 导入 JSON | 用备份文件覆盖当前内容（会二次确认） |
+| 撤销上次保存 | 恢复到上一次保存之前的状态 |
+
+### 安全
+
+| 项 | 说明 |
+|---|---|
+| 安全响应头 | CSP、HSTS、X-Frame-Options、Referrer-Policy、Permissions-Policy 全站生效 |
+| 会话绑定 | Cookie 签名绑定密码哈希 + 吊销纪元，改密码或点「退出所有设备」会让所有旧会话立即失效 |
+| 登录限流 | 同 IP 15 分钟 5 次失败即锁定 |
+| 图片校验 | 按文件头魔数识别真实类型，防止 iOS 上 WebP 回退成 PNG 却被误标 |
+
+### 持续集成
+
+`.github/workflows/ci.yml` 在 push 和 PR 时自动执行 `npm ci` → `npm run build` → `npm run check`。如需自动部署，取消文件末尾的注释并配置 `CLOUDFLARE_API_TOKEN`、`CLOUDFLARE_ACCOUNT_ID`。
+
 ### 首次配置（只需一次）
 
 ```bash

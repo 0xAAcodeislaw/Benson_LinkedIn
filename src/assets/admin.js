@@ -104,7 +104,95 @@
       formEl.appendChild(card);
     });
 
-    if (state.active === "shared") formEl.appendChild(passwordBlock());
+    if (state.active === "shared") {
+      formEl.appendChild(passwordBlock());
+      formEl.appendChild(backupBlock());
+    }
+  }
+
+  // ---- 备份与撤销 ----
+  function backupBlock() {
+    var card = el("section", "card");
+    card.appendChild(el("h2", null, "备份与撤销"));
+    card.appendChild(el("p", "note", "内容只存在 Cloudflare KV。建议定期导出一份 JSON 备份。"));
+
+    var row = el("div", "backup-actions");
+
+    var exp = el("a", "btn ghost", "导出 JSON");
+    exp.href = "/api/export";
+    exp.setAttribute("download", "");
+    row.appendChild(exp);
+
+    var file = el("input");
+    file.type = "file";
+    file.accept = "application/json,.json";
+    file.style.display = "none";
+    file.addEventListener("change", function () {
+      var f = file.files && file.files[0];
+      if (!f) return;
+      var reader = new FileReader();
+      reader.onload = function () {
+        var parsed;
+        try {
+          parsed = JSON.parse(String(reader.result));
+        } catch (e) {
+          alert("文件不是合法的 JSON");
+          return;
+        }
+        var content = parsed && parsed.content ? parsed.content : parsed;
+        if (!content || !content.locales || !content.profile) {
+          alert("文件结构不正确（缺少 locales / profile）");
+          return;
+        }
+        if (!confirm("导入会覆盖当前全部内容，确定继续？")) return;
+        fetch("/api/import", {
+          method: "POST",
+          headers: { "content-type": "application/json", "x-admin-request": "1" },
+          body: JSON.stringify({ content: content }),
+        })
+          .then(function (r) {
+            if (!r.ok) throw new Error("导入失败");
+            return r.json();
+          })
+          .then(function () {
+            location.reload();
+          })
+          .catch(function () {
+            alert("导入失败");
+          });
+      };
+      reader.readAsText(f);
+    });
+
+    var imp = el("button", "btn ghost", "导入 JSON");
+    imp.type = "button";
+    imp.addEventListener("click", function () {
+      file.click();
+    });
+    row.appendChild(imp);
+    row.appendChild(file);
+
+    var restore = el("button", "btn danger", "撤销上次保存");
+    restore.type = "button";
+    restore.addEventListener("click", function () {
+      if (!confirm("恢复到上一次保存之前的内容？当前内容会被覆盖。")) return;
+      fetch("/api/restore", { method: "POST", headers: { "x-admin-request": "1" } })
+        .then(function (r) {
+          if (r.status === 404) throw new Error("没有可恢复的版本");
+          if (!r.ok) throw new Error("恢复失败");
+          return r.json();
+        })
+        .then(function () {
+          location.reload();
+        })
+        .catch(function (e) {
+          alert(e.message);
+        });
+    });
+    row.appendChild(restore);
+
+    card.appendChild(row);
+    return card;
   }
 
   // ---- 修改密码 ----------------------------------------------------------
@@ -165,6 +253,17 @@
     });
     card.appendChild(btn);
     card.appendChild(msg);
+
+    var all = el("button", "btn danger", "退出所有设备");
+    all.type = "button";
+    all.style.marginTop = "10px";
+    all.addEventListener("click", function () {
+      if (!confirm("这会让所有设备上的登录失效，需要重新登录。继续？")) return;
+      fetch("/api/logout-all", { method: "POST", headers: { "x-admin-request": "1" } }).then(function () {
+        location.href = "/admin";
+      });
+    });
+    card.appendChild(all);
     return card;
   }
 
@@ -179,6 +278,19 @@
     return { wrap: wrap, input: input };
   }
 
+  // 其他语言已填写、当前语言为空 → 提示补翻译
+  function missingHere(field, value) {
+    if (state.active === "shared") return false;
+    var empty = Array.isArray(value) ? value.length === 0 : !value || !String(value).trim();
+    if (!empty) return false;
+    return Object.keys(state.content.locales).some(function (l) {
+      if (l === state.active) return false;
+      var v = getPath(state.content.locales[l], field.path);
+      if (Array.isArray(v)) return v.length > 0;
+      return v != null && String(v).trim() !== "";
+    });
+  }
+
   function fieldEl(field, root) {
     var wrap = el("div", "field");
     var id = "f_" + field.path.replace(/[^a-z0-9]/gi, "_");
@@ -187,11 +299,13 @@
     wrap.appendChild(label);
 
     var value = getPath(root, field.path);
+    var missing = missingHere(field, value);
 
     if (field.type === "textarea") {
       var ta = el("textarea");
       ta.id = id;
       ta.value = value || "";
+      if (missing) ta.classList.add("is-missing");
       ta.addEventListener("input", function () {
         setPath(root, field.path, ta.value);
       });
@@ -203,6 +317,7 @@
       var list = el("textarea");
       list.id = id;
       list.value = Array.isArray(value) ? value.join("\n") : "";
+      if (missing) list.classList.add("is-missing");
       list.addEventListener("input", function () {
         setPath(
           root,
@@ -284,6 +399,7 @@
     input.type = "text";
     input.id = id;
     input.value = value == null ? "" : value;
+    if (missing) input.classList.add("is-missing");
     input.addEventListener("input", function () {
       setPath(root, field.path, input.value);
     });
@@ -333,7 +449,7 @@
         .then(function (blob) {
           return fetch("/api/image?id=" + id, {
             method: "POST",
-            headers: { "content-type": "image/webp", "x-admin-request": "1" },
+            headers: { "content-type": blob.type || "application/octet-stream", "x-admin-request": "1" },
             body: blob,
           });
         })
@@ -499,7 +615,7 @@
       .then(function (blob) {
         return fetch("/api/avatar", {
           method: "POST",
-          headers: { "content-type": "image/webp", "x-admin-request": "1" },
+          headers: { "content-type": blob.type || "application/octet-stream", "x-admin-request": "1" },
           body: blob,
         });
       })
@@ -531,8 +647,18 @@
         ctx.drawImage(img, (w0 - dw) / 2, (h0 - dh) / 2, dw, dh);
         URL.revokeObjectURL(url);
         canvas.toBlob(function (blob) {
-          if (blob) resolve(blob);
-          else reject(new Error("encode failed"));
+          if (!blob) {
+            reject(new Error("encode failed"));
+            return;
+          }
+          // Safari / iOS 不支持 WebP 编码，会静默回退成 PNG（体积大 10 倍）→ 改用 JPEG
+          if (blob.type === "image/webp") {
+            resolve(blob);
+            return;
+          }
+          canvas.toBlob(function (jpeg) {
+            resolve(jpeg || blob);
+          }, "image/jpeg", 0.85);
         }, "image/webp", 0.9);
       };
       img.onerror = function () {

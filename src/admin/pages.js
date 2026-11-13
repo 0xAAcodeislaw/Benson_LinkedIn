@@ -113,6 +113,10 @@ border-radius:8px;background:#fff;cursor:pointer}
 .img-field img{width:168px;height:96px;object-fit:cover;border-radius:8px;
 border:1px solid var(--border);background:#f0f0f0}
 .img-actions{display:flex;flex-direction:column;gap:6px}
+.backup-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.field input.is-missing,.field textarea.is-missing{border-color:#d08b00;background:#fffbf0}
+:root[data-theme=dark] .field input.is-missing,
+:root[data-theme=dark] .field textarea.is-missing{background:#3a2f14;border-color:#b58500}
 
 /* 手机端：顶部栏压成一行，避免按钮换行 */
 @media (max-width:640px){

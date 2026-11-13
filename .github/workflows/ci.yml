@@ -1,0 +1,44 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      - name: 构建
+        run: npm run build
+
+      - name: 校验（结构 / 内链 / JSON-LD / 体积）
+        run: npm run check
+
+      # 如需 push 后自动部署，取消注释并在仓库 Secrets 里配置：
+      #   CLOUDFLARE_API_TOKEN、CLOUDFLARE_ACCOUNT_ID
+      # 注意：部署会覆盖线上 KV 内容，请确认 content.json 是最新的。
+      #
+      # deploy:
+      #   needs: build
+      #   if: github.ref == 'refs/heads/main'
+      #   runs-on: ubuntu-latest
+      #   steps:
+      #     - uses: actions/checkout@v4
+      #     - uses: actions/setup-node@v4
+      #       with: { node-version: 20, cache: npm }
+      #     - run: npm ci
+      #     - run: npm run build
+      #     - uses: cloudflare/wrangler-action@v3
+      #       with:
+      #         apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      #         accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
