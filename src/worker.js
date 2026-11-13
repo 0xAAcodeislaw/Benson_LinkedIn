@@ -42,7 +42,7 @@ const SECURITY_HEADERS = {
   "x-frame-options": "DENY",
   "cross-origin-opener-policy": "same-origin",
   "content-security-policy":
-    "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; font-src 'self'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'",
+    "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self'; font-src 'self'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'",
 };
 
 // 给任意响应补上安全头（静态资源也走这里）
@@ -380,17 +380,23 @@ async function handleAvatar(request, env, url) {
   const stored = await loadAvatar(env);
   if (stored) {
     const realType = sniffImageType(stored.body) || stored.type;
+    const etag = `W/"avatar-${stored.rev || 0}"`;
+    if (request.headers.get("if-none-match") === etag) {
+      return new Response(null, { status: 304, headers: { etag, "cache-control": "public, max-age=0, must-revalidate" } });
+    }
     return new Response(stored.body, {
       headers: {
         "content-type": realType,
-        "cache-control": "public, max-age=300",
+        "cache-control": "public, max-age=0, must-revalidate",
+        etag,
         "x-content-type-options": "nosniff",
       },
     });
   }
   const fallback = await env.ASSETS.fetch(new URL("/assets/avatar.svg", url));
   return new Response(fallback.body, {
-    headers: { "content-type": "image/svg+xml", "cache-control": "public, max-age=3600" },
+    // 默认头像只缓存 1 分钟：一旦上传了新头像，浏览器能很快切过来
+    headers: { "content-type": "image/svg+xml", "cache-control": "public, max-age=60" },
   });
 }
 

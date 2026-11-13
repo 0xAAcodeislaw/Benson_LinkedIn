@@ -464,8 +464,8 @@
           clear.style.display = "";
           pick.textContent = "更换图片";
         })
-        .catch(function () {
-          alert("图片上传失败");
+        .catch(function (err) {
+          alert("图片上传失败：" + ((err && err.message) || "未知错误"));
         });
     });
 
@@ -611,8 +611,10 @@
       return;
     }
     status("正在处理图片…");
+    var finalSize = 0;
     compressImage(file, 512, 512)
       .then(function (blob) {
+        finalSize = blob.size;
         return fetch("/api/avatar", {
           method: "POST",
           headers: { "content-type": blob.type || "application/octet-stream", "x-admin-request": "1" },
@@ -622,11 +624,11 @@
       .then(function (res) {
         if (!res.ok) throw new Error("upload failed");
         state.avatarChanged = true;
-        status("头像已更新", "ok");
+        status("头像已更新（" + Math.round(finalSize / 1024) + " KB）", "ok");
         render();
       })
-      .catch(function () {
-        status("头像上传失败", "err");
+      .catch(function (err) {
+        status("头像上传失败：" + ((err && err.message) || "未知错误"), "err");
       });
   }
 
@@ -652,13 +654,20 @@
             return;
           }
           // Safari / iOS 不支持 WebP 编码，会静默回退成 PNG（体积大 10 倍）→ 改用 JPEG
-          if (blob.type === "image/webp") {
-            resolve(blob);
+          var finish = function (finalBlob) {
+            resolve(finalBlob);
+          };
+          if (blob.type === "image/webp" && blob.size <= 250 * 1024) {
+            finish(blob);
             return;
           }
           canvas.toBlob(function (jpeg) {
-            resolve(jpeg || blob);
-          }, "image/jpeg", 0.85);
+            if (!jpeg) {
+              finish(blob);
+              return;
+            }
+            finish(jpeg.size < blob.size ? jpeg : blob);
+          }, "image/jpeg", 0.8);
         }, "image/webp", 0.9);
       };
       img.onerror = function () {

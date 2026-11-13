@@ -92,7 +92,11 @@ export async function loadAvatar(env) {
   try {
     const entry = await env.CONTENT.getWithMetadata(AVATAR_KEY, "arrayBuffer");
     if (entry.value) {
-      return { body: entry.value, type: (entry.metadata && entry.metadata.type) || "image/webp" };
+      return {
+        body: entry.value,
+        type: (entry.metadata && entry.metadata.type) || "image/webp",
+        rev: (entry.metadata && entry.metadata.rev) || 0,
+      };
     }
   } catch {
     /* 忽略 */
@@ -101,7 +105,7 @@ export async function loadAvatar(env) {
 }
 
 export async function saveAvatar(env, bytes, type) {
-  await env.CONTENT.put(AVATAR_KEY, bytes, { metadata: { type } });
+  await env.CONTENT.put(AVATAR_KEY, bytes, { metadata: { type, rev: Date.now() } });
 }
 
 export async function deleteAvatar(env) {
