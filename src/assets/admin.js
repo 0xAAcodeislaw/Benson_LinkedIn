@@ -70,13 +70,46 @@
   });
 
   // ---- 标签页 ------------------------------------------------------------
+  // 统计某语言「其他语言已填、这里为空」的字段数
+  function countMissing(lang) {
+    var loc = state.content.locales[lang];
+    if (!loc) return 0;
+    var others = Object.keys(state.content.locales).filter(function (l) {
+      return l !== lang;
+    });
+    var n = 0;
+    state.schema.locale.sections.forEach(function (sec) {
+      sec.fields.forEach(function (f) {
+        if (f.type === "objectList") return;
+        var v = getPath(loc, f.path);
+        var empty = Array.isArray(v) ? v.length === 0 : !v || !String(v).trim();
+        if (!empty) return;
+        var filled = others.some(function (o) {
+          var ov = getPath(state.content.locales[o], f.path);
+          return Array.isArray(ov) ? ov.length > 0 : ov != null && String(ov).trim() !== "";
+        });
+        if (filled) n++;
+      });
+    });
+    return n;
+  }
+
   function renderTabs() {
     tabsEl.textContent = "";
     state.tabs.forEach(function (tab) {
-      var btn = el("button", null, tab.label);
+      var btn = el("button");
       btn.type = "button";
       btn.setAttribute("role", "tab");
       btn.setAttribute("aria-selected", String(tab.key === state.active));
+      btn.appendChild(document.createTextNode(tab.label));
+      if (tab.key !== "shared") {
+        var miss = countMissing(tab.key);
+        if (miss > 0) {
+          var badge = el("span", "tab-badge", String(miss));
+          badge.title = miss + " 个字段其他语言已填、这里为空";
+          btn.appendChild(badge);
+        }
+      }
       btn.addEventListener("click", function () {
         state.active = tab.key;
         renderTabs();
@@ -171,6 +204,24 @@
     });
     row.appendChild(imp);
     row.appendChild(file);
+
+    var reset = el("button", "btn danger", "重置为仓库默认值");
+    reset.type = "button";
+    reset.addEventListener("click", function () {
+      if (!confirm("会清空线上所有修改，回落到 content.json 的默认内容。确定？")) return;
+      fetch("/api/reset", { method: "POST", headers: { "x-admin-request": "1" } })
+        .then(function (r) {
+          if (!r.ok) throw new Error("重置失败");
+          return r.json();
+        })
+        .then(function () {
+          location.reload();
+        })
+        .catch(function (e) {
+          alert(e.message);
+        });
+    });
+    row.appendChild(reset);
 
     var restore = el("button", "btn danger", "撤销上次保存");
     restore.type = "button";

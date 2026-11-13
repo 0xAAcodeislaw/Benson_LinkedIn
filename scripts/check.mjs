@@ -35,7 +35,7 @@ function keyPaths(value, prefix = "") {
   return [prefix];
 }
 
-console.log("\n[1/6] 三语结构一致性");
+console.log("\n[1/7] 三语结构一致性");
 const base = new Set(keyPaths(content.locales[locales[0]]));
 let structureOk = true;
 for (const lang of locales.slice(1)) {
@@ -54,7 +54,7 @@ for (const lang of locales.slice(1)) {
 if (structureOk) ok(`${locales.length} 个语言字段结构一致（${base.size} 个叶子字段）`);
 
 // ---- 2. 必填字段 ----------------------------------------------------------
-console.log("\n[2/6] 必填字段");
+console.log("\n[2/7] 必填字段");
 const required = ["profile.name", "profile.email", "profile.github", "profile.linkedin", "site.url"];
 for (const path of required) {
   const value = path.split(".").reduce((o, k) => (o == null ? o : o[k]), content);
@@ -72,7 +72,7 @@ for (const lang of locales) {
 if (!errors) ok("必填字段齐全");
 
 // ---- 3. 产物存在 ----------------------------------------------------------
-console.log("\n[3/6] 构建产物");
+console.log("\n[3/7] 构建产物");
 if (!existsSync(publicDir)) {
   fail("public/ 不存在，请先运行 npm run build");
   process.exit(1);
@@ -94,7 +94,7 @@ for (const lang of locales) {
 }
 
 // ---- 4. 页面结构 ----------------------------------------------------------
-console.log("\n[4/6] 页面结构");
+console.log("\n[4/7] 页面结构");
 let structureErrors = errors;
 for (const lang of locales) {
   const file = join(publicDir, lang, "index.html");
@@ -129,7 +129,7 @@ for (const lang of locales) {
 if (errors === structureErrors) ok("lang 属性、id 唯一性、单 h1、图片 alt、JSON-LD 均正常");
 
 // ---- 5. 内链可达 ----------------------------------------------------------
-console.log("\n[5/6] 内链可达性");
+console.log("\n[5/7] 内链可达性");
 // 由 Worker 动态提供、不对应静态文件的路径
 const DYNAMIC_ROUTES = new Set(["/", "/avatar", "/admin"]);
 const broken = new Set();
@@ -149,7 +149,7 @@ if (broken.size) [...broken].forEach((b) => fail(`内链目标不存在：${b}`)
 else ok("所有站内链接均可解析");
 
 // ---- 6. 内容体量 ----------------------------------------------------------
-console.log("\n[6/6] 页面体积");
+console.log("\n[6/7] 页面体积");
 for (const lang of locales) {
   const file = join(publicDir, lang, "index.html");
   if (!existsSync(file)) continue;
@@ -158,6 +158,37 @@ for (const lang of locales) {
   if (kb > 80) warn(`${lang}: ${kb.toFixed(1)} KB（偏大，检查是否误嵌入大段内容）`);
   else ok(`${lang}: ${kb.toFixed(1)} KB`);
 }
+
+// ---- 7. 多语言完整性 ------------------------------------------------------
+console.log("\n[7/7] 多语言完整性");
+
+function emptiness(obj, prefix = "", out = {}) {
+  for (const [k, v] of Object.entries(obj)) {
+    const path = prefix ? `${prefix}.${k}` : k;
+    if (Array.isArray(v)) {
+      out[path] = v.length === 0;
+    } else if (v && typeof v === "object") {
+      emptiness(v, path, out);
+    } else {
+      out[path] = !v || !String(v).trim();
+    }
+  }
+  return out;
+}
+
+const maps = Object.fromEntries(locales.map((l) => [l, emptiness(content.locales[l])]));
+const allPaths = new Set(Object.values(maps).flatMap((m) => Object.keys(m)));
+let gaps = 0;
+for (const path of allPaths) {
+  const states = locales.map((l) => ({ lang: l, empty: maps[l][path] }));
+  const emptyOnes = states.filter((x) => x.empty).map((x) => x.lang);
+  const filledOnes = states.filter((x) => !x.empty).map((x) => x.lang);
+  if (emptyOnes.length && filledOnes.length) {
+    gaps++;
+    fail(`${path}：${emptyOnes.join("/")} 为空，但 ${filledOnes.join("/")} 有内容`);
+  }
+}
+if (!gaps) ok("三语字段内容完整，没有「某语言有、某语言空」的情况");
 
 // ---- 汇总 ----------------------------------------------------------------
 console.log("");

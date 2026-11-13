@@ -21,6 +21,8 @@ import {
   saveImage,
   deleteImage,
   loadPrevious,
+  CONTENT_KEY,
+  htmlKey,
 } from "./render.js";
 import { sharedSchema, localeSchema } from "../scripts/schema.mjs";
 import { loginPage, editorPage } from "./admin/pages.js";
@@ -338,6 +340,14 @@ async function handleApi(request, env, url) {
     const prev = await loadPrevious(env);
     if (!prev) return json({ error: "没有可恢复的版本" }, 404);
     await saveContent(env, prev);
+    return json({ ok: true });
+  }
+
+  // 重置为仓库里的 content.json 默认值
+  if (path === "/api/reset" && request.method === "POST") {
+    if (!isTrustedMutation(request)) return json({ error: "forbidden" }, 403);
+    await env.CONTENT.delete(CONTENT_KEY);
+    for (const lang of LOCALES) await env.CONTENT.delete(htmlKey(lang));
     return json({ ok: true });
   }
 

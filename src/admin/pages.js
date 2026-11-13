@@ -114,6 +114,8 @@ border-radius:8px;background:#fff;cursor:pointer}
 border:1px solid var(--border);background:#f0f0f0}
 .img-actions{display:flex;flex-direction:column;gap:6px}
 .backup-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.tab-badge{display:inline-block;margin-left:6px;min-width:16px;padding:0 5px;border-radius:8px;
+background:#d08b00;color:#fff;font-size:11px;font-weight:700;line-height:16px;text-align:center}
 .field input.is-missing,.field textarea.is-missing{border-color:#d08b00;background:#fffbf0}
 :root[data-theme=dark] .field input.is-missing,
 :root[data-theme=dark] .field textarea.is-missing{background:#3a2f14;border-color:#b58500}

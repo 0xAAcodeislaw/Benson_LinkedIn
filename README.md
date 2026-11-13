@@ -204,7 +204,23 @@ public/                # 构建产物（部署目录，已 gitignore）
 
 ## 社交分享预览图
 
-`src/assets/og.png`（1200×630）。修改内容后如需更新：编辑 `src/og-template.html`，用浏览器以 1200×630 视口打开截图，覆盖保存为 `src/assets/og.png`。
+三张语言独立的分享图：`src/assets/og-{en,zh,fr}.png`（1200×630），分享中文页面时显示中文卡片。
+
+更新方法：
+
+```bash
+# 本地起一个静态服务
+cd src && python3 -m http.server 8899
+
+# 用无头 Chrome 各渲染一张
+CHROME="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+for l in en zh fr; do
+  "$CHROME" --headless=new --hide-scrollbars --window-size=1200,630 \
+    --screenshot="assets/og-$l.png" "http://127.0.0.1:8899/og-template.html?lang=$l"
+done
+```
+
+文案在 `src/og-template.html` 里的 `T` 对象中，按语言维护。
 
 ## 访问统计
 

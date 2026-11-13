@@ -73,7 +73,7 @@ function hero(lang, loc, profile) {
   return `<section class="card hero">
       <div class="banner" aria-hidden="true"></div>
       <div class="hero-body">
-        <img class="avatar" src="/avatar" alt="${esc(profile.name)}" width="152" height="152">
+        <img class="avatar" src="/avatar" alt="${esc(profile.name)}" width="152" height="152" fetchpriority="high" decoding="async">
         <h1>${esc(profile.name)}</h1>
         <p class="headline">${esc(loc.hero.headline)}</p>
         <p class="muted location">${ICONS.pin} ${esc(loc.hero.location)}</p>
@@ -407,7 +407,7 @@ export function buildPage({ lang, loc, site, profile, locales, langLinks }) {
     email: `mailto:${profile.email}`,
     jobTitle: loc.hero.headline,
     description: loc.meta.description,
-    image: `${site.url}/assets/og.png`,
+    image: `${site.url}/assets/og-${lang}.png`,
     sameAs: [profile.github, profile.linkedin].filter(Boolean),
     alumniOf: {
       "@type": "CollegeOrUniversity",
@@ -449,7 +449,7 @@ export function buildPage({ lang, loc, site, profile, locales, langLinks }) {
   <meta property="og:description" content="${esc(loc.meta.description)}">
   <meta property="og:url" content="${esc(site.url)}${base}">
   <meta property="og:site_name" content="${esc(profile.name)}">
-  <meta property="og:image" content="${esc(site.url)}/assets/og.png">
+  <meta property="og:image" content="${esc(site.url)}/assets/og-${lang}.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
   <meta property="og:image:alt" content="${esc(profile.name)} — ${esc(loc.hero.headline)}">
@@ -457,11 +457,12 @@ export function buildPage({ lang, loc, site, profile, locales, langLinks }) {
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="${esc(loc.meta.title)}">
   <meta name="twitter:description" content="${esc(loc.meta.description)}">
-  <meta name="twitter:image" content="${esc(site.url)}/assets/og.png">
+  <meta name="twitter:image" content="${esc(site.url)}/assets/og-${lang}.png">
   ${locales.map((l) => `<link rel="alternate" hreflang="${l}" href="${esc(site.url)}/${l}/">`).join("\n  ")}
   <link rel="alternate" hreflang="x-default" href="${esc(site.url)}/">
   <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
   <link rel="canonical" href="${esc(site.url)}${base}">
+  <link rel="preload" as="image" href="/avatar" fetchpriority="high">
   <link rel="stylesheet" href="/assets/style.css">
   ${themeStyle(site)}
   <script src="/assets/main.js" defer></script>
