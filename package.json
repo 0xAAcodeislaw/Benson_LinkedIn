@@ -1,0 +1,26 @@
+{
+  "name": "benson-ding-site",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "node build.mjs",
+    "dev": "node build.mjs && wrangler dev",
+    "deploy": "node build.mjs && node scripts/build-resume.mjs && wrangler deploy",
+    "resume": "node build.mjs && node scripts/build-resume.mjs",
+    "check": "node scripts/check.mjs",
+    "admin:password": "node scripts/set-password.mjs"
+  },
+  "keywords": [],
+  "author": "Damizaer",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "wrangler": "^4.160.1"
+  },
+  "allowScripts": {
+    "workerd@1.20261110.1": true
+  },
+  "private": "true"
+}

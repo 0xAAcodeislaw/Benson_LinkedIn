@@ -1,0 +1,852 @@
+{
+  "_note": "这是全站唯一需要编辑的内容文件：改完运行 npm run deploy 即可更新网站。标有 placeholder/占位/à remplacer 的字段请替换为真实信息。可选区块（certifications / awards / quickFacts / projects[].featured）留空数组或删除字段时，页面会自动隐藏对应区块。",
+  "site": {
+    "url": "https://benson-ding.deus-edge.workers.dev",
+    "author": "Benson Ding",
+    "languageOrder": [
+      "en",
+      "fr",
+      "zh"
+    ],
+    "theme": {
+      "accentLight": "#0a66c2",
+      "accentDark": "#70b5f9",
+      "baseFontSize": 14,
+      "radius": 8
+    }
+  },
+  "profile": {
+    "name": "Benson Ding",
+    "initials": "BD",
+    "email": "benson.ding@example.com",
+    "github": "https://github.com/bensonding",
+    "linkedin": "https://www.linkedin.com/in/bensonding"
+  },
+  "locales": {
+    "en": {
+      "label": "EN",
+      "meta": {
+        "title": "Benson Ding — Economics Student @ Carleton University",
+        "description": "Benson Ding is an Economics student at Carleton University in Ottawa, concentrating in Computational Analysis. Econometrics, data analysis, and programming projects — looking for economics and data analyst internships and new-grad roles."
+      },
+      "a11y": {
+        "skip": "Skip to main content",
+        "language": "Language",
+        "sections": "Page sections",
+        "themeToggle": "Toggle dark mode",
+        "toTop": "Back to top"
+      },
+      "nav": {
+        "searchPlaceholder": "Search"
+      },
+      "hero": {
+        "headline": "Economics Student @ Carleton University | Concentration in Computational Analysis",
+        "location": "Ottawa, Ontario, Canada",
+        "openToWork": "Open to work",
+        "openToWorkDetail": "Economics and data analyst internships and new-grad roles starting 2027",
+        "availability": {
+          "type": "Economics · Data analysis",
+          "start": "Available May 2027",
+          "workAuth": "Living in Canada · No sponsorship needed"
+        },
+        "btnResume": "Download CV",
+        "btnEmail": "Email",
+        "btnGithub": "GitHub",
+        "btnLinkedin": "LinkedIn"
+      },
+      "sections": {
+        "about": "About",
+        "experience": "Experience",
+        "experienceShort": "Experience",
+        "education": "Education",
+        "volunteering": "Volunteering",
+        "publications": "Publications & Writing",
+        "credentials": "Certifications & Awards",
+        "credentialsShort": "Certs",
+        "certifications": "Certifications",
+        "awards": "Awards",
+        "projects": "Projects",
+        "moreProjects": "More projects",
+        "skills": "Skills",
+        "interests": "Interests",
+        "skillsShort": "Skills",
+        "languages": "Languages",
+        "contact": "Contact Info",
+        "quickFacts": "Quick facts",
+        "gpa": "GPA"
+      },
+      "quickFacts": [
+        {
+          "label": "Degree",
+          "value": "B.Econ. Honours, Economics — Computational Analysis"
+        },
+        {
+          "label": "Graduation",
+          "value": "April 2027 (expected)"
+        },
+        {
+          "label": "GPA",
+          "value": "3.8 / 4.3"
+        },
+        {
+          "label": "Work authorization",
+          "value": "Living in Canada — no sponsorship needed"
+        },
+        {
+          "label": "Availability",
+          "value": "May 2027 · Internship or new grad"
+        },
+        {
+          "label": "Location",
+          "value": "Ottawa, ON · Open to relocation"
+        }
+      ],
+      "about": [],
+      "experience": [
+        {
+          "role": "Data Analyst Intern",
+          "company": "NorthBridge Analytics",
+          "period": "May 2026 – Aug 2026",
+          "location": "Ottawa, ON · Hybrid",
+          "points": [
+            "Cleaned and joined 12 months of survey data in Python/pandas, cutting analysis turnaround from days to hours",
+            "Built regression models in R to estimate price elasticities, documenting assumptions for non-technical stakeholders",
+            "Automated a weekly Excel reporting pack into a reproducible script, saving ~6 hours of manual work per week"
+          ],
+          "tech": [
+            "Python",
+            "pandas",
+            "R",
+            "SQL",
+            "Excel"
+          ]
+        },
+        {
+          "role": "Undergraduate Teaching Assistant — Principles of Economics",
+          "company": "Carleton University",
+          "period": "Sep 2025 – Present",
+          "location": "Ottawa, ON",
+          "points": [
+            "Lead weekly tutorials for 30+ students in ECON 1001 (microeconomics), and grade problem sets and exams",
+            "Walk students through supply-and-demand diagrams, elasticity, and regression interpretation; rated 4.8/5 in feedback"
+          ],
+          "tech": [
+            "Microeconomics",
+            "Excel"
+          ]
+        }
+      ],
+      "education": {
+        "degree": "B.Econ. Honours, Economics — Concentration in Computational Analysis",
+        "school": "Carleton University",
+        "period": "2023 – 2027 (expected)",
+        "location": "Ottawa, ON",
+        "gpa": "3.8 / 4.3 (placeholder)",
+        "honours": [
+          "Dean's List 2024–2025 (placeholder)"
+        ],
+        "details": [
+          "Core economics: Intermediate Microeconomics (ECON 2020 / 3020), Intermediate Macroeconomics (ECON 2102 / 3102), Introductory Econometrics (ECON 3210), Research Methods (ECON 3900), Honours Capstone (ECON 4905)",
+          "Computation: Computer Science I & II (COMP 1005 / 1006), Systems Programming (COMP 2401), Abstract Data Types & Algorithms (COMP 2402), Discrete Structures (COMP 1805 / 2804)",
+          "Selected electives: Database Management Systems (COMP 3005), Economic Data Science: Analytics (ECON 4708)"
+        ],
+        "coursework": []
+      },
+      "certifications": [
+        {
+          "name": "Google Data Analytics Professional Certificate",
+          "issuer": "Google · Coursera",
+          "date": "2025 (placeholder)",
+          "link": "https://www.coursera.org/"
+        },
+        {
+          "name": "R Programming",
+          "issuer": "Johns Hopkins University · Coursera",
+          "date": "2026 (placeholder)",
+          "link": "https://www.coursera.org/"
+        }
+      ],
+      "awards": [
+        {
+          "name": "Dean's List",
+          "issuer": "Carleton University",
+          "date": "2024–2025 (placeholder)"
+        },
+        {
+          "name": "Entrance Scholarship",
+          "issuer": "Carleton University",
+          "date": "2023 (placeholder)"
+        }
+      ],
+      "projects": [
+        {
+          "name": "Canadian Housing Affordability Dashboard",
+          "link": "https://github.com/bensonding/housing-affordability",
+          "featured": true,
+          "metric": "10 years · 30 metro areas",
+          "description": "Interactive dashboard tracking rent-to-income ratios across Canadian cities, built from CMHC and Statistics Canada data with a reproducible R pipeline.",
+          "tech": [
+            "R",
+            "SQL",
+            "ggplot2",
+            "Shiny"
+          ],
+          "image": "",
+          "role": "",
+          "period": ""
+        },
+        {
+          "name": "Minimum Wage and Youth Employment",
+          "link": "https://github.com/bensonding/minimum-wage-panel",
+          "featured": true,
+          "metric": "Panel regression · 2000–2024",
+          "description": "Econometric study using provincial panel data and two-way fixed effects to estimate how minimum wage increases affect youth employment.",
+          "tech": [
+            "R",
+            "Python",
+            "LaTeX"
+          ],
+          "image": "",
+          "role": "",
+          "period": ""
+        },
+        {
+          "name": "This Website",
+          "link": "https://github.com/bensonding/personal-site",
+          "featured": false,
+          "metric": "Trilingual · Served from Cloudflare edge",
+          "description": "LinkedIn-style trilingual (EN/FR/中文) personal site built with a zero-dependency static generator and served by a Cloudflare Worker.",
+          "tech": [
+            "HTML/CSS",
+            "JavaScript",
+            "Cloudflare Workers"
+          ],
+          "image": "",
+          "role": "",
+          "period": ""
+        }
+      ],
+      "skills": [
+        {
+          "group": "Economics & Econometrics",
+          "items": [
+            "Microeconomics",
+            "Macroeconomics",
+            "Econometrics",
+            "Statistical Inference",
+            "Research Methods",
+            "Policy Analysis"
+          ]
+        },
+        {
+          "group": "Programming & Data",
+          "items": [
+            "Python",
+            "R",
+            "SQL",
+            "Java",
+            "C",
+            "pandas",
+            "Git"
+          ]
+        },
+        {
+          "group": "Core Knowledge",
+          "items": [
+            "Data Structures & Algorithms",
+            "Discrete Mathematics",
+            "Probability & Statistics",
+            "Machine Learning",
+            "Database Systems"
+          ]
+        }
+      ],
+      "languagesList": [
+        {
+          "name": "English",
+          "level": "Fluent",
+          "cefr": "C1",
+          "pct": 90
+        },
+        {
+          "name": "French",
+          "level": "Intermediate",
+          "cefr": "B1",
+          "pct": 55
+        },
+        {
+          "name": "Chinese",
+          "level": "Native",
+          "cefr": "C2",
+          "pct": 100
+        }
+      ],
+      "contact": {
+        "emailLabel": "Email",
+        "copy": "Copy",
+        "copied": "Copied!",
+        "githubLabel": "GitHub",
+        "linkedinLabel": "LinkedIn",
+        "profileLabel": "Profile"
+      },
+      "footer": "© 2026 Benson Ding",
+      "notFound": {
+        "title": "404 — Page not found",
+        "text": "The page you're looking for doesn't exist."
+      },
+      "volunteering": [],
+      "publications": [],
+      "interests": []
+    },
+    "zh": {
+      "label": "CN",
+      "meta": {
+        "title": "Benson Ding — 卡尔顿大学经济学专业（计算分析方向）",
+        "description": "Benson Ding，加拿大卡尔顿大学经济学专业（计算分析方向）学生，求职经济学与数据分析实习及应届岗位。计量经济学、数据分析与编程项目。"
+      },
+      "a11y": {
+        "skip": "跳到主要内容",
+        "language": "语言",
+        "sections": "页面区块",
+        "themeToggle": "切换深色模式",
+        "toTop": "回到顶部"
+      },
+      "nav": {
+        "searchPlaceholder": "搜索"
+      },
+      "hero": {
+        "headline": "卡尔顿大学经济学专业在读 | 计算分析方向",
+        "location": "加拿大安大略省渥太华",
+        "openToWork": "正在找工作",
+        "openToWorkDetail": "求职 2027 年经济学与数据分析实习及应届生岗位",
+        "availability": {
+          "type": "经济学 · 数据分析",
+          "start": "2027 年 5 月可入职",
+          "workAuth": "居住在加拿大 · 无需雇主担保"
+        },
+        "btnResume": "下载简历",
+        "btnEmail": "邮件联系",
+        "btnGithub": "GitHub",
+        "btnLinkedin": "领英"
+      },
+      "sections": {
+        "about": "关于我",
+        "experience": "工作经历",
+        "experienceShort": "工作经历",
+        "education": "教育背景",
+        "volunteering": "志愿服务",
+        "publications": "出版物与写作",
+        "credentials": "认证与奖项",
+        "credentialsShort": "证书",
+        "certifications": "证书",
+        "awards": "奖项",
+        "projects": "项目作品",
+        "moreProjects": "其他项目",
+        "skills": "技能",
+        "interests": "兴趣与爱好",
+        "skillsShort": "技能",
+        "languages": "语言能力",
+        "contact": "联系方式",
+        "quickFacts": "快速信息",
+        "gpa": "GPA"
+      },
+      "quickFacts": [
+        {
+          "label": "学位",
+          "value": "经济学荣誉学士（B.Econ. Honours）· 计算分析方向"
+        },
+        {
+          "label": "毕业时间",
+          "value": "2027 年 4 月（预计）"
+        },
+        {
+          "label": "GPA",
+          "value": "3.8 / 4.3"
+        },
+        {
+          "label": "工作授权",
+          "value": "居住在加拿大 — 无需雇主担保"
+        },
+        {
+          "label": "可入职",
+          "value": "2027 年 5 月 · 实习或应届"
+        },
+        {
+          "label": "所在地",
+          "value": "渥太华 · 可异地工作"
+        }
+      ],
+      "about": [],
+      "experience": [
+        {
+          "role": "数据分析实习生",
+          "company": "NorthBridge Analytics",
+          "period": "2026年5月 – 2026年8月",
+          "location": "渥太华 · 混合办公",
+          "points": [
+            "使用 Python/pandas 清洗并合并 12 个月的调查数据，将分析周转时间从数天缩短到数小时",
+            "用 R 建立回归模型估计价格弹性，并为非技术背景的同事整理模型假设说明",
+            "把每周手工 Excel 报表改造成可复现脚本，每周节省约 6 小时人工"
+          ],
+          "tech": [
+            "Python",
+            "pandas",
+            "R",
+            "SQL",
+            "Excel"
+          ]
+        },
+        {
+          "role": "本科助教 — 经济学原理",
+          "company": "卡尔顿大学",
+          "period": "2025年9月 – 至今",
+          "location": "渥太华",
+          "points": [
+            "每周为 30 余名学生主讲 ECON 1001（微观经济学）辅导课，负责作业与考试批改",
+            "讲解供需图、弹性与回归结果解读，学生评教 4.8/5"
+          ],
+          "tech": [
+            "微观经济学",
+            "Excel"
+          ]
+        }
+      ],
+      "education": {
+        "degree": "经济学荣誉学士（B.Econ. Honours）— 计算分析方向",
+        "school": "卡尔顿大学",
+        "period": "2023 – 2027（在读）",
+        "location": "渥太华",
+        "gpa": "3.8 / 4.3（占位）",
+        "honours": [
+          "2024–2025 年度院长名单（占位）"
+        ],
+        "details": [
+          "经济学核心：中级微观经济学（ECON 2020 / 3020）、中级宏观经济学（ECON 2102 / 3102）、计量经济学导论（ECON 3210）、经济学研究方法（ECON 3900）、荣誉学位研讨课（ECON 4905）",
+          "计算类课程：计算机科学导论 I / II（COMP 1005 / 1006）、系统编程（COMP 2401）、抽象数据类型与算法（COMP 2402）、离散结构（COMP 1805 / 2804）",
+          "选修：数据库管理系统（COMP 3005）、经济数据科学：分析（ECON 4708）"
+        ],
+        "coursework": []
+      },
+      "certifications": [
+        {
+          "name": "Google 数据分析专业证书",
+          "issuer": "Google · Coursera",
+          "date": "2025（占位）",
+          "link": "https://www.coursera.org/"
+        },
+        {
+          "name": "R 语言编程",
+          "issuer": "约翰霍普金斯大学 · Coursera",
+          "date": "2026（占位）",
+          "link": "https://www.coursera.org/"
+        }
+      ],
+      "awards": [
+        {
+          "name": "院长名单",
+          "issuer": "卡尔顿大学",
+          "date": "2024–2025（占位）"
+        },
+        {
+          "name": "入学奖学金",
+          "issuer": "卡尔顿大学",
+          "date": "2023（占位）"
+        }
+      ],
+      "projects": [
+        {
+          "name": "加拿大住房负担能力看板",
+          "link": "https://github.com/bensonding/housing-affordability",
+          "featured": true,
+          "metric": "10 年 · 30 个都市区",
+          "description": "追踪加拿大各城市租金收入比的交互式看板，基于 CMHC 与加拿大统计局数据，用可复现的 R 流程构建。",
+          "tech": [
+            "R",
+            "SQL",
+            "ggplot2",
+            "Shiny"
+          ],
+          "image": "",
+          "role": "",
+          "period": ""
+        },
+        {
+          "name": "最低工资与青年就业",
+          "link": "https://github.com/bensonding/minimum-wage-panel",
+          "featured": true,
+          "metric": "面板回归 · 2000–2024",
+          "description": "使用省级面板数据与双向固定效应模型，估计最低工资上调对青年就业的影响。",
+          "tech": [
+            "R",
+            "Python",
+            "LaTeX"
+          ],
+          "image": "",
+          "role": "",
+          "period": ""
+        },
+        {
+          "name": "本网站",
+          "link": "https://github.com/bensonding/personal-site",
+          "featured": false,
+          "metric": "三语 · Cloudflare 边缘节点直出",
+          "description": "LinkedIn 风格的三语（英/法/中）个人网站，使用零依赖静态生成器构建，由 Cloudflare Worker 提供服务。",
+          "tech": [
+            "HTML/CSS",
+            "JavaScript",
+            "Cloudflare Workers"
+          ],
+          "image": "",
+          "role": "",
+          "period": ""
+        }
+      ],
+      "skills": [
+        {
+          "group": "经济学与计量",
+          "items": [
+            "微观经济学",
+            "宏观经济学",
+            "计量经济学",
+            "统计推断",
+            "研究方法",
+            "政策分析"
+          ]
+        },
+        {
+          "group": "编程与数据",
+          "items": [
+            "Python",
+            "R",
+            "SQL",
+            "Java",
+            "C",
+            "pandas",
+            "Git"
+          ]
+        },
+        {
+          "group": "核心知识",
+          "items": [
+            "数据结构与算法",
+            "离散数学",
+            "概率统计",
+            "机器学习",
+            "数据库系统"
+          ]
+        }
+      ],
+      "languagesList": [
+        {
+          "name": "英语",
+          "level": "流利",
+          "cefr": "C1",
+          "pct": 90
+        },
+        {
+          "name": "法语",
+          "level": "中等",
+          "cefr": "B1",
+          "pct": 55
+        },
+        {
+          "name": "中文",
+          "level": "母语",
+          "cefr": "C2",
+          "pct": 100
+        }
+      ],
+      "contact": {
+        "emailLabel": "邮箱",
+        "copy": "复制",
+        "copied": "已复制！",
+        "githubLabel": "GitHub",
+        "linkedinLabel": "领英",
+        "profileLabel": "主页"
+      },
+      "footer": "© 2026 Benson Ding",
+      "notFound": {
+        "title": "404 — 页面不存在",
+        "text": "您访问的页面不存在。"
+      },
+      "volunteering": [],
+      "publications": [],
+      "interests": []
+    },
+    "fr": {
+      "label": "FR",
+      "meta": {
+        "title": "Benson Ding — Étudiant en économie à l'Université Carleton",
+        "description": "Benson Ding, étudiant en économie à l'Université Carleton (Ottawa), concentration en analyse computationnelle. Économétrie, analyse de données et programmation — à la recherche d'un stage en économie ou en analyse de données."
+      },
+      "a11y": {
+        "skip": "Aller au contenu principal",
+        "language": "Langue",
+        "sections": "Sections de la page",
+        "themeToggle": "Basculer le mode sombre",
+        "toTop": "Retour en haut"
+      },
+      "nav": {
+        "searchPlaceholder": "Rechercher"
+      },
+      "hero": {
+        "headline": "Étudiant en économie à l'Université Carleton | Concentration en analyse computationnelle",
+        "location": "Ottawa, Ontario, Canada",
+        "openToWork": "Ouvert aux opportunités",
+        "openToWorkDetail": "Stages et postes de fin d'études en économie et analyse de données à partir de 2027",
+        "availability": {
+          "type": "Économie · Analyse de données",
+          "start": "Disponible en mai 2027",
+          "workAuth": "Résidant au Canada · Aucun parrainage requis"
+        },
+        "btnResume": "Télécharger le CV",
+        "btnEmail": "Courriel",
+        "btnGithub": "GitHub",
+        "btnLinkedin": "LinkedIn"
+      },
+      "sections": {
+        "about": "À propos",
+        "experience": "Expérience",
+        "experienceShort": "Expér.",
+        "education": "Formation",
+        "volunteering": "Bénévolat",
+        "publications": "Publications et écrits",
+        "credentials": "Certifications et distinctions",
+        "credentialsShort": "Certifs",
+        "certifications": "Certifications",
+        "awards": "Distinctions",
+        "projects": "Projets",
+        "moreProjects": "Autres projets",
+        "skills": "Compétences",
+        "interests": "Centres d'intérêt",
+        "skillsShort": "Compét.",
+        "languages": "Langues",
+        "contact": "Coordonnées",
+        "quickFacts": "En bref",
+        "gpa": "Moyenne"
+      },
+      "quickFacts": [
+        {
+          "label": "Diplôme",
+          "value": "B.Econ. spécialisé, économie — analyse computationnelle"
+        },
+        {
+          "label": "Fin des études",
+          "value": "Avril 2027 (prévu)"
+        },
+        {
+          "label": "Moyenne",
+          "value": "3,8 / 4,3"
+        },
+        {
+          "label": "Autorisation de travail",
+          "value": "Résidant au Canada — aucun parrainage requis"
+        },
+        {
+          "label": "Disponibilité",
+          "value": "Mai 2027 · Stage ou poste de fin d'études"
+        },
+        {
+          "label": "Lieu",
+          "value": "Ottawa, ON · Mobilité possible"
+        }
+      ],
+      "about": [],
+      "experience": [
+        {
+          "role": "Stagiaire en analyse de données",
+          "company": "NorthBridge Analytics",
+          "period": "Mai 2026 – Août 2026",
+          "location": "Ottawa, ON · Hybride",
+          "points": [
+            "Nettoyé et fusionné 12 mois de données d'enquête avec Python/pandas, réduisant le délai d'analyse de plusieurs jours à quelques heures",
+            "Construit des modèles de régression en R pour estimer les élasticités-prix, en documentant les hypothèses pour des interlocuteurs non techniques",
+            "Automatisé un rapport Excel hebdomadaire en script reproductible, éliminant environ 6 heures de travail manuel par semaine"
+          ],
+          "tech": [
+            "Python",
+            "pandas",
+            "R",
+            "SQL",
+            "Excel"
+          ]
+        },
+        {
+          "role": "Assistant d'enseignement — Principes d'économie",
+          "company": "Université Carleton",
+          "period": "Sept. 2025 – Aujourd'hui",
+          "location": "Ottawa, ON",
+          "points": [
+            "Anime des séances hebdomadaires pour plus de 30 étudiants en ECON 1001 (microéconomie) et corrige les travaux et examens",
+            "Explique les diagrammes offre-demande, l'élasticité et l'interprétation des régressions; évalué 4,8/5"
+          ],
+          "tech": [
+            "Microéconomie",
+            "Excel"
+          ]
+        }
+      ],
+      "education": {
+        "degree": "B.Econ. spécialisé (honours), économie — concentration en analyse computationnelle",
+        "school": "Université Carleton",
+        "period": "2023 – 2027 (prévu)",
+        "location": "Ottawa, ON",
+        "gpa": "3,8 / 4,3 (à remplacer)",
+        "honours": [
+          "Liste du doyen 2024–2025 (à remplacer)"
+        ],
+        "details": [
+          "Tronc commun en économie : microéconomie intermédiaire (ECON 2020 / 3020), macroéconomie intermédiaire (ECON 2102 / 3102), introduction à l'économétrie (ECON 3210), méthodes de recherche (ECON 3900), séminaire de synthèse (ECON 4905)",
+          "Informatique : introduction à l'informatique I et II (COMP 1005 / 1006), programmation système (COMP 2401), types abstraits et algorithmes (COMP 2402), structures discrètes (COMP 1805 / 2804)",
+          "Cours optionnels : systèmes de gestion de bases de données (COMP 3005), science des données économiques : analytique (ECON 4708)"
+        ],
+        "coursework": []
+      },
+      "certifications": [
+        {
+          "name": "Certificat professionnel Google Data Analytics",
+          "issuer": "Google · Coursera",
+          "date": "2025 (à remplacer)",
+          "link": "https://www.coursera.org/"
+        },
+        {
+          "name": "Programmation en R",
+          "issuer": "Université Johns Hopkins · Coursera",
+          "date": "2026 (à remplacer)",
+          "link": "https://www.coursera.org/"
+        }
+      ],
+      "awards": [
+        {
+          "name": "Liste du doyen",
+          "issuer": "Université Carleton",
+          "date": "2024–2025 (à remplacer)"
+        },
+        {
+          "name": "Bourse d'admission",
+          "issuer": "Université Carleton",
+          "date": "2023 (à remplacer)"
+        }
+      ],
+      "projects": [
+        {
+          "name": "Tableau de bord de l'abordabilité du logement",
+          "link": "https://github.com/bensonding/housing-affordability",
+          "featured": true,
+          "metric": "10 ans · 30 régions métropolitaines",
+          "description": "Tableau de bord interactif suivant le ratio loyer-revenu dans les villes canadiennes, construit à partir des données de la SCHL et de Statistique Canada avec un pipeline R reproductible.",
+          "tech": [
+            "R",
+            "SQL",
+            "ggplot2",
+            "Shiny"
+          ],
+          "image": "",
+          "role": "",
+          "period": ""
+        },
+        {
+          "name": "Salaire minimum et emploi des jeunes",
+          "link": "https://github.com/bensonding/minimum-wage-panel",
+          "featured": true,
+          "metric": "Régression sur panel · 2000–2024",
+          "description": "Étude économétrique utilisant des données de panel provinciales et des effets fixes à deux dimensions pour estimer l'effet des hausses du salaire minimum sur l'emploi des jeunes.",
+          "tech": [
+            "R",
+            "Python",
+            "LaTeX"
+          ],
+          "image": "",
+          "role": "",
+          "period": ""
+        },
+        {
+          "name": "Ce site web",
+          "link": "https://github.com/bensonding/personal-site",
+          "featured": false,
+          "metric": "Trilingue · Servi depuis le réseau Cloudflare",
+          "description": "Site personnel trilingue (EN/FR/中文) de style LinkedIn, généré par un script statique sans dépendance et servi par un Worker Cloudflare.",
+          "tech": [
+            "HTML/CSS",
+            "JavaScript",
+            "Cloudflare Workers"
+          ],
+          "image": "",
+          "role": "",
+          "period": ""
+        }
+      ],
+      "skills": [
+        {
+          "group": "Économie et économétrie",
+          "items": [
+            "Microéconomie",
+            "Macroéconomie",
+            "Économétrie",
+            "Inférence statistique",
+            "Méthodes de recherche",
+            "Analyse de politiques"
+          ]
+        },
+        {
+          "group": "Programmation et données",
+          "items": [
+            "Python",
+            "R",
+            "SQL",
+            "Java",
+            "C",
+            "pandas",
+            "Git"
+          ]
+        },
+        {
+          "group": "Connaissances fondamentales",
+          "items": [
+            "Structures de données et algorithmes",
+            "Mathématiques discrètes",
+            "Probabilités et statistique",
+            "Apprentissage automatique",
+            "Systèmes de bases de données"
+          ]
+        }
+      ],
+      "languagesList": [
+        {
+          "name": "Anglais",
+          "level": "Courant",
+          "cefr": "C1",
+          "pct": 90
+        },
+        {
+          "name": "Français",
+          "level": "Intermédiaire",
+          "cefr": "B1",
+          "pct": 55
+        },
+        {
+          "name": "Chinois",
+          "level": "Langue maternelle",
+          "cefr": "C2",
+          "pct": 100
+        }
+      ],
+      "contact": {
+        "emailLabel": "Courriel",
+        "copy": "Copier",
+        "copied": "Copié !",
+        "githubLabel": "GitHub",
+        "linkedinLabel": "LinkedIn",
+        "profileLabel": "Profil"
+      },
+      "footer": "© 2026 Benson Ding",
+      "notFound": {
+        "title": "404 — Page introuvable",
+        "text": "La page que vous cherchez n'existe pas."
+      },
+      "volunteering": [],
+      "publications": [],
+      "interests": []
+    }
+  }
+}
