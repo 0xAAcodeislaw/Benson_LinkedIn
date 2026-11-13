@@ -10,6 +10,8 @@ LinkedIn 风格的三语（中 / 英 / 法）个人求职网站，部署在 Clou
 
 提供两种方式，功能不同，按需选择。
 
+> 按钮会克隆本仓库并直接部署。**部署前请先创建自己的 KV 命名空间**（`npx wrangler kv namespace create CONTENT`），把返回的 id 替换掉 `wrangler.toml` 里的 `id`，否则会因命名空间不存在而失败。完整步骤见下方。
+
 ### 方式一：Cloudflare Workers（推荐 · 功能完整）
 
 支持三语渲染、`/admin` 后台、KV 存储、图片上传、主题设置。
