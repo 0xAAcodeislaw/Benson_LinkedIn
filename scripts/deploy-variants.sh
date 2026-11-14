@@ -23,14 +23,14 @@ TARGETS="${1:-all}"
 if [ "$TARGETS" = "all" ]; then TARGETS="geek cyber minecraft blockchain corporate"; fi
 
 for t in $TARGETS; do
+  W="$(get_worker "$t")"
+  K="$(get_kv "$t")"
+  B="$(get_branch "$t")"
   echo ""
   echo "════════════════════════════════════════════════"
   echo "  $t → $W  (KV $K)"
   echo "════════════════════════════════════════════════"
 
-  W="$(get_worker "$t")"
-  K="$(get_kv "$t")"
-  B="$(get_branch "$t")"
   git checkout -q "$B"
 
   # 1) 主题 CSS
