@@ -1,24 +1,16 @@
-name = "benson-ding"
+name = "benson-cyber"
 main = "src/worker.js"
 compatibility_date = "2026-11-12"
 
 [assets]
 directory = "./public"
 binding = "ASSETS"
-# 所有请求先经过 Worker：三语页面由 Worker 渲染并缓存，/admin 与 /api 也由 Worker 处理
 run_worker_first = true
 
-# 后台内容存储（运行 `npx wrangler kv namespace create CONTENT` 后填入 id）
 [[kv_namespaces]]
 binding = "CONTENT"
-id = "16f4027247a54cf3846aed54e24a73fb"
+id = "5482b7e1d09542199a4f56432b2cc8ab"
 
-# 可选：绑定自定义域名后启用
-# [[routes]]
-# pattern = "bensonding.com"
-# custom_domain = true
-
-# 主页访问计数器（Durable Object 单例，原子自增）
 [[durable_objects.bindings]]
 name = "VISITS"
 class_name = "VisitCounter"
