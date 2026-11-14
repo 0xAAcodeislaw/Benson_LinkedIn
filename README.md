@@ -2,7 +2,7 @@
 
 LinkedIn 风格的三语（中 / 英 / 法）个人求职网站，部署在 Cloudflare Workers。
 
-**线上地址：** https://benson-ding.deus-edge.workers.dev
+**线上地址：** https://benson.codeislaw.qzz.io
 
 ## 一键部署
 
@@ -125,7 +125,7 @@ npm run deploy     # 构建 + 生成 PDF + 部署
 无 Cookie、无需隐私弹窗，免费。
 
 1. Cloudflare Dashboard → **Analytics & Logs → Web Analytics** → **Add a site**
-2. 填入你的域名（绑定自定义域名后用新域名；当前也可填 `benson-ding.deus-edge.workers.dev`）
+2. 填入自定义域名 `benson.codeislaw.qzz.io`（Web Analytics 的 hostname 必须与实际访问域名一致，否则不计数据）
 3. 复制生成的 **token**（32 位十六进制）
 4. 后台 **共享 → 站点 → Cloudflare Analytics Token** 粘贴后保存
 
@@ -235,13 +235,13 @@ done
 
 文案在 `src/og-template.html` 里的 `T` 对象中，按语言维护。
 
-## 访问统计
-
-在 Cloudflare Dashboard → **Web Analytics** → Add a site，选择本站的 Worker 域名即可。该功能不使用 Cookie，无需隐私弹窗；开启后可在面板看到访问量、来源与热门页面。
-
 ## 绑定自定义域名
 
-1. Dashboard → Workers & Pages → `benson-ding` → Settings → Domains & Routes → Add custom domain
+**已绑定**：`benson.codeislaw.qzz.io`（Dashboard → Workers & Pages → `benson-ding` → 设置 → 域和路由）。
+
+绑定后需要同步 `content.json` 的 `site.url`（影响 canonical / hreflang / og:image / sitemap），改完执行 `npm run deploy`。
+
+> 注：上方「访问统计」章节有完整的 Web Analytics 配置说明。
 2. 域名需已托管在同一 Cloudflare 账号下（自动创建 DNS 与证书）
 3. 把 `content.json` 里的 `site.url` 改成新域名，再 `npm run deploy`
 4. 到 [LinkedIn Post Inspector](https://www.linkedin.com/post-inspector/) 刷新分享缓存
