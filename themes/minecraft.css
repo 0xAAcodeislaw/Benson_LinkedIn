@@ -79,3 +79,9 @@ body {
 .visit-counter { border-radius: 0 !important; border: 3px solid #6b5230 !important; box-shadow: 3px 3px 0 #5a4326 !important; }
 .to-top { border-radius: 0 !important; border: 3px solid #3d2c15 !important; box-shadow: 3px 3px 0 #2a1d0e !important; }
 .entry + .entry { border-top: 3px dashed #a8946c !important; }
+
+.nav .theme-toggle, .nav .lang-switch a { color: #f2e8d0 !important; }
+.nav .lang-switch a.active { color: #1a140c !important; }
+.nav .section-nav a { color: #e8dcc0 !important; }
+.nav .section-nav a.active { color: #a5db72 !important; }
+.nav .brand { color: #fff !important; }
