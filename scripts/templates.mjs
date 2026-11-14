@@ -115,7 +115,7 @@ function analyticsScript(site) {
   const token = site && site.analyticsToken ? String(site.analyticsToken).trim() : "";
   // 只接受 32 位十六进制，避免后台误填导致注入异常
   if (!/^[a-fA-F0-9]{32}$/.test(token)) return "";
-  return `<script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "${token}"}'></script>`;
+  return `<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "${token}"}'></script>`;
 }
 
 // ---- 各区块 ----

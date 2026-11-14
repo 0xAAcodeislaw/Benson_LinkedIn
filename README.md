@@ -127,7 +127,7 @@ npm run deploy     # 构建 + 生成 PDF + 部署
 1. Cloudflare Dashboard → **Analytics & Logs → Web Analytics** → **Add a site**
 2. 填入自定义域名 `benson.codeislaw.qzz.io`（Web Analytics 的 hostname 必须与实际访问域名一致，否则不计数据）
 3. 复制生成的 **token**（32 位十六进制）
-4. 后台 **共享 → 站点 → Cloudflare Analytics Token** 粘贴后保存
+4. 后台 **共享 → 站点 → Cloudflare Analytics Token** 粘贴后保存（当前已配置）
 
 token 为空时页面完全不加载统计脚本（零开销）。代码位在 `scripts/templates.mjs` 的 `analyticsScript()`，CSP 已放行 `static.cloudflareinsights.com`。
 
