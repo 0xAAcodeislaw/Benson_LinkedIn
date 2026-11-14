@@ -68,3 +68,9 @@ body::before {
 .visit-counter { border-radius: 2px !important; }
 .footer::before { content: "// "; color: var(--blue); }
 .to-top { border-radius: 2px !important; }
+
+@media (max-width: 640px) {
+  .section-nav a { font-size: 10.5px !important; padding: 5px 6px !important; }
+  .lang-switch a { font-size: 11px !important; padding: 5px 5px !important; }
+  .section-nav { overflow-x: auto !important; }
+}
