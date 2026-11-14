@@ -871,7 +871,11 @@ img.project-thumb {
 
 /* --- 访问计数器 --- */
 .visit-counter {
-  display: inline-flex;
+  display: flex;
+  width: fit-content;
+  /* 用 flex 居中，避开 position/transform 带来的滚动条偏差 */
+  margin-left: auto;
+  margin-right: auto;
   align-items: center;
   gap: 7px;
   padding: 6px 14px;
@@ -880,8 +884,8 @@ img.project-thumb {
   background: var(--card);
   color: var(--text-2);
   font-size: var(--fs-xs);
-  justify-self: center;
-  margin: 0 auto var(--sp-3);
+  margin-top: calc(-1 * var(--sp-2));
+  margin-bottom: var(--sp-5);
   box-shadow: var(--shadow-sm);
 }
 .visit-counter .visit-icon {
@@ -1007,9 +1011,41 @@ img.project-thumb {
   }
 }
 
-@media (max-width: 991px) {
-  /* 单列时把两栏摊平，按求职阅读顺序重排：
-     个人信息 → 快速信息 → 关于 → 经历 → 教育 → 认证 → 项目 → 技能 → 语言 → 联系 */
+@media (min-width: 641px) and (max-width: 991px) {
+  /* iPad 竖屏：保留双栏，主栏优先 */
+  .nav-inner {
+    flex-wrap: nowrap;
+    height: var(--nav-h);
+  }
+  .section-nav {
+    order: 0;
+    flex-basis: auto;
+    padding: 0;
+  }
+  .section-nav a {
+    font-size: 13px;
+  }
+  .layout {
+    grid-template-columns: minmax(0, 1fr) 260px;
+    gap: var(--sp-4);
+  }
+  .card {
+    padding: var(--sp-4);
+  }
+  .hero-body {
+    padding: 0 var(--sp-4) var(--sp-4);
+  }
+  .project-card {
+    grid-template-columns: 120px minmax(0, 1fr);
+  }
+  .project-thumb {
+    min-height: 100px;
+  }
+}
+
+@media (max-width: 640px) {
+  /* 手机：单列摊平，按求职阅读顺序重排：
+     个人信息 → 快速信息 → 经历 → 教育 → 认证 → 项目 → 技能 → 语言 → 联系 → 计数器 → 页脚 */
   .layout {
     display: flex;
     flex-direction: column;
@@ -1031,9 +1067,7 @@ img.project-thumb {
   #languages { order: 9; }
   #contact { order: 10; }
   .footer { order: 11; }
-}
 
-@media (max-width: 640px) {
   .nav-inner {
     padding: 0 var(--sp-3);
     gap: var(--sp-2);

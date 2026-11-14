@@ -494,11 +494,6 @@ ${header(lang, loc, profile, locales, langLinks, navItems)}
     ${publicationsSection(loc)}
     ${skillsSection(loc)}
     ${interestsSection(loc)}
-    <div class="visit-counter" data-visits title="${esc(loc.a11y.visitsTitle)}">
-      <span class="visit-icon" aria-hidden="true">${ICONS.pin}</span>
-      <span class="visit-num" data-visits-num>—</span>
-      <span class="visit-label">${esc(loc.sections.visitsLabel)}</span>
-    </div>
     <p class="footer">${esc(loc.footer)}</p>
   </div>
 
@@ -508,6 +503,11 @@ ${header(lang, loc, profile, locales, langLinks, navItems)}
     ${contactCard(loc, profile)}
   </aside>
 </main>
+<div class="visit-counter" data-visits title="${esc(loc.a11y.visitsTitle)}">
+  <span class="visit-icon" aria-hidden="true">${ICONS.pin}</span>
+  <span class="visit-num" data-visits-num>—</span>
+  <span class="visit-label">${esc(loc.sections.visitsLabel)}</span>
+</div>
 <button class="to-top" type="button" data-to-top aria-label="${esc(loc.a11y.toTop)}" title="${esc(loc.a11y.toTop)}">${ICONS.arrowUp}</button>
 ${analyticsScript(site)}
 </body>
