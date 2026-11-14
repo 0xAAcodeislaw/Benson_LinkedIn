@@ -1,7 +1,7 @@
 {
   "_note": "这是全站唯一需要编辑的内容文件：改完运行 npm run deploy 即可更新网站。标有 placeholder/占位/à remplacer 的字段请替换为真实信息。可选区块（certifications / awards / quickFacts / projects[].featured）留空数组或删除字段时，页面会自动隐藏对应区块。",
   "site": {
-    "url": "https://benson.codeislaw.qzz.io",
+    "url": "https://benson-blockchain.deus-edge.workers.dev",
     "author": "Benson Ding",
     "languageOrder": [
       "en",
@@ -14,7 +14,7 @@
       "baseFontSize": 14,
       "radius": 8
     },
-    "analyticsToken": "87b17c524b0f422ba857f9f8e93e7ec5"
+    "analyticsToken": ""
   },
   "profile": {
     "name": "Benson Ding",
