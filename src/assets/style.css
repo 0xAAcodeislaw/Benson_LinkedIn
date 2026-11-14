@@ -869,6 +869,34 @@ img.project-thumb {
   background: var(--blue-soft);
 }
 
+/* --- 访问计数器 --- */
+.visit-counter {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 14px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--card);
+  color: var(--text-2);
+  font-size: var(--fs-xs);
+  justify-self: center;
+  margin: 0 auto var(--sp-3);
+  box-shadow: var(--shadow-sm);
+}
+.visit-counter .visit-icon {
+  line-height: 0;
+  color: var(--text-3);
+}
+.visit-num {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+}
+.visit-label {
+  color: var(--text-3);
+}
+
 /* --- 页脚 --- */
 .footer {
   color: var(--text-3);

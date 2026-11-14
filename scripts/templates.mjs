@@ -494,6 +494,11 @@ ${header(lang, loc, profile, locales, langLinks, navItems)}
     ${publicationsSection(loc)}
     ${skillsSection(loc)}
     ${interestsSection(loc)}
+    <div class="visit-counter" data-visits title="${esc(loc.a11y.visitsTitle)}">
+      <span class="visit-icon" aria-hidden="true">${ICONS.pin}</span>
+      <span class="visit-num" data-visits-num>—</span>
+      <span class="visit-label">${esc(loc.sections.visitsLabel)}</span>
+    </div>
     <p class="footer">${esc(loc.footer)}</p>
   </div>
 

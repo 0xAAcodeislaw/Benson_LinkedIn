@@ -4,6 +4,19 @@ LinkedIn 风格的三语（中 / 英 / 法）个人求职网站，部署在 Clou
 
 **线上地址：** https://benson.codeislaw.qzz.io
 
+## 访问计数器
+
+页脚上方有一个低调的累计访问数（如 `2 visits` / `2 次访问` / `2 visites`）。
+
+- 用 **Durable Object 单例**原子自增（免费版 SQLite 后端），并发不会丢数
+- `sessionStorage` 去重：同一会话刷新不重复计数
+- 排除爬虫与预取请求
+- 三语文案在 `content.json` 的 `sections.visitsLabel` / `a11y.visitsTitle`，后台可改
+
+接口：`GET /api/visits` 读数，`POST /api/visits` 自增。
+
+> 这是「给访客看的装饰数字」。要分析访问来源、页面路径、Core Web Vitals，仍看 Cloudflare Web Analytics。
+
 ## 一键部署
 
 [![Deploy to Cloudflare Workers](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/0xAAcodeislaw/Benson_LinkedIn)

@@ -26,6 +26,9 @@ import {
 } from "./render.js";
 import { sharedSchema, localeSchema } from "../scripts/schema.mjs";
 import { loginPage, editorPage } from "./admin/pages.js";
+import { VisitCounter } from "./counter.js";
+
+export { VisitCounter };
 
 const COOKIE = "bd_admin";
 const PASSWORD_KEY = "admin:hash";
@@ -464,6 +467,18 @@ export default {
         return html(loginPage(), 200, { "x-robots-tag": "noindex, nofollow" });
       }
       return html(editorPage(), 200, { "x-robots-tag": "noindex, nofollow" });
+    }
+
+    // 访问计数器：GET 读当前值，POST 自增（仅统计真实页面浏览）
+    if (path === "/api/visits") {
+      const id = env.VISITS.idFromName("site-total");
+      const stub = env.VISITS.get(id);
+      const ua = (request.headers.get("user-agent") || "").toLowerCase();
+      const bot = /bot|crawler|spider|headlesschrome|lighthouse|curl|wget/i.test(ua);
+      if (request.method === "POST" && !bot) {
+        return stub.fetch("https://counter/increment", { method: "POST" });
+      }
+      return stub.fetch("https://counter/read");
     }
 
     if (path.startsWith("/api/")) return handleApi(request, env, url);

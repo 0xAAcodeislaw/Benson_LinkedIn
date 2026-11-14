@@ -123,6 +123,36 @@
     });
   }
 
+  /* ---- 访问计数器：每次真实浏览自增，然后显示总数 ---- */
+  var visitEl = document.querySelector("[data-visits]");
+  if (visitEl) {
+    var numEl = visitEl.querySelector("[data-visits-num]");
+    // 同一会话只计一次（避免刷新刷数）
+    var counted = false;
+    try {
+      counted = sessionStorage.getItem("visit-counted") === "1";
+    } catch (e) {}
+
+    var action = counted ? "GET" : "POST";
+    fetch("/api/visits", { method: action, credentials: "same-origin" })
+      .then(function (r) {
+        return r.ok ? r.json() : null;
+      })
+      .then(function (data) {
+        if (!data || typeof data.count !== "number") return;
+        numEl.textContent = data.count.toLocaleString();
+        visitEl.setAttribute("aria-label", (visitEl.getAttribute("title") || "Visits") + ": " + data.count);
+        if (!counted) {
+          try {
+            sessionStorage.setItem("visit-counted", "1");
+          } catch (e) {}
+        }
+      })
+      .catch(function () {
+        visitEl.style.display = "none";
+      });
+  }
+
   /* ---- 邮箱复制 ---- */
   document.addEventListener("click", function (e) {
     var btn = e.target.closest("[data-copy]");

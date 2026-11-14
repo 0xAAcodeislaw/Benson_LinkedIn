@@ -17,3 +17,12 @@ id = "16f4027247a54cf3846aed54e24a73fb"
 # [[routes]]
 # pattern = "bensonding.com"
 # custom_domain = true
+
+# 主页访问计数器（Durable Object 单例，原子自增）
+[[durable_objects.bindings]]
+name = "VISITS"
+class_name = "VisitCounter"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["VisitCounter"]

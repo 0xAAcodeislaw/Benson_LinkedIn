@@ -35,7 +35,8 @@
         "language": "Language",
         "sections": "Page sections",
         "themeToggle": "Toggle dark mode",
-        "toTop": "Back to top"
+        "toTop": "Back to top",
+        "visitsTitle": "Total visits to this site"
       },
       "nav": {
         "searchPlaceholder": "Search"
@@ -74,6 +75,7 @@
         "languages": "Languages",
         "contact": "Contact Info",
         "quickFacts": "Quick facts",
+        "visitsLabel": "visits",
         "gpa": "GPA"
       },
       "quickFacts": [
@@ -310,7 +312,8 @@
         "language": "语言",
         "sections": "页面区块",
         "themeToggle": "切换深色模式",
-        "toTop": "回到顶部"
+        "toTop": "回到顶部",
+        "visitsTitle": "本站累计访问次数"
       },
       "nav": {
         "searchPlaceholder": "搜索"
@@ -349,6 +352,7 @@
         "languages": "语言能力",
         "contact": "联系方式",
         "quickFacts": "快速信息",
+        "visitsLabel": "次访问",
         "gpa": "GPA"
       },
       "quickFacts": [
@@ -585,7 +589,8 @@
         "language": "Langue",
         "sections": "Sections de la page",
         "themeToggle": "Basculer le mode sombre",
-        "toTop": "Retour en haut"
+        "toTop": "Retour en haut",
+        "visitsTitle": "Nombre total de visites"
       },
       "nav": {
         "searchPlaceholder": "Rechercher"
@@ -624,6 +629,7 @@
         "languages": "Langues",
         "contact": "Coordonnées",
         "quickFacts": "En bref",
+        "visitsLabel": "visites",
         "gpa": "Moyenne"
       },
       "quickFacts": [
