@@ -472,6 +472,7 @@ export function buildPage({ lang, loc, site, profile, locales, langLinks }) {
   <link rel="canonical" href="${esc(site.url)}${base}">
   <link rel="preload" as="image" href="/avatar" fetchpriority="high">
   <link rel="stylesheet" href="/assets/style.css">
+  <link rel="stylesheet" href="/assets/theme.css">
   ${themeStyle(site)}
   <script src="/assets/main.js" defer></script>
   <script type="application/ld+json">
@@ -543,6 +544,7 @@ export function buildNotFound({ profile, locales, content }) {
   </script>
   <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
   <link rel="stylesheet" href="/assets/style.css">
+  <link rel="stylesheet" href="/assets/theme.css">
 </head>
 <body class="nf-body">
   <main class="card nf-card">
