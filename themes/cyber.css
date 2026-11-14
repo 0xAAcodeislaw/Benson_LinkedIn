@@ -1,0 +1,67 @@
+/* ==========================================================================
+   THEME: CYBERSPACE / 赛博空间
+   霓虹紫粉青、玻璃拟态、网格背景、发光边框
+   ========================================================================== */
+:root {
+  --blue: #00e5ff !important;
+  --blue-hover: #7df9ff !important;
+  --blue-soft: rgba(0, 229, 255, 0.12) !important;
+  --blue-chip: rgba(0, 229, 255, 0.1) !important;
+  --on-accent: #05001a !important;
+  --bg: #070316 !important;
+  --card: rgba(22, 12, 48, 0.72) !important;
+  --border: rgba(140, 100, 255, 0.3) !important;
+  --border-strong: rgba(0, 229, 255, 0.55) !important;
+  --text: #eae4ff !important;
+  --text-2: rgba(200, 190, 245, 0.75) !important;
+  --text-3: rgba(175, 165, 225, 0.68) !important;
+  --green: #ff4ecd !important;
+  --green-bg: rgba(255, 78, 205, 0.12) !important;
+  --green-dot: #ff4ecd !important;
+  --chip-bg: rgba(120, 90, 220, 0.16) !important;
+  --banner-a: #2a0a5e !important;
+  --banner-b: #7b1fa2 !important;
+  --banner-c: #00b3d6 !important;
+  --radius: 14px !important;
+  --shadow-sm: 0 2px 20px rgba(90, 40, 180, .25) !important;
+  --shadow-md: 0 8px 40px rgba(0, 229, 255, .2) !important;
+}
+:root[data-theme="light"] {
+  --bg: #070316 !important; --card: rgba(22,12,48,.72) !important;
+  --text: #eae4ff !important; --text-2: rgba(200,190,245,.75) !important;
+  --text-3: rgba(175,165,225,.68) !important;
+  --border: rgba(140,100,255,.3) !important; --border-strong: rgba(0,229,255,.55) !important;
+  --blue: #00e5ff !important; --on-accent: #05001a !important;
+  --green-bg: rgba(255,78,205,.12) !important; --chip-bg: rgba(120,90,220,.16) !important;
+}
+body {
+  background-image:
+    linear-gradient(rgba(120, 80, 220, .07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(120, 80, 220, .07) 1px, transparent 1px),
+    radial-gradient(circle at 15% 0%, rgba(123, 31, 162, .35), transparent 45%),
+    radial-gradient(circle at 85% 100%, rgba(0, 179, 214, .25), transparent 45%) !important;
+  background-size: 42px 42px, 42px 42px, 100% 100%, 100% 100% !important;
+  background-attachment: fixed !important;
+}
+.nav { background: rgba(10, 5, 30, .8) !important; backdrop-filter: blur(18px) saturate(160%) !important; border-bottom: 1px solid rgba(0,229,255,.3) !important; }
+.card { backdrop-filter: blur(12px) !important; box-shadow: inset 0 1px 0 rgba(255,255,255,.05), 0 8px 32px rgba(10,0,40,.5) !important; }
+.card:hover { box-shadow: 0 0 0 1px rgba(0,229,255,.5), 0 12px 44px rgba(0,229,255,.22) !important; }
+.brand { box-shadow: 0 0 18px rgba(0,229,255,.7), inset 0 0 10px rgba(255,255,255,.2) !important; }
+.hero h1 { text-shadow: 0 0 24px rgba(0,229,255,.55); }
+.banner { position: relative; overflow: hidden; }
+.banner::after {
+  content: ""; position: absolute; inset: 0;
+  background: repeating-linear-gradient(0deg, transparent 0 3px, rgba(255,255,255,.06) 3px 4px);
+}
+.avatar { box-shadow: 0 0 0 2px rgba(0,229,255,.8), 0 0 30px rgba(0,229,255,.5) !important; }
+.btn-primary { box-shadow: 0 0 22px rgba(0,229,255,.55) !important; }
+.btn-outline { box-shadow: inset 0 0 12px rgba(0,229,255,.08); }
+.otw { border: 1px solid rgba(255,78,205,.5) !important; box-shadow: 0 0 18px rgba(255,78,205,.18) !important; }
+.dot { box-shadow: 0 0 10px 3px rgba(255,78,205,.5) !important; }
+.chip { border: 1px solid rgba(140,100,255,.35) !important; }
+.project-thumb { box-shadow: inset 0 0 30px rgba(0,0,0,.3), 0 0 18px rgba(120,80,220,.3); }
+.project-card { background: rgba(10, 4, 30, .5) !important; }
+.section-nav a.active { text-shadow: 0 0 10px var(--blue); }
+.visit-counter { box-shadow: 0 0 18px rgba(0,229,255,.25) !important; }
+.bar span { box-shadow: 0 0 12px rgba(0,229,255,.7); }
+.to-top { box-shadow: 0 0 20px rgba(0,229,255,.4) !important; }

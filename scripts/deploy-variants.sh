@@ -34,7 +34,7 @@ for t in $TARGETS; do
   git checkout -q "$B"
 
   # 1) 主题 CSS
-  cp ".build-themes/$t.css" src/assets/theme.css
+  cp "themes/$t.css" src/assets/theme.css
 
   # 2) 独立 wrangler.toml：独立 Worker 名 + 独立 KV
   cat > wrangler.toml <<EOF
