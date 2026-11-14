@@ -13,7 +13,8 @@
       "accentDark": "#70b5f9",
       "baseFontSize": 14,
       "radius": 8
-    }
+    },
+    "analyticsToken": ""
   },
   "profile": {
     "name": "Benson Ding",

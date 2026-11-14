@@ -110,6 +110,14 @@ function themeStyle(site) {
   }</style>`;
 }
 
+// ---- 访问统计（token 为空时输出空字符串，零开销）----
+function analyticsScript(site) {
+  const token = site && site.analyticsToken ? String(site.analyticsToken).trim() : "";
+  // 只接受 32 位十六进制，避免后台误填导致注入异常
+  if (!/^[a-fA-F0-9]{32}$/.test(token)) return "";
+  return `<script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "${token}"}'></script>`;
+}
+
 // ---- 各区块 ----
 function aboutSection(loc) {
   // 没有段落时整块不渲染（导航项也会自动隐藏）
@@ -496,6 +504,7 @@ ${header(lang, loc, profile, locales, langLinks, navItems)}
   </aside>
 </main>
 <button class="to-top" type="button" data-to-top aria-label="${esc(loc.a11y.toTop)}" title="${esc(loc.a11y.toTop)}">${ICONS.arrowUp}</button>
+${analyticsScript(site)}
 </body>
 </html>`;
 }

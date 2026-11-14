@@ -120,6 +120,19 @@ npm run deploy     # 构建 + 生成 PDF + 部署
 | 登录限流 | 同 IP 15 分钟 5 次失败即锁定 |
 | 图片校验 | 按文件头魔数识别真实类型，防止 iOS 上 WebP 回退成 PNG 却被误标 |
 
+### 访问统计（Cloudflare Web Analytics）
+
+无 Cookie、无需隐私弹窗，免费。
+
+1. Cloudflare Dashboard → **Analytics & Logs → Web Analytics** → **Add a site**
+2. 填入你的域名（绑定自定义域名后用新域名；当前也可填 `benson-ding.deus-edge.workers.dev`）
+3. 复制生成的 **token**（32 位十六进制）
+4. 后台 **共享 → 站点 → Cloudflare Analytics Token** 粘贴后保存
+
+token 为空时页面完全不加载统计脚本（零开销）。代码位在 `scripts/templates.mjs` 的 `analyticsScript()`，CSP 已放行 `static.cloudflareinsights.com`。
+
+> 另外，Dashboard 的 **Workers & Pages → benson-ding → Metrics** 本身就有请求量、错误率、CPU 时间、边缘节点分布，无需任何配置，只是看不到「哪个页面被访问」。
+
 ### 持续集成
 
 `.github/workflows/ci.yml` 在 push 和 PR 时自动执行 `npm ci` → `npm run build` → `npm run check`。如需自动部署，取消文件末尾的注释并配置 `CLOUDFLARE_API_TOKEN`、`CLOUDFLARE_ACCOUNT_ID`。

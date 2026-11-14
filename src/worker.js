@@ -44,7 +44,7 @@ const SECURITY_HEADERS = {
   "x-frame-options": "DENY",
   "cross-origin-opener-policy": "same-origin",
   "content-security-policy":
-    "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self'; font-src 'self'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'",
+    "default-src 'self'; script-src 'self' 'unsafe-inline' https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' https://cloudflareinsights.com; font-src 'self'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'",
 };
 
 // 给任意响应补上安全头（静态资源也走这里）

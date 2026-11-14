@@ -19,6 +19,7 @@ export const sharedSchema = {
       fields: [
         { path: "site.url", label: "站点地址（不含结尾斜杠）", type: "text" },
         { path: "site.author", label: "作者（用于 meta 标签）", type: "text" },
+        { path: "site.analyticsToken", label: "Cloudflare Analytics Token（32 位十六进制，留空即关闭）", type: "text" },
       ],
     },
     {
