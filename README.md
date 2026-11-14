@@ -4,6 +4,23 @@ LinkedIn 风格的三语（中 / 英 / 法）个人求职网站，部署在 Clou
 
 **线上地址：** https://benson.codeislaw.qzz.io
 
+> **当前状态：v0.20 收工版本（已上线、功能完整）**
+>
+> | 项 | 值 |
+> |---|---|
+> | 正式域名 | `benson.codeislaw.qzz.io` |
+> | GitHub | `0xAAcodeislaw/Benson_LinkedIn` |
+> | 最新标签 | `v0.20` |
+> | 后台 | `/admin`（单密码，可在页面内修改） |
+> | 内容存储 | Cloudflare KV（`CONTENT`），带导出/导入/撤销 |
+> | 分享统计 | Cloudflare Web Analytics（token 已配置） |
+> | 计数器 | Durable Object（页脚显示累计访问数） |
+> | CI | push 自动跑 build + check |
+>
+> 日常只做两件事：**改内容去 `/admin`** ；**看数据去 Cloudflare Web Analytics**。
+> 只有改结构/样式才需要动代码并 `npm run deploy`。
+
+
 ## 访问计数器
 
 页脚上方有一个低调的累计访问数（如 `2 visits` / `2 次访问` / `2 visites`）。
