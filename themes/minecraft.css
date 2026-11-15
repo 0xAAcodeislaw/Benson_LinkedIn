@@ -56,8 +56,8 @@ body {
     linear-gradient(180deg, #7ba9d0 0%, #a9cde8 300px, transparent 300px) !important;
   background-attachment: fixed !important;
   font-family: "MinecraftPixel", "Courier New", monospace !important;
-  font-size: 11px !important;
-  line-height: 2.1 !important;
+  font-size: 12px !important;
+  line-height: 2.2 !important;
   letter-spacing: .02em;
   image-rendering: pixelated;
   -webkit-font-smoothing: none;
@@ -92,8 +92,8 @@ body, .card, .btn, .entry-body, .fact dt, .fact dd, .headline, .hero h1,
 .fact dt { font-size: 8.5px !important; letter-spacing: .06em; }
 .fact dd { font-size: 10px !important; }
 .entry-body h3 { font-size: 10.5px !important; }
-.entry-body, .para, .project-info p, .cred-name { font-size: 10px !important; }
-.muted, .small, .contact-list a, .lang-head, .footer, .visit-counter { font-size: 9px !important; }
+.entry-body, .para, .project-info p, .cred-name { font-size: 10.5px !important; line-height: 2.1 !important; }
+.muted, .small, .contact-list a, .lang-head, .footer, .visit-counter { font-size: 9.5px !important; }
 
 /* ---------- 顶栏：泥土砖 ---------- */
 .nav {
@@ -151,7 +151,10 @@ body, .card, .btn, .entry-body, .fact dt, .fact dd, .headline, .hero h1,
   border: 4px solid #3d2c15 !important;
   box-shadow: 4px 4px 0 #2a1d0e, inset 0 0 0 2px rgba(255,255,255,.25) !important;
   image-rendering: pixelated !important;
-  filter: contrast(1.18) saturate(1.25);
+  filter: contrast(1.25) saturate(1.3);
+  /* 阶梯像素边框：模拟物品栏 16x16 图标 */
+  outline: 3px solid #2a1d0e;
+  outline-offset: 2px;
   background: #7cc94a !important;
 }
 
