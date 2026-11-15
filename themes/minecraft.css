@@ -264,11 +264,34 @@ body, .card, .btn, .entry-body, .fact dt, .fact dd, .headline, .hero h1,
 
 /* ---------- 手机端：字号再收一点，导航不溢出 ---------- */
 @media (max-width: 640px) {
-  .section-nav a { font-size: 8px !important; padding: 5px 5px !important; }
-  .lang-switch a { font-size: 9px !important; padding: 5px 5px !important; }
-  .section-nav { overflow-x: auto !important; }
-  .hero h1 { font-size: 17px !important; }
+  /* 像素字体字符宽：导航用更短标签 + 横滑兜底 */
+  .section-nav a { font-size: 7.5px !important; padding: 5px 4px !important; letter-spacing: 0 !important; }
+  .lang-switch a { font-size: 9px !important; padding: 5px 4px !important; }
+  .section-nav { overflow-x: auto !important; scrollbar-width: none; }
+  .hero h1 { font-size: 16px !important; }
   .card h2 { font-size: 11px !important; }
-  .btn { font-size: 8px !important; padding: 9px 8px !important; }
+  .btn { font-size: 7.5px !important; padding: 9px 6px !important; }
   .project-thumb { font-size: 16px !important; }
+
+  /* 状态胶囊：改成上下两块，标题不换行 */
+  .otw {
+    display: grid !important;
+    grid-template-columns: auto minmax(0, 1fr) !important;
+    gap: 4px 8px !important;
+    align-items: start !important;
+    font-size: 9px !important;
+    padding: 10px !important;
+  }
+  .otw .dot { grid-row: 1 / span 2; margin-top: 3px !important; }
+  .otw strong { grid-column: 2; white-space: nowrap !important; font-size: 9.5px !important; }
+  .otw .otw-sep { display: none !important; }
+  .otw > span:last-child { grid-column: 2; font-size: 8.5px !important; line-height: 1.9 !important; }
+
+  /* 求职状态行：允许换行但收紧 */
+  .availability { font-size: 8.5px !important; gap: 4px 8px !important; }
+  .availability li { gap: 4px !important; }
+  .availability svg { width: 12px !important; height: 12px !important; }
+  .headline { font-size: 11px !important; line-height: 2 !important; }
+  .hero-body { padding: 0 12px 16px !important; }
+  .card { padding: 14px !important; }
 }
