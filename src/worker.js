@@ -27,6 +27,7 @@ import {
 import { sharedSchema, localeSchema } from "../scripts/schema.mjs";
 import { loginPage, editorPage } from "./admin/pages.js";
 import { VisitCounter } from "./counter.js";
+import { previewGate } from "./preview-gate.js";
 
 export { VisitCounter };
 
@@ -71,7 +72,7 @@ function sniffImageType(buffer) {
   return null;
 }
 
-// ---- 工具 --------------------------------------------------------------
+// ---- 工具 ----
 const html = (body, status = 200, extra = {}) =>
   new Response(body, {
     status,
@@ -413,11 +414,15 @@ async function handleAvatar(request, env, url) {
   });
 }
 
-// ---- 主入口 --------------------------------------------------------------
+// ---- 主入口 ----
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
     const path = url.pathname;
+
+    // 预览站访问口令：主站未设置 PREVIEW_PASSWORD 时完全跳过
+    const gate = await previewGate(request, env);
+    if (gate) return gate;
 
     // 根路径：按浏览器语言跳转
     if (path === "/") {
