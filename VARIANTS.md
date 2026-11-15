@@ -2,13 +2,15 @@
 
 基于 `main` 的内容与功能，用 `themes/*.css` 覆盖视觉层，**每个版本是独立 Worker + 独立 KV，互不干扰，也未合并进 main**。
 
-| 风格 | 预览地址 | 分支 | Worker | 后台 |
-|---|---|---|---|---|
-| Geek 终端极客风 | https://benson-geek.deus-edge.workers.dev | `style/geek` | `benson-geek` | `/admin` |
-| 赛博空间 | https://benson-cyber.deus-edge.workers.dev | `style/cyber` | `benson-cyber` | `/admin` |
-| 我的世界（Minecraft） | https://benson-minecraft.deus-edge.workers.dev | `style/minecraft` | `benson-minecraft` | `/admin` |
-| 数字区块链 | https://benson-blockchain.deus-edge.workers.dev | `style/blockchain` | `benson-blockchain` | `/admin` |
-| 欧美职场风 | https://benson-corporate.deus-edge.workers.dev | `style/corporate` | `benson-corporate` | `/admin` |
+| 风格 | 预览地址 | 分支 | Worker |
+|---|---|---|---|
+| Geek 终端极客风 | 见 `PREVIEW-PRIVATE.md`（本地文件，未提交） | `style/geek` | `benson-geek` |
+| 赛博空间 | 同上 | `style/cyber` | `benson-cyber` |
+| 我的世界 | 同上 | `style/minecraft` | `benson-minecraft` |
+| 数字区块链 | 同上 | `style/blockchain` | `benson-blockchain` |
+| 欧美职场风 | 同上 | `style/corporate` | `benson-corporate` |
+
+> 5 个站的 `*.workers.dev` 已关闭（404），改用随机长子域私有预览，地址不写入公开仓库。
 
 ## 说明
 
