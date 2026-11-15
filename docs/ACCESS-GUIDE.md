@@ -1,9 +1,8 @@
 # 给预览站加 Cloudflare Access 保护（手动教程）
 
-> 状态：**脚本已就绪，等待一次 API Token 授权**（见第 2 步）。
-> wrangler 登录用的 OAuth token 只有 `workers:write` / `kv:write` 等 scope，
-> **没有 `access:write`**，所以脚本直接跑会报 `auth.forbidden (1010)`。
-> 这不代表 Access 不能用，只是需要换一个有权限的凭证。
+> **现已改用零成本方案**：在 Worker 里加访问口令网关（见文末「零成本替代方案」）。
+> Cloudflare Zero Trust 免费版也要绑卡，且 API 需要 `access:write` 权限，已放弃。
+> 本章节保留作为「如果以后想用官方 Access」的参考。
 
 ## 原理（先懂这个）
 
@@ -98,3 +97,37 @@ curl -s -o /dev/null -w "%{http_code}\n" https://<私有域名>/en/
 
 Access → Applications → 删掉对应应用即可，立刻恢复直接访问。
 不想用了也可以直接把 5 个 Worker 删掉（分支代码仍在 GitHub）。
+
+
+## 零成本替代方案（已实际启用）
+
+不用 Zero Trust、不用绑卡、不用 API Token —— 直接在 Worker 入口加一层口令。
+
+**原理**：`src/preview-gate.js` 在 `fetch()` 最前面检查签名 Cookie，
+`env.PREVIEW_PASSWORD` 存在时未登录一律返回 401 解锁页；主站不设这个变量，网关完全跳过。
+
+**改口令**（每个 Worker 一条命令，立刻生效，不用重新部署）：
+
+```bash
+echo "新口令" | npx wrangler secret put PREVIEW_PASSWORD --name benson-geek
+```
+
+**批量**：
+
+```bash
+for v in geek cyber minecraft blockchain corporate; do
+  echo "新口令" | npx wrangler secret put PREVIEW_PASSWORD --name "benson-$v"
+done
+```
+
+**效果对比**：
+
+| | Cloudflare Access | Worker 口令网关 |
+|---|---|---|
+| 绑卡 | 需要 | **不需要** |
+| 额外服务 | Zero Trust 组织 | 无（复用现有 Worker） |
+| 身份方式 | 邮箱验证码 / SSO | 单口令 |
+| 拦在哪 | 边缘（比 Worker 更早） | Worker 入口（已足够） |
+| 配置 | Dashboard 5 个应用 | 5 条 secret 命令 |
+
+对「防扫描」这个目标，两者等效：扫描器拿到的都是登录页，看不到简历内容。
