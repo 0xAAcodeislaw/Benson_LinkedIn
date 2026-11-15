@@ -18,3 +18,7 @@ class_name = "VisitCounter"
 [[migrations]]
 tag = "v1"
 new_sqlite_classes = ["VisitCounter"]
+
+[[routes]]
+pattern = "pv-corporate-b1158a55cd0d.codeislaw.qzz.io"
+custom_domain = true
