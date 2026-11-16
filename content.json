@@ -14,7 +14,8 @@
       "baseFontSize": 14,
       "radius": 8
     },
-    "analyticsToken": ""
+    "analyticsToken": "",
+    "themeFile": "theme-cyber.css"
   },
   "profile": {
     "name": "Benson Ding",
