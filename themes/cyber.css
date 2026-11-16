@@ -65,3 +65,24 @@ body {
 .visit-counter { box-shadow: 0 0 18px rgba(0,229,255,.25) !important; }
 .bar span { box-shadow: 0 0 12px rgba(0,229,255,.7); }
 .to-top { box-shadow: 0 0 20px rgba(0,229,255,.4) !important; }
+
+/* ---- Cyber 深度打磨 ---- */
+/* 标题字母间距 + 霓虹发光 */
+.hero h1, .card h2 {
+  text-transform: uppercase;
+  letter-spacing: .08em;
+}
+.hero h1 {
+  font-weight: 800;
+  text-shadow:
+    0 0 20px rgba(0,229,255,.55),
+    0 0 60px rgba(0,229,255,.25),
+    2px 2px 0 rgba(255,78,205,.35);
+}
+/* 打印 */
+@media print {
+  body { background-image: none !important; background: #fff !important; color: #000 !important; }
+  .card, .banner, .nav { background: #fff !important; color: #000 !important; box-shadow: none !important; }
+  .card h2, .hero h1 { color: #000 !important; text-shadow: none !important; text-transform: none !important; }
+  .btn { border: 1px solid #000 !important; color: #000 !important; background: #fff !important; box-shadow: none !important; }
+}
