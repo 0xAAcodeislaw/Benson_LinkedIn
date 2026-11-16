@@ -6,6 +6,11 @@ import { fileURLToPath } from "node:url";
 import { buildPage, buildNotFound } from "./scripts/templates.mjs";
 
 const root = dirname(fileURLToPath(import.meta.url));
+
+// 风格变体与站点 URL 由各分支的 package.json scripts 提供
+const VARIANT = process.env.VARIANT || "";
+const SITE_URL = process.env.SITE_URL || "";
+
 const content = JSON.parse(readFileSync(join(root, "content.json"), "utf8"));
 
 // 语言顺序由 content.json 的 site.languageOrder 决定（未配置时用 locales 的书写顺序）
@@ -22,7 +27,17 @@ rmSync(outDir, { recursive: true, force: true });
 mkdirSync(outDir, { recursive: true });
 cpSync(join(root, "src/assets"), join(outDir, "assets"), { recursive: true });
 
+// 风格主题（若存在）输出为带风格名的文件，避免多 Worker 部署时同路径缓存串味
+const themeSrc = join(root, "src/assets/theme.css");
+if (existsSync(themeSrc)) {
+  cpSync(themeSrc, join(outDir, "assets", `theme-${VARIANT}.css`));
+  rmSync(join(outDir, "assets", "theme.css"));
+}
+
 // ---- 页面 ----
+if (SITE_URL) content.site.url = SITE_URL;
+delete content._rev;
+
 for (const lang of LOCALES) {
   const dir = join(outDir, lang);
   mkdirSync(dir, { recursive: true });
