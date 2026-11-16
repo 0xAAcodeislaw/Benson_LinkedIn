@@ -29,7 +29,7 @@
 :root[data-theme="light"] {
   --bg: #0b1220 !important; --card: #141d30 !important;
   --text: #e8edf7 !important; --text-2: rgba(190,202,225,.76) !important;
-  --text-3: rgba(165,180,208,.68) !important;
+  --text-3: rgba(190,200,222,.85) !important;
   --border: rgba(240,185,11,.18) !important; --border-strong: rgba(240,185,11,.48) !important;
   --blue: #f0b90b !important; --on-accent: #0b1220 !important;
   --green-bg: rgba(38,194,129,.1) !important; --chip-bg: rgba(240,185,11,.08) !important;
