@@ -86,6 +86,8 @@ EOF
 
   # 7) 用默认内容初始化 KV（后台可改，主站数据不串）
   npx wrangler kv key put content --path=content.json --namespace-id="$K" --remote >/dev/null 2>&1 || true
+  # 清掉该 namespace 的 HTML 缓存，下次访问按最新内容渲染
+  for l in en fr zh; do npx wrangler kv key delete "html:$l" --namespace-id="$K" --remote >/dev/null 2>&1 || true; done
 
   echo "  ✓ $t 完成 → $URL"
 done
