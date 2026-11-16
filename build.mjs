@@ -31,11 +31,14 @@ rmSync(outDir, { recursive: true, force: true });
 mkdirSync(outDir, { recursive: true });
 cpSync(join(root, "src/assets"), join(outDir, "assets"), { recursive: true });
 
-// 风格主题（若存在）输出为带风格名的文件，避免多 Worker 部署时同路径缓存串味
+// 风格主题（若存在）输出为带风格名的文件，避免多 Worker 部署时同路径缓存串味。
+// 优先取变体专属文件（部署脚本拷贝的目标名），避免分支上残留的旧 theme.css 覆盖新主题。
+const variantSrc = join(root, "src/assets", `theme-${VARIANT}.css`);
 const themeSrc = join(root, "src/assets/theme.css");
-if (existsSync(themeSrc)) {
-  cpSync(themeSrc, join(outDir, "assets", `theme-${VARIANT}.css`));
-  rmSync(join(outDir, "assets", "theme.css"));
+const themeFile = existsSync(variantSrc) ? variantSrc : existsSync(themeSrc) ? themeSrc : null;
+if (themeFile) {
+  cpSync(themeFile, join(outDir, "assets", `theme-${VARIANT}.css`));
+  rmSync(join(outDir, "assets", "theme.css"), { force: true });
 }
 
 // ---- 页面 ----
