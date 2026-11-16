@@ -386,6 +386,7 @@ section[id] {
 }
 
 .avatar {
+  content-visibility: auto;
   display: block;
   width: 152px;
   height: 152px;
@@ -487,6 +488,7 @@ section[id] {
   text-decoration: none;
   border: 1px solid transparent;
   white-space: nowrap;
+  will-change: transform;
   transition: background-color var(--transition), border-color var(--transition),
     color var(--transition), transform var(--transition);
 }
