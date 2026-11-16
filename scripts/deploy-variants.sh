@@ -34,7 +34,7 @@ for t in $TARGETS; do
   git checkout -q "$B"
 
   # 1) 主题 CSS
-  cp "themes/$t.css" src/assets/theme.css
+  cp "themes/$t.css" "src/assets/theme-$t.css"
 
   # 2) 独立 wrangler.toml：独立 Worker 名 + 独立 KV
   cat > wrangler.toml <<EOF
@@ -66,14 +66,15 @@ EOF
     const fs=require("fs");
     const c=JSON.parse(fs.readFileSync("content.json","utf8"));
     c.site.url=process.argv[1];
+    c.site.themeFile=process.argv[2];
     // 各风格独立统计：清空官方 token，避免 5 个站的数据混进同一个 Web Analytics 站点
     c.site.analyticsToken="";
     delete c._rev;
     fs.writeFileSync("content.json",JSON.stringify(c,null,2)+"\n");
-  ' "$URL"
+  ' "$URL" "theme-$t.css"
 
   # 4) 构建 + 校验
-  npm run build >/dev/null
+  VARIANT="$t" SITE_URL="$URL" npm run build >/dev/null
   npm run check >/dev/null
 
   # 5) 提交到各自分支
