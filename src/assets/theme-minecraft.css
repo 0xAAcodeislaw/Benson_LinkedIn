@@ -42,7 +42,7 @@
   --bg: #241d14 !important; --card: #3b3226 !important;
   --text: #f2e8d0 !important; --text-2: #d8c9a8 !important; --text-3: #c2b28f !important;
   --border: #6b5230 !important; --border-strong: #a8946c !important;
-  --blue: #7cc94a !important; --on-accent: #1a140c !important;
+  --blue: #5a8c2a !important; --on-accent: #1a140c !important;
   --green-bg: rgba(94,168,50,.2) !important; --chip-bg: #4a3f2c !important;
 }
 
@@ -114,7 +114,7 @@ body, .card, .btn, .entry-body, .fact dt, .fact dd, .headline, .hero h1,
 }
 /* 顶栏文字反色，深棕底上可见 */
 .nav .theme-toggle, .nav .lang-switch a, .nav .section-nav a { color: #f2e8d0 !important; }
-.nav .lang-switch a.active { color: #1a140c !important; }
+.nav .lang-switch a.active { color: #b6ec7a !important; }
 .nav .section-nav a.active { color: #b6ec7a !important; }
 
 /* ---------- 卡片：橡木木板 + 阶梯阴影 ---------- */
