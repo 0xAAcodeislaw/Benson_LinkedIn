@@ -248,8 +248,8 @@ section[id] {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
+  width: 44px;
+  height: 44px;
   padding: 0;
   border: none;
   border-radius: 50%;
@@ -279,9 +279,12 @@ section[id] {
 }
 
 .lang-switch a {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
   color: var(--text-2);
-  padding: 8px 10px;
-  min-height: 36px;
+  padding: 10px 12px;
+  min-height: 44px;
   border-radius: 6px;
   font-weight: 600;
   font-size: var(--fs-sm);
@@ -860,8 +863,9 @@ img.project-thumb {
   color: var(--blue);
   background: transparent;
   border-radius: 999px;
-  padding: 2px 10px;
+  padding: 6px 12px;
   font-size: var(--fs-xs);
+  min-height: 36px;
   font-weight: 600;
   cursor: pointer;
   transition: background-color var(--transition);
@@ -1524,3 +1528,9 @@ img.project-thumb {
     transform: none !important;
   }
 }
+
+/* 滚动条（Firefox/WebKit） */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--muted); }
