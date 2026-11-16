@@ -18,7 +18,3 @@ class_name = "VisitCounter"
 [[migrations]]
 tag = "v1"
 new_sqlite_classes = ["VisitCounter"]
-
-[[routes]]
-pattern = "pv-blockchain-0e57d221e77d.codeislaw.qzz.io"
-custom_domain = true
