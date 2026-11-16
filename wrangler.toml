@@ -18,9 +18,3 @@ class_name = "VisitCounter"
 [[migrations]]
 tag = "v1"
 new_sqlite_classes = ["VisitCounter"]
-
-# 关闭默认 *.workers.dev 域名，避免被扫描
-
-[[routes]]
-pattern = "pv-geek-30bd0d2250c1.codeislaw.qzz.io"
-custom_domain = true
