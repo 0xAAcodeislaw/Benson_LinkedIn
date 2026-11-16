@@ -69,3 +69,16 @@ body {
 .bar span { background: linear-gradient(90deg, #f0b90b, #26c281) !important; }
 .section-nav a.active { color: var(--blue); }
 .to-top { border: 1px solid rgba(240,185,11,.4) !important; }
+
+/* ---- Blockchain 深度打磨 ---- */
+/* 哈希标签：等宽字体 + 截断 */
+.fact dd, .cred-name, .contact-list a { font-variant-numeric: tabular-nums; }
+/* 打印 */
+@media print {
+  body { background-image: none !important; background: #fff !important; color: #000 !important; }
+  .card, .banner, .nav { background: #fff !important; color: #000 !important; box-shadow: none !important; border-color: #ccc !important; }
+  .card h2, .hero h1 { color: #000 !important; }
+  .btn { border: 1px solid #999 !important; color: #333 !important; background: #fff !important; box-shadow: none !important; }
+  .chip { border: 1px solid #999 !important; color: #333 !important; background: #fff !important; }
+  .banner { border-bottom: 2px solid #ccc !important; }
+}

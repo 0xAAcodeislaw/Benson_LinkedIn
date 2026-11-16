@@ -9,6 +9,10 @@ const root = dirname(fileURLToPath(import.meta.url));
 
 // 风格变体与站点 URL 由各分支的 package.json scripts 提供
 const VARIANT = process.env.VARIANT || "";
+const VARIANT_THEME_COLOR = {
+  geek: "#0a0e0a", cyber: "#070316", minecraft: "#5ea832",
+  blockchain: "#0b1220", corporate: "#1a3a5c",
+}[VARIANT] || "#0a66c2";
 const SITE_URL = process.env.SITE_URL || "";
 
 const content = JSON.parse(readFileSync(join(root, "content.json"), "utf8"));
@@ -49,7 +53,9 @@ for (const lang of LOCALES) {
     locales: LOCALES,
     langLinks: LANG_LINKS,
   });
-  writeFileSync(join(dir, "index.html"), html);
+  // R4: 注入 theme-color meta
+  const themed = html.replace("</head>", `  <meta name="theme-color" content="${VARIANT_THEME_COLOR}">\n</head>`);
+  writeFileSync(join(dir, "index.html"), themed);
   console.log(`  /${lang}/  ${(html.length / 1024).toFixed(1)} KB`);
 }
 
