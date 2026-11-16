@@ -82,3 +82,12 @@ body { font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Robo
 :root[data-theme="dark"] .project-card { background: var(--project-card-bg, #1d2833) !important; }
 :root[data-theme="dark"] .copy-btn { color: var(--blue) !important; border-color: var(--blue) !important; }
 :root[data-theme="dark"] .copy-btn:hover { background: rgba(158,194,232,.1) !important; }
+
+/* dark 下补全组件覆盖 */
+:root[data-theme="dark"] .project-info h3 a { color: var(--text) !important; }
+:root[data-theme="dark"] .project-info p { color: var(--text-2) !important; }
+:root[data-theme="dark"] .project-metric { color: var(--blue) !important; background: var(--blue-chip) !important; }
+:root[data-theme="dark"] .brand,
+:root[data-theme="dark"] .logo,
+:root[data-theme="dark"] .btn-primary { background: var(--blue) !important; color: var(--on-accent) !important; }
+:root[data-theme="dark"] .copy-btn { color: var(--blue) !important; border-color: var(--blue) !important; }
