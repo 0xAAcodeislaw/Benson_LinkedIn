@@ -247,7 +247,7 @@ body, .card, .btn, .entry-body, .fact dt, .fact dd, .headline, .hero h1,
 
 /* ---------- 分隔线 / 导航 ---------- */
 .entry + .entry { border-top: 3px dashed #a8946c !important; }
-.section-nav a, .lang-switch a { border-radius: 0 !important; }
+.section-nav a, .lang-switch a { border-radius: 0 !important; min-height: 36px !important; }
 .section-nav a.active { border-bottom: 3px solid #b6ec7a !important; }
 .visit-counter {
   border-radius: 0 !important;
@@ -327,3 +327,14 @@ body, .card, .btn, .entry-body, .fact dt, .fact dd, .headline, .hero h1,
 :root[data-theme="dark"] .nav .section-nav a { color: #c2b28f !important; }
 :root[data-theme="dark"] .nav .lang-switch a.active,
 :root[data-theme="dark"] .nav .section-nav a.active { color: #b6ec7a !important; }
+
+/* MC: 品牌字白字在深绿底（对比 5+） */
+.brand { color: #ffffff !important; }
+/* MC: 语言切换 active 亮绿字在深色顶栏底（对比 4.5+） */
+.nav .lang-switch a.active { color: #b6ec7a !important; }
+.nav .section-nav a.active { color: #b6ec7a !important; }
+/* MC: footer 亮字在暗色背景（对比 5+） */
+.footer { color: #a8946c !important; }
+:root[data-theme="dark"] .footer { color: #a8946c !important; }
+/* MC: copy-btn 深字在亮底（对比 4.26 → 够了但提升到 5） */
+.copy-btn { color: #2d5a15 !important; border-color: #2d5a15 !important; }

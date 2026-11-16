@@ -91,3 +91,15 @@ body { font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Robo
 :root[data-theme="dark"] .logo,
 :root[data-theme="dark"] .btn-primary { background: var(--blue) !important; color: var(--on-accent) !important; }
 :root[data-theme="dark"] .copy-btn { color: var(--blue) !important; border-color: var(--blue) !important; }
+
+/* corporate dark 下 Open to work 的绿色文字调亮 */
+:root[data-theme="dark"] .otw { background: rgba(94,168,50,.12) !important; color: #7cc94a !important; }
+:root[data-theme="dark"] .otw .dot { background: #7cc94a !important; }
+/* corporate light 的 project-card 亮底但文字用深色（1.14 修复 → 跟随 var(--text)） */
+.project-info h3 a { color: var(--text) !important; }
+.project-info p { color: var(--text-2) !important; }
+.project-metric { color: var(--blue) !important; }
+/* corporate brand logo 深字在藏青底上（2.12 → 白字对比 11） */
+.brand { color: #ffffff !important; }
+
+:root[data-theme="dark"] .copy-btn { color: #9ec2e8 !important; border-color: #9ec2e8 !important; }
