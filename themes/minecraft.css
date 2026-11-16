@@ -24,7 +24,7 @@
   --border-strong: #3d2c15 !important;
   --text: #2b2013 !important;
   --text-2: #5a4630 !important;
-  --text-3: #6b583d !important;
+  --text-3: #4d3d28 !important;
   --green: #2f5a15 !important;
   --green-bg: rgba(94, 168, 50, 0.2) !important;
   --green-dot: #3d8c28 !important;
@@ -42,7 +42,7 @@
   --bg: #241d14 !important; --card: #3b3226 !important;
   --text: #f2e8d0 !important; --text-2: #d8c9a8 !important; --text-3: #c2b28f !important;
   --border: #6b5230 !important; --border-strong: #a8946c !important;
-  --blue: #7cc94a !important; --on-accent: #1a140c !important;
+  --blue: #5a8c2a !important; --on-accent: #1a140c !important;
   --green-bg: rgba(94,168,50,.2) !important; --chip-bg: #4a3f2c !important;
 }
 
@@ -114,7 +114,7 @@ body, .card, .btn, .entry-body, .fact dt, .fact dd, .headline, .hero h1,
 }
 /* 顶栏文字反色，深棕底上可见 */
 .nav .theme-toggle, .nav .lang-switch a, .nav .section-nav a { color: #f2e8d0 !important; }
-.nav .lang-switch a.active { color: #1a140c !important; }
+.nav .lang-switch a.active { color: #b6ec7a !important; }
 .nav .section-nav a.active { color: #b6ec7a !important; }
 
 /* ---------- 卡片：橡木木板 + 阶梯阴影 ---------- */
@@ -143,6 +143,7 @@ body, .card, .btn, .entry-body, .fact dt, .fact dd, .headline, .hero h1,
     repeating-linear-gradient(90deg, #5ea832 0 16px, #6cb63c 16px 32px) !important;
   border-bottom: 6px solid var(--border-strong) !important;
   image-rendering: pixelated;
+  text-shadow: 2px 2px 0 rgba(0,0,0,.5);
 }
 
 /* ---------- 头像：像素化 + 物品栏方框 ---------- */
@@ -208,6 +209,7 @@ body, .card, .btn, .entry-body, .fact dt, .fact dd, .headline, .hero h1,
     repeating-linear-gradient(0deg, rgba(255,255,255,.10) 0 2px, transparent 2px 12px),
     linear-gradient(135deg, var(--blue), var(--banner-c)) !important;
   image-rendering: pixelated;
+  text-shadow: 2px 2px 0 rgba(0,0,0,.5);
 }
 .project-card {
   border-radius: 0 !important;
@@ -245,7 +247,7 @@ body, .card, .btn, .entry-body, .fact dt, .fact dd, .headline, .hero h1,
 
 /* ---------- 分隔线 / 导航 ---------- */
 .entry + .entry { border-top: 3px dashed #a8946c !important; }
-.section-nav a, .lang-switch a { border-radius: 0 !important; }
+.section-nav a, .lang-switch a { border-radius: 0 !important; min-height: 36px !important; }
 .section-nav a.active { border-bottom: 3px solid #b6ec7a !important; }
 .visit-counter {
   border-radius: 0 !important;
@@ -306,3 +308,55 @@ body, .card, .btn, .entry-body, .fact dt, .fact dd, .headline, .hero h1,
 :root .project-metric { color: var(--green) !important; }
 :root .contact-list a { color: var(--green) !important; }
 :root .copy-btn { color: var(--green) !important; border-color: var(--green) !important; }
+
+/* ---------- 夜晚模式：天空/草地/泥土全变暗 ---------- */
+:root[data-theme="dark"] body {
+  background-color: #0d0a06 !important;
+  background-image:
+    repeating-linear-gradient(0deg, rgba(0,0,0,.06) 0 2px, transparent 2px 4px),
+    linear-gradient(180deg, transparent 0, transparent 300px, #1a140c 300px, #1a140c 100%),
+    linear-gradient(180deg, transparent 0, transparent 292px, #2d4a1e 292px, #2d4a1e 320px, transparent 320px),
+    linear-gradient(180deg, #0d0a14 0%, #0d0a14 300px, transparent 300px) !important;
+}
+:root[data-theme="dark"] .nav {
+  background: #2a1d0e !important;
+  background-image: repeating-linear-gradient(90deg, transparent 0 30px, rgba(0,0,0,.2) 30px 32px) !important;
+}
+:root[data-theme="dark"] .nav .theme-toggle,
+:root[data-theme="dark"] .nav .lang-switch a,
+:root[data-theme="dark"] .nav .section-nav a { color: #c2b28f !important; }
+:root[data-theme="dark"] .nav .lang-switch a.active,
+:root[data-theme="dark"] .nav .section-nav a.active { color: #b6ec7a !important; }
+
+/* MC: 品牌字白字在深绿底（对比 5+） */
+.brand { color: #ffffff !important; }
+/* MC: 语言切换 active 亮绿字在深色顶栏底（对比 4.5+） */
+.nav .lang-switch a.active { color: #b6ec7a !important; }
+.nav .section-nav a.active { color: #b6ec7a !important; }
+/* MC: footer 亮字在暗色背景（对比 5+） */
+.footer { color: #a8946c !important; }
+:root[data-theme="dark"] .footer { color: #a8946c !important; }
+/* MC: copy-btn 深字在亮底（对比 4.26 → 够了但提升到 5） */
+.copy-btn { color: #2d5a15 !important; border-color: #2d5a15 !important; }
+
+/* ---- Minecraft 深度打磨 ---- */
+/* 项目缩略块改用纯 CSS 像素方块纹理（草方块） */
+.project-thumb {
+  background-image:
+    repeating-linear-gradient(90deg, transparent 0 8px, rgba(0,0,0,.12) 8px 10px),
+    repeating-linear-gradient(0deg, transparent 0 8px, rgba(255,255,255,.08) 8px 10px),
+    repeating-linear-gradient(0deg, #5ea832 0 6px, #4a7d28 6px 12px) !important;
+  image-rendering: pixelated;
+}
+/* 进度条加方块纹理 */
+.bar span {
+  background-image: repeating-linear-gradient(90deg, transparent 0 8px, rgba(0,0,0,.14) 8px 10px) !important;
+}
+/* 打印 */
+@media print {
+  body { background-image: none !important; background: #fff !important; }
+  .card, .banner, .nav { background: #fff !important; color: #000 !important; box-shadow: none !important; border-color: #ccc !important; }
+  .card h2, .hero h1, .entry-body h3 { color: #000 !important; font-family: "Courier New", monospace !important; font-size: 12pt !important; }
+  .chip, .project-metric { border: 1px solid #999 !important; color: #333 !important; background: #fff !important; }
+  .banner, .project-thumb { display: none !important; }
+}
