@@ -94,9 +94,9 @@
       slot.appendChild(icon);
       slot.appendChild(num);
       slot.addEventListener("click", function () {
-        var el = document.getElementById(d.id);
-        if (!el) return;
-        el.scrollIntoView({ behavior: "smooth", block: "start" });
+        var target = document.getElementById(d.id);
+        if (!target) return;
+        target.scrollIntoView({ behavior: "smooth", block: "start" });
         setActive(d.id);
       });
       bar.appendChild(slot);
@@ -116,8 +116,8 @@
       ticking = false;
       var current = ids[0];
       ids.forEach(function (id) {
-        var el = document.getElementById(id);
-        if (el && el.getBoundingClientRect().top <= window.innerHeight * 0.4) current = id;
+        var sec = document.getElementById(id);
+        if (sec && sec.getBoundingClientRect().top <= window.innerHeight * 0.4) current = id;
       });
       setActive(current);
     };
@@ -162,19 +162,59 @@
     document.fonts.ready.then(function () { init(); });
   }
 
-  // ---- 6. 彩蛋：Minecraft 挖矿小游戏 --------------------------------------
-  // 顶栏 ⛏ 按钮 → 全屏挖矿覆盖层。沿用 MC 操作：
-  //   点击 = 挖掘（不同方块硬度不同）；WASD/方向键 = 移动光标；空格 = 挖掘。
-  // 挖到底部的金色「电话方块」→ 解锁求职者电话号码。
-  var COLS = 14, ROWS = 10;
+  // =====================================================================
+  // ---- 6. 彩蛋：挖矿闯关（10 关，1-9 关得像素靓照，第 10 关得电话） ----
+  // =====================================================================
+  // 玩法沿用 Minecraft 手感：
+  //   点击 = 挖掘（硬度不同敲的次数不同）；WASD/方向键 = 移动光标；空格 = 挖掘。
+  //   只能挖「暴露」的方块：表层，或紧挨着已挖开的洞。
+  //   挖到品红「相机方块」📷 = 解锁一张像素靓照；第 10 关挖金色「电话方块」☎ = 电话号码。
+  var PROGRESS_KEY = "mc_dig_lv";     // 已通到第几关（1~10）
+  var SEEN_TUT_KEY = "mc_dig_seen";   // 是否看过教学
+
   var BLOCKS = {
-    grass:     { hp: 1, face: "#5ea832", side: "#4a7d28", drop: "Grass / 草方块" },
-    dirt:      { hp: 1, face: "#8f6b42", side: "#6b5230", drop: "Dirt / 泥土" },
-    stone:     { hp: 2, face: "#8a8a8a", side: "#5f5f5f", drop: "Stone / 石头" },
-    coal:      { hp: 2, face: "#565656", side: "#333333", drop: "Coal / 煤矿" },
-    deepslate: { hp: 3, face: "#484850", side: "#2e2e36", drop: "Deepslate / 深板岩" },
-    phone:     { hp: 3, face: "#f0b90b", side: "#c99a08", drop: "Phone! / 电话方块" }
+    grass:     { hp: 1, drop: "Grass / 草方块",    cn: "草",    color: "#5ea832" },
+    dirt:      { hp: 1, drop: "Dirt / 泥土",       cn: "泥土",  color: "#8f6b42" },
+    stone:     { hp: 2, drop: "Stone / 石头",      cn: "石头",  color: "#8a8a8a" },
+    coal:      { hp: 2, drop: "Coal / 煤矿",       cn: "煤矿",  color: "#565656" },
+    deepslate: { hp: 3, drop: "Deepslate / 深板岩", cn: "深板岩", color: "#484850" },
+    camera:    { hp: 2, drop: "Camera / 相机方块",  cn: "相机",  color: "#d946ef" },
+    phone:     { hp: 3, drop: "Phone / 电话方块",   cn: "电话",  color: "#f0b90b" }
   };
+
+  var LEVELS = [
+    { name: "草地试挖 · Grass Trial",       tip: "最简单的一关：全是软方块，点一下就碎。相机方块就埋在浅处。",                 cols: 10, rows: 6,  goalMin: 2, goalMax: 3, rock: "soft" },
+    { name: "泥土花园 · Dirt Garden",       tip: "还是软土，但相机埋深了一层。垂直往下挖一条井最快。",                         cols: 11, rows: 7,  goalMin: 3, goalMax: 4, rock: "soft" },
+    { name: "初见岩石 · First Stone",       tip: "石头出现了！要敲 2 下才碎。先挖穿土层，再往石头层找。",                     cols: 12, rows: 7,  goalMin: 3, goalMax: 5, rock: "mix"  },
+    { name: "煤层 · Coal Seam",             tip: "黑点的是煤矿，和石头一样敲 2 下。相机藏在中层。",                           cols: 12, rows: 8,  goalMin: 4, goalMax: 6, rock: "mix"  },
+    { name: "深板岩边缘 · Deepslate Edge",  tip: "最深的深板岩要敲 3 下。往下挖时留意：越深越硬。",                           cols: 13, rows: 8,  goalMin: 5, goalMax: 6, rock: "mix"  },
+    { name: "硬岩地带 · Hard Rock",         tip: "硬岩遍地。策略：选一列垂直打井，别到处乱挖。",                             cols: 13, rows: 9,  goalMin: 5, goalMax: 7, rock: "hard" },
+    { name: "幽深矿洞 · Deep Cave",         tip: "相机在下层，可能需要挖两条竖井。深板岩敲 3 下，要有耐心。",                 cols: 14, rows: 9,  goalMin: 6, goalMax: 7, rock: "hard" },
+    { name: "岩石迷宫 · Rock Maze",         tip: "地图更大、埋得更深。先下后横，路过煤矿顺手拿。",                           cols: 14, rows: 10, goalMin: 6, goalMax: 8, rock: "hard" },
+    { name: "最后一张照片 · Last Photo",    tip: "第 9 张靓照就在下面！挖到它，下一关就是终极电话。",                         cols: 15, rows: 10, goalMin: 7, goalMax: 8, rock: "hard" },
+    { name: "金色电话 · The Golden Phone",  tip: "最后一关！金色电话方块埋在最底层。挖穿整个世界，拿到求职者的电话号码！",     cols: 16, rows: 11, goalMin: 9, goalMax: 9, rock: "hard" }
+  ];
+
+  // 1-9 关的像素靓照风格：同一张头像，不同像素尺寸 + 滤镜（滤镜用 CSS，兼容所有浏览器）
+  var PHOTO_STYLES = [
+    { name: "Classic / 经典像素",  size: 32, filter: "" },
+    { name: "Mini 8-bit / 迷你",   size: 8,  filter: "" },
+    { name: "Golden Hour / 黄昏",  size: 16, filter: "sepia(.45) saturate(1.7) hue-rotate(-12deg)" },
+    { name: "Night Vision / 夜视", size: 16, filter: "hue-rotate(175deg) saturate(1.4) brightness(1.15)" },
+    { name: "Vintage / 复古胶片",  size: 24, filter: "sepia(.75) contrast(1.15) brightness(1.05)" },
+    { name: "Negative / 负片",     size: 24, filter: "invert(1)" },
+    { name: "Emerald / 翡翠",      size: 16, filter: "hue-rotate(90deg) saturate(1.9)" },
+    { name: "Royal Gold / 鎏金",   size: 24, filter: "sepia(1) saturate(3.2) hue-rotate(-10deg) brightness(1.08)" },
+    { name: "Blossom / 樱花",      size: 32, filter: "hue-rotate(300deg) saturate(1.6) brightness(1.1)" }
+  ];
+
+  function loadProgress() {
+    var n = Number(localStorage.getItem(PROGRESS_KEY) || 1);
+    return Math.min(10, Math.max(1, n));
+  }
+  function saveProgress(lv) {
+    try { localStorage.setItem(PROGRESS_KEY, String(Math.min(10, lv))); } catch (e) {}
+  }
 
   function readPhone() {
     try {
@@ -184,9 +224,8 @@
         if (p.telephone) return p.telephone;
       }
     } catch (e) {}
-    // 回落：从联系卡片找
-    var el2 = document.querySelector('[data-contact-phone]');
-    return el2 ? el2.getAttribute('data-contact-phone') : "";
+    var ph = document.querySelector('[data-contact-phone]');
+    return ph ? ph.getAttribute('data-contact-phone') : "";
   }
 
   function injectEasterEggButton() {
@@ -196,193 +235,539 @@
     var btn = document.createElement("button");
     btn.type = "button";
     btn.className = "mc-easter-btn";
-    btn.title = "Easter egg: mining mini-game / 彩蛋小游戏";
-    btn.setAttribute("aria-label", "Easter egg: mining mini-game");
+    btn.title = "Easter egg: 10-level mining game / 彩蛋闯关小游戏";
+    btn.setAttribute("aria-label", "Easter egg: mining game");
     btn.textContent = "\u26CF";
     btn.addEventListener("click", openGame);
     tools.appendChild(btn);
   }
 
+  // 生成一张像素靓照：头像降采样到 size×size 再放大回 256（nearest 保硬边）
+  function makePhoto(style, cb) {
+    var srcImg = document.querySelector(".avatar");
+    var src = srcImg ? (srcImg.currentSrc || srcImg.src) : "";
+    if (!src) { cb(null); return; }
+    var work = new Image();
+    work.crossOrigin = "anonymous";
+    work.onload = function () {
+      try {
+        var SIZE = style.size;
+        var c = document.createElement("canvas");
+        c.width = SIZE; c.height = SIZE;
+        var ctx = c.getContext("2d", { willReadFrequently: true });
+        var s = Math.min(work.width, work.height);
+        ctx.drawImage(work, (work.width - s) / 2, (work.height - s) / 2, s, s, 0, 0, SIZE, SIZE);
+        var out = document.createElement("canvas");
+        out.width = 256; out.height = 256;
+        var octx = out.getContext("2d");
+        octx.imageSmoothingEnabled = false;
+        octx.drawImage(c, 0, 0, 256, 256);
+        cb(out.toDataURL("image/png"));
+      } catch (e) { cb(null); }
+    };
+    work.onerror = function () { cb(null); };
+    work.src = src;
+  }
+
+  // ---- 游戏外壳 ----
+  var G = null; // 当前对局状态
+
   function openGame() {
     if (document.getElementById("mc-game")) return;
-    var phone = readPhone();
 
-    var overlay = document.createElement("div");
-    overlay.className = "mc-game-overlay";
+    var overlay = el("div", "mc-game-overlay");
     overlay.id = "mc-game";
 
     var frame = el("div", "mc-game-frame");
+
+    // 标题行
     var titleRow = el("div", "mc-game-title");
     titleRow.appendChild(el("span", null, "\u26CF"));
-    titleRow.appendChild(el("span", null, "Dig for the phone! / 挖出电话方块"));
+    titleRow.appendChild(el("span", "mc-game-title-txt", "Mine for the photos & phone! / 挖矿闯关"));
+    var resetBtn = el("button", "mc-reset-btn", "\u21BB");
+    resetBtn.type = "button";
+    resetBtn.title = "Reset progress / 重置进度（从第 1 关重来）";
+    resetBtn.addEventListener("click", function () {
+      saveProgress(1);
+      try { localStorage.removeItem(SEEN_TUT_KEY); } catch (e) {}
+      closeGame();
+      openGame();
+    });
+    titleRow.appendChild(resetBtn);
     var closeBtn = el("button", "mc-game-close", "\u00D7");
     closeBtn.type = "button";
     closeBtn.setAttribute("aria-label", "Close");
     closeBtn.addEventListener("click", closeGame);
     titleRow.appendChild(closeBtn);
 
+    // HUD：关卡徽章 + 照片进度点 + 背包 + 目标
     var hud = el("div", "mc-game-hud");
+    var lvBadge = el("span", "mc-lv-badge", "Lv --");
+    var dots = el("span", "mc-dots");
     var inv = el("span", "mc-game-inv", "Bag / 背包: --");
-    var goal = el("span", "mc-game-goal", "Goal / 目标: find the golden phone / 挖出金色电话方块");
+    var goal = el("span", "mc-game-goal", "");
+    hud.appendChild(lvBadge);
+    hud.appendChild(dots);
     hud.appendChild(inv);
     hud.appendChild(goal);
 
     var grid = el("div", "mc-game-grid");
 
     var help = el("div", "mc-game-help");
-    help.appendChild(el("span", null, "Click to dig / 点击挖掘 \u00B7 WASD move / 移动光标 \u00B7 Space dig / 空格挖 \u00B7 ESC close / 关闭"));
+    help.appendChild(el("span", null, "Click = dig 点击挖掘 · WASD/arrows 移动 · Space 空格挖 · ESC close 关闭"));
+
+    var panel = el("div", "mc-panel"); // 教学 / 关卡说明 / 照片卡 都盖在这里
 
     frame.appendChild(titleRow);
     frame.appendChild(hud);
     frame.appendChild(grid);
+    frame.appendChild(panel);
     frame.appendChild(help);
     overlay.appendChild(frame);
     document.body.appendChild(overlay);
     document.body.style.overflow = "hidden";
 
-    // ---- 世界生成 ----
+    G = {
+      overlay: overlay, frame: frame, grid: grid, panel: panel,
+      lvBadge: lvBadge, dots: dots, inv: inv, goal: goal,
+      level: loadProgress(),
+      cells: null, hpMap: null, cursor: { r: 0, c: 0 },
+      closed: false, bag: {}, phone: readPhone(),
+      onKey: null
+    };
+
+    function closeGame() {
+      if (!G) return;
+      G.closed = true;
+      if (G.onKey) document.removeEventListener("keydown", G.onKey);
+      var o = document.getElementById("mc-game");
+      if (o) o.remove();
+      document.body.style.overflow = "";
+      G = null;
+    }
+    G.closeGame = closeGame;
+    overlay.addEventListener("click", function (e) { if (e.target === overlay) closeGame(); });
+
+    // 首次玩 → 教学；否则直接关卡说明
+    var seen = false;
+    try { seen = !!localStorage.getItem(SEEN_TUT_KEY); } catch (e) {}
+    if (!seen) showTutorial();
+    else showLevelCard(G.level);
+  }
+
+  function updateHud() {
+    if (!G) return;
+    var def = LEVELS[G.level - 1];
+    G.lvBadge.textContent = "Lv " + G.level + "/10 · " + def.name;
+    // 照片进度点：9 张照片 + 1 个电话
+    G.dots.textContent = "";
+    for (var i = 1; i <= 10; i++) {
+      var d = el("span", "mc-dot" + (i < G.level ? " is-on" : ""));
+      d.textContent = i < 10 ? "\u25A0" : "\u260E";
+      G.dots.appendChild(d);
+    }
+    var goalTxt = G.level < 10
+      ? "Goal / 目标: dig the pink camera block \u{1F4F7} / 挖出品红相机方块"
+      : "Goal / 目标: dig the golden phone \u260E / 挖出金色电话方块";
+    G.goal.textContent = goalTxt;
+  }
+
+  // ---- 教学面板（含自动演示动画） ----
+  function showTutorial() {
+    if (!G) return;
+    G.grid.style.display = "none";
+    G.panel.style.display = "";
+    G.panel.textContent = "";
+
+    var card = el("div", "mc-tut");
+    card.appendChild(el("div", "mc-tut-head", "How to play · 怎么玩（看动画演示）"));
+
+    // 演示小棋盘：4 列 × 3 行，固定地形：草/草/泥/石，草/泥/相机/石，…
+    var tutGrid = el("div", "mc-tut-grid");
+    var tutCells = [];
+    var layout = [
+      ["grass", "grass", "dirt", "stone"],
+      ["dirt", "camera", "stone", "dirt"],
+      ["stone", "dirt", "dirt", "stone"]
+    ];
+    for (var r = 0; r < 3; r++) {
+      for (var c = 0; c < 4; c++) {
+        var d = el("div", "mc-tut-cell mc-cell-" + layout[r][c]);
+        tutGrid.appendChild(d);
+        tutCells.push(d);
+      }
+    }
+    card.appendChild(tutGrid);
+
+    var bubble = el("div", "mc-tut-bubble", "\u25B6 演示开始…");
+    card.appendChild(bubble);
+
+    var steps = el("ul", "mc-tut-steps");
+    [
+      "① 点方块 = 挖。硬度不同敲的次数不同：草/泥 1 下、石头/煤矿/相机 2 下、深板岩/电话 3 下（点击: 1 hit for grass & dirt, 2 for stone/coal/camera, 3 for deepslate/phone）",
+      "② 只能挖「露出来」的方块：最表层，或紧挨着已挖开的洞 —— 和 Minecraft 一样（Only exposed blocks can be dug, just like Minecraft）",
+      "③ 键盘党：WASD/方向键移动黄色光标，空格挖掘（Keyboard: WASD/arrows to move cursor, Space to dig）",
+      "④ 挖到品红相机方块 \u{1F4F7} = 得一张像素靓照，共 9 关 9 张；第 10 关挖出金色电话 \u260E = 求职者电话号码！"
+    ].forEach(function (t) { steps.appendChild(el("li", null, t)); });
+    card.appendChild(steps);
+
+    var goBtn = el("button", "mc-tut-go", "看懂了，开始挖！ · GOT IT, LET'S DIG!");
+    goBtn.type = "button";
+    goBtn.addEventListener("click", function () {
+      try { localStorage.setItem(SEEN_TUT_KEY, "1"); } catch (e) {}
+      tutStop = true;
+      showLevelCard(G.level);
+    });
+    card.appendChild(goBtn);
+    G.panel.appendChild(card);
+
+    // ---- 演示动画：光标移动 → 敲击 → 裂纹 → 碎裂 →（相机）金光 ----
+    var tutStop = false;
+    var seq = [
+      { r: 0, c: 1, type: "grass",   hits: 1, say: "点草方块… 1 下就碎！ / Click grass… 1 hit!" },
+      { r: 1, c: 1, type: "dirt",    hits: 1, say: "露出来的泥土也能直接挖 / Exposed dirt is diggable" },
+      { r: 0, c: 3, type: "stone",   hits: 2, say: "石头要敲 2 下：裂纹→碎 / Stone needs 2 hits: crack → break" },
+      { r: 1, c: 2, type: "camera",  hits: 2, say: "品红相机方块！挖到 = 得靓照 \u{1F4F7} / Pink camera = a photo!" }
+    ];
+    function cellAt(r, c) { return tutCells[r * 4 + c]; }
+    function runStep(i) {
+      if (tutStop || !G) return;
+      if (i >= seq.length) { // 一轮结束，重置地形再来
+        setTimeout(function () {
+          if (tutStop || !G) return;
+          tutCells.forEach(function (d, idx) {
+            d.className = "mc-tut-cell mc-cell-" + layout[Math.floor(idx / 4)][idx % 4];
+          });
+          runStep(0);
+        }, 1400);
+        return;
+      }
+      var s = seq[i];
+      var cell = cellAt(s.r, s.c);
+      bubble.textContent = "\u25B6 " + s.say;
+      cell.classList.add("is-tut-cursor");
+      var hit = 0;
+      function hitOnce() {
+        if (tutStop || !G) return;
+        hit++;
+        if (s.hits > 1 && hit < s.hits) {
+          cell.classList.add("is-cracking");
+          setTimeout(hitOnce, 650);
+        } else {
+          cell.classList.remove("is-cracking");
+          cell.classList.remove("is-tut-cursor");
+          cell.classList.add("is-tut-break");
+          if (s.type === "camera") cell.classList.add("is-tut-glow");
+          setTimeout(function () { runStep(i + 1); }, 900);
+        }
+      }
+      setTimeout(hitOnce, 600);
+    }
+    runStep(0);
+  }
+
+  // ---- 关卡说明卡（每关开场：目标 + 地形 + 硬度表 + 操作） ----
+  function showLevelCard(lv) {
+    if (!G) return;
+    var def = LEVELS[lv - 1];
+    G.panel.style.display = "";
+    G.panel.textContent = "";
+    G.grid.style.display = "none";
+
+    var card = el("div", "mc-level-card");
+    card.appendChild(el("div", "mc-lc-num", "LEVEL " + lv + " / 10"));
+    card.appendChild(el("div", "mc-lc-name", def.name));
+    card.appendChild(el("div", "mc-lc-tip", def.tip));
+
+    // 目标方块大图 + 说明
+    var goalRow = el("div", "mc-lc-goal");
+    var goalBlock = el("div", "mc-lc-goal-block " + (lv < 10 ? "mc-cell-camera" : "mc-cell-phone"));
+    goalRow.appendChild(goalBlock);
+    var goalTxt = lv < 10
+      ? "挖到「相机方块」📷 得到第 " + lv + " 张像素靓照（埋在第 " + (def.goalMin + 1) + "~" + (def.goalMax + 1) + " 层）"
+      : "挖穿最底层，找到「金色电话方块」☎ —— 得到求职者的电话号码！";
+    goalRow.appendChild(el("span", "mc-lc-goal-txt", goalTxt));
+    card.appendChild(goalRow);
+
+    // 硬度速查表
+    card.appendChild(el("div", "mc-lc-sub", "方块硬度 · Block hardness（敲几下）"));
+    var hardRow = el("div", "mc-lc-hard");
+    Object.keys(BLOCKS).forEach(function (k) {
+      if (k === "camera" || k === "phone") return;
+      var item = el("span", "mc-lc-hard-item");
+      var sw = el("i", "mc-lc-sw mc-cell-" + k);
+      item.appendChild(sw);
+      item.appendChild(el("span", null, BLOCKS[k].cn + " " + BLOCKS[k].hp));
+      hardRow.appendChild(item);
+    });
+    card.appendChild(hardRow);
+
+    card.appendChild(el("div", "mc-lc-ops",
+      "操作：点击方块挖掘 · WASD/方向键移动光标 · 空格挖 · ESC 关闭\n" +
+      "规则：只能挖暴露在表面、或紧挨空洞的方块（和 Minecraft 一样）"));
+
+    var startBtn = el("button", "mc-lc-start", "\u26CF 开始挖掘 · START DIGGING");
+    startBtn.type = "button";
+    startBtn.addEventListener("click", function () { startLevel(lv); });
+    card.appendChild(startBtn);
+
+    // 看过教学但忘了？随时重看
+    var tutLink = el("button", "mc-lc-tut", "\u25B6 重看玩法演示 · Replay tutorial");
+    tutLink.type = "button";
+    tutLink.addEventListener("click", function () {
+      try { localStorage.removeItem(SEEN_TUT_KEY); } catch (e) {}
+      showTutorial();
+    });
+    card.appendChild(tutLink);
+
+    G.panel.appendChild(card);
+    updateHud();
+  }
+
+  // ---- 开局：生成世界 ----
+  function startLevel(lv) {
+    if (!G) return;
+    var def = LEVELS[lv - 1];
+    G.level = lv;
+    G.panel.style.display = "none";
+    G.grid.style.display = "";
+    G.grid.style.gridTemplateColumns = "repeat(" + def.cols + ", 1fr)";
+    G.cursor = { r: 0, c: 0 };
+    G.bag = {};
+
     var cells = [], hpMap = [];
-    for (var r = 0; r < ROWS; r++) {
+    for (var r = 0; r < def.rows; r++) {
       var row = [], rowHp = [];
-      for (var c = 0; c < COLS; c++) {
+      for (var c = 0; c < def.cols; c++) {
         var t;
         if (r === 0) t = "grass";
         else if (r <= 2) t = "dirt";
-        else if (r <= 5) t = Math.random() < 0.18 ? "coal" : "stone";
-        else t = Math.random() < 0.15 ? "coal" : "deepslate";
+        else if (def.rock === "soft") t = Math.random() < 0.15 ? "coal" : "stone";
+        else if (def.rock === "mix") {
+          if (r <= def.rows * 0.55) t = Math.random() < 0.18 ? "coal" : "stone";
+          else t = Math.random() < 0.15 ? "coal" : "deepslate";
+        } else { // hard
+          if (r <= 3) t = Math.random() < 0.18 ? "coal" : "stone";
+          else t = Math.random() < 0.18 ? "coal" : "deepslate";
+        }
         row.push(t);
         rowHp.push(BLOCKS[t].hp);
       }
       cells.push(row);
       hpMap.push(rowHp);
     }
-    // 金色电话方块：埋在最底层随机列
-    var phoneCol = 3 + Math.floor(Math.random() * (COLS - 6));
-    cells[ROWS - 1][phoneCol] = "phone";
+    // 目标方块：goalMin~goalMax 行内随机列（避开最左最右 2 列，保证可达）
+    var gr = def.goalMin + Math.floor(Math.random() * (def.goalMax - def.goalMin + 1));
+    var gc = 2 + Math.floor(Math.random() * (def.cols - 4));
+    var goalType = lv < 10 ? "camera" : "phone";
+    cells[gr][gc] = goalType;
+    hpMap[gr][gc] = BLOCKS[goalType].hp;
+    G.goalPos = { r: gr, c: gc };
 
-    var bag = {}; // 背包数据；inv 是上面的 HUD 文本节点，勿重名
-    var cursor = { r: 0, c: 0 };
-    var closed = false;
-
-    function render() {
-      grid.textContent = "";
-      for (var r = 0; r < ROWS; r++) {
-        for (var c = 0; c < COLS; c++) {
-          var type = cells[r][c];
-          if (type === "air") continue; // 挖空 = 洞，不渲染（BLOCKS 里也没有 air 条目）
-          var d = document.createElement("div");
-          var can = exposed(r, c);
-          d.className = "mc-cell mc-cell-" + type +
-            (hpMap[r][c] < BLOCKS[type].hp ? " is-cracking" : "") +
-            (cursor.r === r && cursor.c === c ? " is-cursor" : "") +
-            (can ? "" : " is-buried");
-          d.dataset.r = String(r);
-          d.dataset.c = String(c);
-          grid.appendChild(d);
-        }
-      }
-      var parts = [];
-      Object.keys(bag).forEach(function (k) { parts.push(k + " x" + bag[k]); });
-      inv.textContent = "Bag / 背包: " + (parts.length ? parts.join(" \u00B7 ") : "--");
-    }
-
-    // 只能挖「暴露面」：表层或与已挖空方块相邻 —— 沿用 MC 的挖掘习惯
-    function exposed(r, c) {
-      if (r === 0) return true;
-      var dirs = [[-1, 0], [1, 0], [0, -1], [0, 1]];
-      for (var d = 0; d < 4; d++) {
-        var nr = r + dirs[d][0], nc = c + dirs[d][1];
-        if (nr >= 0 && nr < ROWS && nc >= 0 && nc < COLS && cells[nr][nc] === "air") return true;
-      }
-      return false;
-    }
-
-    function digCell(r, c) {
-      if (closed) return;
-      if (!exposed(r, c)) return;
-      var type = cells[r][c];
-      if (type === "air") return;
-      hpMap[r][c] -= 1;
-      if (hpMap[r][c] > 0) { render(); return; }
-      var drop = BLOCKS[type].drop;
-      cells[r][c] = "air";
-      bag[drop] = (bag[drop] || 0) + 1;
-      render();
-      if (type === "phone") {
-        closed = true;
-        document.removeEventListener("keydown", onKey);
-        winPanel(phone);
-      }
-    }
-
-    function moveCursor(dr, dc) {
-      var nr = Math.max(0, Math.min(ROWS - 1, cursor.r + dr));
-      var nc = Math.max(0, Math.min(COLS - 1, cursor.c + dc));
-      if (nr !== cursor.r || nc !== cursor.c) { cursor.r = nr; cursor.c = nc; render(); }
-    }
-
-    function onKey(e) {
-      if (closed) return;
-      var k = e.key.toLowerCase();
-      var map = { w: [-1, 0], a: [0, -1], s: [1, 0], d: [0, 1], arrowup: [-1, 0], arrowleft: [0, -1], arrowdown: [1, 0], arrowright: [0, 1] };
-      if (map[k]) { e.preventDefault(); moveCursor(map[k][0], map[k][1]); }
-      else if (k === " " || k === "enter") { e.preventDefault(); digCell(cursor.r, cursor.c); }
-      else if (k === "escape") { closeGame(); }
-    }
-    document.addEventListener("keydown", onKey);
-
-    grid.addEventListener("click", function (e) {
-      var t = e.target.closest(".mc-cell");
-      if (!t) return;
-      digCell(Number(t.dataset.r), Number(t.dataset.c));
-    });
-
-    function closeGame() {
-      closed = true;
-      document.removeEventListener("keydown", onKey);
-      var o = document.getElementById("mc-game");
-      if (o) o.remove();
-      document.body.style.overflow = "";
-    }
-    overlay.addEventListener("click", function (e) { if (e.target === overlay) closeGame(); });
-
+    G.cells = cells;
+    G.hpMap = hpMap;
+    updateHud();
     render();
+
+    if (!G.onKey) {
+      G.onKey = function (e) {
+        if (!G || G.closed) return;
+        if (G.panel.style.display !== "none") {
+          if (e.key === "Escape") G.closeGame();
+          return;
+        }
+        var k = e.key.toLowerCase();
+        var map = { w: [-1, 0], a: [0, -1], s: [1, 0], d: [0, 1], arrowup: [-1, 0], arrowleft: [0, -1], arrowdown: [1, 0], arrowright: [0, 1] };
+        if (map[k]) { e.preventDefault(); moveCursor(map[k][0], map[k][1]); }
+        else if (k === " " || k === "enter") { e.preventDefault(); digCell(G.cursor.r, G.cursor.c); }
+        else if (k === "escape") { G.closeGame(); }
+      };
+      document.addEventListener("keydown", G.onKey);
+      G.grid.addEventListener("click", function (e) {
+        if (!G || G.closed || G.panel.style.display !== "none") return;
+        var t = e.target.closest(".mc-cell");
+        if (!t) return;
+        digCell(Number(t.dataset.r), Number(t.dataset.c));
+      });
+    }
   }
 
-  // ---- 7. 胜利面板：解锁电话号码 ----
-  function winPanel(phone) {
-    var overlay = el("div", "mc-game-overlay mc-win-overlay");
-    var frame = el("div", "mc-game-frame mc-win-frame");
-    frame.appendChild(el("div", "mc-ach-icon", "\u260F"));
-    frame.appendChild(el("div", "mc-ach-title", "Achievement get! / 成就达成！"));
-    frame.appendChild(el("div", "mc-ach-desc", "You found the phone block! / 你挖到了电话方块\uFF1A"));
+  function render() {
+    if (!G || !G.cells) return;
+    var def = LEVELS[G.level - 1];
+    G.grid.textContent = "";
+    for (var r = 0; r < def.rows; r++) {
+      for (var c = 0; c < def.cols; c++) {
+        var type = G.cells[r][c];
+        if (type === "air") continue; // 挖空 = 洞，不渲染
+        var d = document.createElement("div");
+        d.className = "mc-cell mc-cell-" + type +
+          (G.hpMap[r][c] < BLOCKS[type].hp ? " is-cracking" : "") +
+          (G.cursor.r === r && G.cursor.c === c ? " is-cursor" : "") +
+          (exposed(r, c) ? "" : " is-buried");
+        d.dataset.r = String(r);
+        d.dataset.c = String(c);
+        G.grid.appendChild(d);
+      }
+    }
+    var parts = [];
+    Object.keys(G.bag).forEach(function (k) { parts.push(k + " x" + G.bag[k]); });
+    G.inv.textContent = "Bag / 背包: " + (parts.length ? parts.join(" \u00B7 ") : "--");
+  }
+
+  // 只能挖「暴露面」：表层或与已挖空方块相邻 —— 沿用 MC 的挖掘习惯
+  function exposed(r, c) {
+    if (r === 0) return true;
+    var dirs = [[-1, 0], [1, 0], [0, -1], [0, 1]];
+    for (var d = 0; d < 4; d++) {
+      var nr = r + dirs[d][0], nc = c + dirs[d][1];
+      if (nr >= 0 && nr < LEVELS[G.level - 1].rows && nc >= 0 && nc < LEVELS[G.level - 1].cols && G.cells[nr][nc] === "air") return true;
+    }
+    return false;
+  }
+
+  function digCell(r, c) {
+    if (!G || G.closed || !G.cells) return;
+    if (!exposed(r, c)) return;
+    var type = G.cells[r][c];
+    if (type === "air") return;
+    G.hpMap[r][c] -= 1;
+    if (G.hpMap[r][c] > 0) { render(); return; }
+    var drop = BLOCKS[type].drop;
+    G.cells[r][c] = "air";
+    G.bag[drop] = (G.bag[drop] || 0) + 1;
+    render();
+    if (type === "camera" || type === "phone") {
+      var won = type === "phone";
+      saveProgress(G.level + 1);
+      if (won) showPhoneCard();
+      else showPhotoCard(G.level);
+    }
+  }
+
+  function moveCursor(dr, dc) {
+    if (!G || !G.cells) return;
+    var def = LEVELS[G.level - 1];
+    var nr = Math.max(0, Math.min(def.rows - 1, G.cursor.r + dr));
+    var nc = Math.max(0, Math.min(def.cols - 1, G.cursor.c + dc));
+    if (nr !== G.cursor.r || nc !== G.cursor.c) { G.cursor.r = nr; G.cursor.c = nc; render(); }
+  }
+
+  // ---- 照片卡：拍立得风格 ----
+  function showPhotoCard(lv) {
+    if (!G) return;
+    G.grid.style.display = "none";
+    G.panel.style.display = "";
+    G.panel.textContent = "";
+    var style = PHOTO_STYLES[lv - 1];
+
+    var card = el("div", "mc-photo-card");
+    card.appendChild(el("div", "mc-ach-title", "\u{1F4F8} New photo! / 新靓照到手！"));
+    card.appendChild(el("div", "mc-ach-desc", "Level " + lv + " clear · 第 " + lv + " 关通关"));
+
+    var polaroid = el("div", "mc-polaroid");
+    var img = document.createElement("img");
+    img.alt = "Pixel photo " + lv;
+    img.className = "mc-photo-img";
+    polaroid.appendChild(img);
+    card.appendChild(polaroid);
+
+    makePhoto(style, function (url) {
+      if (url) {
+        img.src = url;
+        if (style.filter) img.style.filter = style.filter;
+      } else {
+        img.replaceWith(el("div", "mc-photo-fallback", "\u{1F4F8}"));
+      }
+    });
+    card.appendChild(el("div", "mc-photo-cap", "Photo " + lv + "/9 · " + style.name));
+
+    // 进度点
+    var dots = el("div", "mc-dots mc-dots-big");
+    for (var i = 1; i <= 10; i++) {
+      var d = el("span", "mc-dot" + (i <= lv ? " is-on" : ""));
+      d.textContent = i < 10 ? "\u25A0" : "\u260E";
+      dots.appendChild(d);
+    }
+    card.appendChild(dots);
+
+    var btnRow = el("div", "mc-photo-btns");
+    var next = el("button", "mc-win-close", lv < 9 ? "下一关 Level " + (lv + 1) + " \u2192" : "最终关：金色电话 \u260E");
+    next.type = "button";
+    next.addEventListener("click", function () { showLevelCard(lv + 1); });
+    btnRow.appendChild(next);
+    var later = el("button", "mc-photo-later", "先收着，稍后再来 · Close");
+    later.type = "button";
+    later.addEventListener("click", function () { G && G.closeGame(); });
+    btnRow.appendChild(later);
+    card.appendChild(btnRow);
+
+    card.appendChild(el("div", "mc-ach-desc mc-win-hint",
+      lv < 9
+        ? "再挖 " + (9 - lv) + " 张，最后一关挖出电话号码！"
+        : "靓照集齐 9 张！最后一关：挖出金色电话 \u260E"));
+
+    G.panel.appendChild(card);
+    updateHud();
+  }
+
+  // ---- 终极奖励：电话号码 ----
+  function showPhoneCard() {
+    if (!G) return;
+    G.grid.style.display = "none";
+    G.panel.style.display = "";
+    G.panel.textContent = "";
+
+    var card = el("div", "mc-photo-card");
+    card.appendChild(el("div", "mc-ach-icon", "\u260E"));
+    card.appendChild(el("div", "mc-ach-title", "ALL 10 LEVELS CLEAR! / 十关全通！"));
+    card.appendChild(el("div", "mc-ach-desc", "You dug out the phone! / 你挖到了求职者的电话："));
 
     var phoneRow = el("div", "mc-win-phone");
-    phoneRow.appendChild(el("span", "mc-win-num", phone || "benson.codeislaw.qzz.io"));
+    phoneRow.appendChild(el("span", "mc-win-num", G.phone || "benson.codeislaw.qzz.io"));
     var copy = el("button", "mc-win-copy", "Copy / \u590D\u5236");
     copy.type = "button";
     copy.addEventListener("click", function () {
-      if (navigator.clipboard) navigator.clipboard.writeText(phone);
+      if (navigator.clipboard) navigator.clipboard.writeText(G.phone);
       copy.textContent = "OK \u2713";
       setTimeout(function () { copy.textContent = "Copy / \u590D\u5236"; }, 1600);
     });
     phoneRow.appendChild(copy);
-    frame.appendChild(phoneRow);
+    card.appendChild(phoneRow);
 
-    frame.appendChild(el("div", "mc-ach-desc mc-win-hint", "That phone was buried in the game \u2014 in real life, just call me :) / 游戏里埋的电话 \u2014\u2014 现实中直接打更快 :)"));
+    var dots = el("div", "mc-dots mc-dots-big");
+    for (var i = 1; i <= 10; i++) {
+      var d = el("span", "mc-dot is-on");
+      d.textContent = i < 10 ? "\u25A0" : "\u260E";
+      dots.appendChild(d);
+    }
+    card.appendChild(dots);
+
+    // 9 张靓照缩略图墙
+    var wall = el("div", "mc-photo-wall");
+    PHOTO_STYLES.forEach(function (st, idx) {
+      var box = el("div", "mc-photo-thumb");
+      var im = document.createElement("img");
+      im.alt = "Photo " + (idx + 1);
+      makePhoto(st, function (url) {
+        if (url) { im.src = url; if (st.filter) im.style.filter = st.filter; }
+      });
+      box.appendChild(im);
+      wall.appendChild(box);
+    });
+    card.appendChild(el("div", "mc-lc-sub", "\u{1F4F8} Collected photos / 靓照图鉴 9/9"));
+    card.appendChild(wall);
+
+    card.appendChild(el("div", "mc-ach-desc mc-win-hint",
+      "That phone was buried 10 levels deep \u2014 in real life, just call me :) / 游戏里挖了十层才到的电话 \u2014\u2014 现实中直接打更快 :)"));
 
     var close = el("button", "mc-win-close", "Close / \u5173\u95ED");
     close.type = "button";
-    close.addEventListener("click", function () {
-      overlay.remove();
-      var game = document.getElementById("mc-game");
-      if (game) game.remove(); // 胜利后把游戏层一并关掉
-      document.body.style.overflow = "";
-    });
-    frame.appendChild(close);
-    overlay.appendChild(frame);
-    document.body.appendChild(overlay);
-  }
+    close.addEventListener("click", function () { G && G.closeGame(); });
+    card.appendChild(close);
 
+    G.panel.appendChild(card);
+    updateHud();
+  }
 
 })();

@@ -780,3 +780,126 @@ body { padding-bottom: 76px !important; }
   inset: 0;
   background: rgba(0, 0, 0, 0.45) !important;
 }
+
+/* ===== 挖矿闯关：相机方块 / 教学 / 关卡卡 / 照片卡 ===== */
+.mc-cell-camera {
+  background: #d946ef !important;
+  background-image:
+    radial-gradient(circle at 25% 25%, #f5d0fe 0 2px, transparent 3px),
+    radial-gradient(circle at 75% 25%, #f5d0fe 0 2px, transparent 3px),
+    radial-gradient(circle at 25% 75%, #f5d0fe 0 2px, transparent 3px),
+    radial-gradient(circle at 75% 75%, #f5d0fe 0 2px, transparent 3px),
+    linear-gradient(180deg, #f0abfc 0 25%, #d946ef 25%) !important;
+  box-shadow: inset 0 0 10px rgba(255,255,255,.45) !important;
+}
+.mc-panel {
+  display: none;
+  padding: 14px 16px;
+  min-height: 200px;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  align-content: center;
+}
+.mc-game-frame { display: flex; flex-direction: column; }
+
+/* 教学面板 */
+.mc-tut { text-align: center; max-width: 520px; }
+.mc-tut-head { font-size: 13px !important; color: #3d2c15 !important; margin-bottom: 12px; }
+.mc-tut-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 56px);
+  grid-auto-rows: 56px;
+  gap: 2px;
+  border: 3px solid #3d2c15 !important;
+  background: #1a140c !important;
+  margin: 0 auto 10px;
+  image-rendering: pixelated;
+}
+.mc-tut-cell { position: relative; }
+.mc-tut-cell.is-tut-cursor { outline: 3px solid #ffff55 !important; outline-offset: -3px; z-index: 2; animation: mc-cursor-blink .6s steps(2) infinite; }
+@keyframes mc-cursor-blink { 50% { outline-color: rgba(255,255,85,.35); } }
+.mc-tut-cell.is-tut-break { background: #1a140c !important; background-image: none !important; }
+.mc-tut-cell.is-tut-glow { animation: mc-phone-glow 1s steps(2) infinite; }
+.mc-tut-bubble {
+  min-height: 18px; font-size: 10px !important; color: #3d2c15 !important;
+  background: #fff8e1; border: 2px solid #3d2c15; padding: 5px 10px; margin: 0 auto 12px;
+  width: fit-content; max-width: 100%;
+}
+.mc-tut-steps { text-align: left; font-size: 9px !important; color: #4d3d28 !important; line-height: 1.7; margin: 0 0 14px; padding-left: 18px; }
+.mc-tut-go {
+  border: 3px solid #3d2c15 !important; background: #5ea832 !important; color: #fff !important;
+  font-family: "MinecraftPixel", monospace !important; font-size: 11px !important;
+  padding: 12px 18px !important; cursor: pointer; box-shadow: 3px 3px 0 #2a1d0e !important;
+}
+.mc-tut-go:hover { background: #7cc94a !important; }
+
+/* 关卡说明卡 */
+.mc-level-card { text-align: center; max-width: 560px; }
+.mc-lc-num { font-size: 10px !important; color: #8a6d3b !important; letter-spacing: 2px; }
+.mc-lc-name { font-size: 15px !important; color: #3d2c15 !important; margin: 6px 0 8px; }
+.mc-lc-tip { font-size: 9px !important; color: #4d3d28 !important; line-height: 1.7; margin-bottom: 12px; }
+.mc-lc-goal { display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 12px; }
+.mc-lc-goal-block { width: 44px; height: 44px; border: 3px solid #3d2c15; flex: none; }
+.mc-lc-goal-txt { font-size: 10px !important; color: #3d2c15 !important; line-height: 1.6; max-width: 300px; text-align: left; }
+.mc-lc-sub { font-size: 9px !important; color: #8a6d3b !important; margin: 10px 0 6px; }
+.mc-lc-hard { display: flex; flex-wrap: wrap; gap: 8px 14px; justify-content: center; margin-bottom: 12px; }
+.mc-lc-hard-item { display: inline-flex; align-items: center; gap: 5px; font-size: 9px !important; color: #4d3d28 !important; }
+.mc-lc-sw { display: inline-block; width: 16px; height: 16px; border: 2px solid #3d2c15; }
+.mc-lc-ops { white-space: pre-line; font-size: 8px !important; color: #6b583d !important; line-height: 1.8; margin-bottom: 14px; }
+.mc-lc-start {
+  border: 3px solid #3d2c15 !important; background: #5ea832 !important; color: #fff !important;
+  font-family: "MinecraftPixel", monospace !important; font-size: 11px !important;
+  padding: 12px 20px !important; cursor: pointer; box-shadow: 3px 3px 0 #2a1d0e !important;
+}
+.mc-lc-start:hover { background: #7cc94a !important; }
+.mc-lc-tut {
+  display: block; margin: 10px auto 0; background: none; border: none;
+  font-family: "MinecraftPixel", monospace !important; font-size: 8px !important;
+  color: #8a6d3b !important; cursor: pointer; text-decoration: underline;
+}
+
+/* 照片卡（拍立得） */
+.mc-photo-card { text-align: center; max-width: 420px; }
+.mc-polaroid {
+  background: #fff; border: 3px solid #3d2c15; padding: 10px 10px 4px;
+  box-shadow: 4px 4px 0 #2a1d0e; display: inline-block; margin: 10px 0 8px;
+  transform: rotate(-2deg);
+}
+.mc-photo-img { width: 168px; height: 168px; display: block; image-rendering: pixelated; }
+.mc-photo-fallback { width: 168px; height: 168px; display: flex; align-items: center; justify-content: center; font-size: 60px; }
+.mc-photo-cap { font-size: 9px !important; color: #4d3d28 !important; margin-bottom: 10px; }
+.mc-photo-btns { display: flex; gap: 10px; justify-content: center; margin-bottom: 10px; flex-wrap: wrap; }
+.mc-photo-later {
+  border: 3px solid #3d2c15 !important; background: #d9c9a3 !important; color: #3d2c15 !important;
+  font-family: "MinecraftPixel", monospace !important; font-size: 9px !important;
+  padding: 10px 14px !important; cursor: pointer; box-shadow: 3px 3px 0 #2a1d0e !important;
+}
+.mc-photo-later:hover { background: #e8dcc0 !important; }
+
+/* 进度点 */
+.mc-dots { display: inline-flex; gap: 3px; align-items: center; }
+.mc-dot { font-size: 9px; color: rgba(0,0,0,.18); }
+.mc-dot.is-on { color: #d946ef; }
+.mc-dot:last-child { font-size: 11px; color: rgba(0,0,0,.18); }
+.mc-dot:last-child.is-on { color: #f0b90b; }
+.mc-dots-big .mc-dot { font-size: 13px; }
+.mc-dots-big { margin-bottom: 10px; justify-content: center; }
+
+/* HUD 关卡徽章 */
+.mc-lv-badge {
+  font-size: 9px !important; color: #3d2c15 !important; background: #f0e0b8;
+  border: 2px solid #3d2c15; padding: 3px 7px;
+}
+.mc-reset-btn {
+  background: none; border: none; font-size: 15px; color: #3d2c15; cursor: pointer; padding: 0 4px;
+  margin-left: auto;
+}
+.mc-reset-btn:hover { color: #b3261e; }
+
+/* 电话卡的照片墙 */
+.mc-photo-wall { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-bottom: 12px; }
+.mc-photo-thumb {
+  background: #fff; border: 2px solid #3d2c15; padding: 3px; box-shadow: 2px 2px 0 #2a1d0e;
+}
+.mc-photo-thumb img { width: 44px; height: 44px; display: block; image-rendering: pixelated; }
