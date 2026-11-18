@@ -163,6 +163,8 @@
   }
   // 字体始终没就绪的兜底：3.5s 后再试一次（防止游戏入口永远不出现）
   setTimeout(function () { init(); }, 3500);
+  // 音频解锁：页面上任何第一次按下即解锁 AudioContext（所有关卡都有声音的保证）
+  document.addEventListener("pointerdown", function () { ac(); }, { once: true, capture: true });
 
   // =====================================================================
   // ---- 6. 彩蛋：挖矿闯关（10 关，1-9 关得像素靓照，第 10 关得电话） ----
@@ -231,9 +233,31 @@
     ach:    function () { [523, 659, 784, 1047].forEach(function (f, i) { blip(f, 0.12, "square", 0.05, i * 0.09); }); },
     win:    function () { [392, 523, 659, 784, 1047, 1319].forEach(function (f, i) { blip(f, 0.16, "square", 0.06, i * 0.11); }); },
     go:     function () { blip(880, 0.08, "square", 0.05); blip(1174, 0.12, "square", 0.05, 0.08); }, // GO! 上行提示音
+    clear:  function () { [659, 784, 988, 1319].forEach(function (f, i) { blip(f, 0.1, "square", 0.05, i * 0.08); }); }, // 过关小调
+    // 音阶上行：每收一张靓照，音符爬一级（五声音阶，情绪价值）
+    note:   function (i) { var scale = [523, 587, 659, 784, 880, 1047, 1175, 1319, 1568]; blip(scale[Math.min(i, scale.length - 1)], 0.2, "triangle", 0.06); },
+    move:   function () { blip(500, 0.03, "square", 0.012); }, // 光标移动轻响（键盘党）
     click:  function () { blip(660, 0.05, "square", 0.04); },
     tick:   function () { blip(1200, 0.04, "square", 0.03); }
   };
+
+  // ---- 烟花爆炸（复用像素粒子）：任意位置、任意配色 —— 宝石/相机/过关全用 ----
+  function fxFirework(cx, cy, colors, count, power) {
+    var n = count || 14;
+    var pw = power || 1;
+    for (var i = 0; i < n; i++) {
+      var p = el("span", "mc-particle" + (i % 3 === 0 ? " is-glow" : ""));
+      p.style.left = cx + "px";
+      p.style.top = cy + "px";
+      p.style.background = colors[i % colors.length];
+      var ang = (Math.PI * 2 * i) / n + Math.random() * 0.5;
+      var dist = (30 + Math.random() * 40) * pw;
+      p.style.setProperty("--dx", Math.cos(ang) * dist + "px");
+      p.style.setProperty("--dy", (Math.sin(ang) * dist + 34 * pw) + "px"); // 带重力
+      document.body.appendChild(p);
+      setTimeout(function (node) { return function () { node.remove(); }; }(p), 640);
+    }
+  }
 
   // ---- 打击特效：粒子飞溅 / 掉落物飞入背包 / 涟漪 / 屏震（fixed 定位 + 自毁） ----
   function fxParticles(cellEl, color, n) {
@@ -993,8 +1017,13 @@
     fxParticles(cellEl, color, type === "deepslate" || type === "phone" ? 10 : 6);
     fxFlyDrop(cellEl, color);
     if (type === "deepslate" || type === "phone") fxShake();
-    if (type === "gem") { // 钻石彩蛋方块
+    if (type === "gem") { // 钻石彩蛋方块：烟花 + 成就
       SFX.gem();
+      if (cellEl) {
+        var gr2 = cellEl.getBoundingClientRect();
+        fxFirework(gr2.left + gr2.width / 2, gr2.top + gr2.height / 2,
+          ["#4fd8ff", "#ffffff", "#ffff55", "#bfe9ff"], 16, 1.2);
+      }
       toast("\u{1F48E}", "DIAMONDS! / 挖到钻石！", "Shiny bonus find / 意外的宝贝");
       try { localStorage.setItem("mc_gems", String(Number(localStorage.getItem("mc_gems") || 0) + 1)); } catch (e) {}
     }
@@ -1007,6 +1036,12 @@
         try { localStorage.setItem(DONE_KEY, "1"); } catch (e) {}
         showFinale(); // 大祝贺 + 礼花秀，谢幕后自动进入电话卡
       } else {
+        // 相机方块 = 宝！原地粉紫烟花 + 快门白闪
+        if (cellEl) {
+          var gr3 = cellEl.getBoundingClientRect();
+          fxFirework(gr3.left + gr3.width / 2, gr3.top + gr3.height / 2,
+            ["#d946ef", "#f0abfc", "#ffff55", "#ffffff"], 16, 1.1);
+        }
         fxFlash();
         SFX.shutter();
         saveProgress(G.level + 1);
@@ -1020,7 +1055,7 @@
     var def = LEVELS[G.level - 1];
     var nr = Math.max(0, Math.min(def.rows - 1, G.cursor.r + dr));
     var nc = Math.max(0, Math.min(def.cols - 1, G.cursor.c + dc));
-    if (nr !== G.cursor.r || nc !== G.cursor.c) { G.cursor.r = nr; G.cursor.c = nc; render(); }
+    if (nr !== G.cursor.r || nc !== G.cursor.c) { G.cursor.r = nr; G.cursor.c = nc; render(); SFX.move(); }
   }
 
   // ---- 照片卡：拍立得风格 ----
@@ -1030,6 +1065,8 @@
     G.panel.classList.add("is-show");
     G.panel.textContent = "";
     var style = PHOTO_STYLES[lv - 1];
+    SFX.clear(); // 过关小调
+    SFX.note(lv - 1); // 音阶上行：第 N 张靓照 = 第 N 级音符
 
     var card = el("div", "mc-photo-card");
     card.appendChild(el("div", "mc-ach-title", "\u{1F4F8} New photo! / 新靓照到手！"));
@@ -1100,9 +1137,20 @@
 
     G.panel.appendChild(card);
     updateHud();
-  }
 
-  // ---- 大祝贺 + 礼花秀：挖出电话后的全屏谢幕（约 3.7s，随后进入电话卡） ----
+    // 拍立得周围来两轮小烟花（等飘落动画就位后）
+    setTimeout(function () {
+      if (!G) return;
+      var pr = (document.querySelector(".mc-polaroid") || {}).getBoundingClientRect;
+      if (!pr) return;
+      var r = document.querySelector(".mc-polaroid").getBoundingClientRect();
+      var cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+      fxFirework(cx - r.width / 2 - 8, cy - 10, ["#ffff55", "#f0b90b", "#d946ef"], 8, 0.7);
+      setTimeout(function () {
+        if (G) fxFirework(cx + r.width / 2 + 8, cy - 10, ["#5ea832", "#4fd8ff", "#ffffff"], 8, 0.7);
+      }, 260);
+    }, 520);
+  }
   function showFinale() {
     SFX.win();
     setTimeout(function () { SFX.ach(); }, 900); // 双段号角

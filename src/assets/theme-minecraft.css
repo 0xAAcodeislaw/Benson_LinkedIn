@@ -1379,3 +1379,14 @@ body { padding-bottom: 76px !important; }
   55% { opacity: 1; }
   100% { transform: translate(var(--dx), var(--dy)) scale(.3); opacity: 0; }
 }
+
+/* ===== 情绪价值：发光礼花粒子 ===== */
+.mc-particle.is-glow {
+  box-shadow: 0 0 6px 1px rgba(255, 255, 200, .8);
+  animation: mc-particle-glow .7s cubic-bezier(.2,.7,.4,1) forwards;
+}
+@keyframes mc-particle-glow {
+  0% { transform: translate(0, 0) scale(1.4); opacity: 1; }
+  55% { opacity: 1; }
+  100% { transform: translate(var(--dx), var(--dy)) scale(.3); opacity: 0; }
+}
