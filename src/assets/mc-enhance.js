@@ -567,6 +567,9 @@
     try { seen = !!localStorage.getItem(SEEN_TUT_KEY); } catch (e) {}
     if (!seen) showTutorial();
     else showLevelCard(G.level);
+
+    // 后台预热靓照缓存（首次挖到相机时照片即点即有，无异步空白）
+    PHOTO_STYLES.forEach(function (st) { makePhoto(st, function () {}); });
   }
 
   function updateHud() {
