@@ -1,6 +1,7 @@
 name = "benson-minecraft"
 main = "src/worker.js"
 compatibility_date = "2026-11-12"
+workers_dev = false # 禁用 workers.dev 路由（防扫描），只走私有预览域
 
 [assets]
 directory = "./public"
