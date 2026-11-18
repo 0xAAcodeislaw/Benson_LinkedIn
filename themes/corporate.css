@@ -28,13 +28,11 @@
 }
 :root[data-theme="dark"] {
   --bg: #10161d !important; --card: #18212b !important;
-  --text: #e6ebf0 !important; --text-2: #aeb9c4 !important; --text-3: #a9b6c3 !important;
+  --text: #e6ebf0 !important; --text-2: #aeb9c4 !important; --text-3: #94a2b0 !important;
   --border: #2c3946 !important; --border-strong: #4a5b6c !important;
-  --blue: #9ec2e8 !important; --on-accent: #10161d !important;
+  --blue: #8fb6dc !important; --on-accent: #10161d !important;
   --green-bg: rgba(31,107,74,.16) !important; --chip-bg: #212c38 !important;
   --blue-chip: #22303e !important;
-  /* dark 下项目卡/卡片内嵌区域用深色底 */
-  --project-card-bg: #1d2833 !important;
 }
 body { font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important; }
 .hero h1, .card h2, .subhead {
@@ -76,42 +74,4 @@ body { font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Robo
   .section-nav a { font-size: 9.5px !important; letter-spacing: .02em !important; padding: 5px 5px !important; }
   .lang-switch a { font-size: 11px !important; padding: 5px 6px !important; }
   .section-nav { overflow-x: auto !important; }
-}
-
-/* dark 下修正 corporate 的组件底色 */
-:root[data-theme="dark"] .project-card { background: var(--project-card-bg, #1d2833) !important; }
-:root[data-theme="dark"] .copy-btn { color: var(--blue) !important; border-color: var(--blue) !important; }
-:root[data-theme="dark"] .copy-btn:hover { background: rgba(158,194,232,.1) !important; }
-
-/* dark 下补全组件覆盖 */
-:root[data-theme="dark"] .project-info h3 a { color: var(--text) !important; }
-:root[data-theme="dark"] .project-info p { color: var(--text-2) !important; }
-:root[data-theme="dark"] .project-metric { color: var(--blue) !important; background: var(--blue-chip) !important; }
-:root[data-theme="dark"] .brand,
-:root[data-theme="dark"] .logo,
-:root[data-theme="dark"] .btn-primary { background: var(--blue) !important; color: var(--on-accent) !important; }
-:root[data-theme="dark"] .copy-btn { color: var(--blue) !important; border-color: var(--blue) !important; }
-
-/* corporate dark 下 Open to work 的绿色文字调亮 */
-:root[data-theme="dark"] .otw { background: rgba(94,168,50,.12) !important; color: #7cc94a !important; }
-:root[data-theme="dark"] .otw .dot { background: #7cc94a !important; }
-/* corporate light 的 project-card 亮底但文字用深色（1.14 修复 → 跟随 var(--text)） */
-.project-info h3 a { color: var(--text) !important; }
-.project-info p { color: var(--text-2) !important; }
-.project-metric { color: var(--blue) !important; }
-/* corporate brand logo 深字在藏青底上（2.12 → 白字对比 11） */
-.brand { color: #ffffff !important; }
-
-:root[data-theme="dark"] .copy-btn { color: #9ec2e8 !important; border-color: #9ec2e8 !important; }
-
-/* ---- Corporate 深度打磨 ---- */
-/* 打印优化 */
-@media print {
-  body { background: #fff !important; color: #000 !important; font-size: 11pt !important; }
-  .card, .banner, .nav { background: #fff !important; color: #000 !important; box-shadow: none !important; border: none !important; border-bottom: 1px solid #ccc !important; }
-  .card h2, .hero h1 { color: #000 !important; font-family: Georgia, serif !important; }
-  .btn { border: 1px solid #666 !important; color: #333 !important; background: #fff !important; box-shadow: none !important; }
-  .chip { border: 1px solid #ccc !important; color: #333 !important; background: #fff !important; }
-  .banner { display: none !important; }
-  .project-thumb { display: none !important; }
 }

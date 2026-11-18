@@ -14,7 +14,7 @@
   --border-strong: rgba(240, 185, 11, 0.48) !important;
   --text: #e8edf7 !important;
   --text-2: rgba(190, 202, 225, 0.76) !important;
-  --text-3: rgba(178, 192, 218, 0.82) !important;
+  --text-3: rgba(165, 180, 208, 0.68) !important;
   --green: #26c281 !important;
   --green-bg: rgba(38, 194, 129, 0.1) !important;
   --green-dot: #26c281 !important;
@@ -29,7 +29,7 @@
 :root[data-theme="light"] {
   --bg: #0b1220 !important; --card: #141d30 !important;
   --text: #e8edf7 !important; --text-2: rgba(190,202,225,.76) !important;
-  --text-3: rgba(190,200,222,.85) !important;
+  --text-3: rgba(165,180,208,.68) !important;
   --border: rgba(240,185,11,.18) !important; --border-strong: rgba(240,185,11,.48) !important;
   --blue: #f0b90b !important; --on-accent: #0b1220 !important;
   --green-bg: rgba(38,194,129,.1) !important; --chip-bg: rgba(240,185,11,.08) !important;
@@ -69,16 +69,3 @@ body {
 .bar span { background: linear-gradient(90deg, #f0b90b, #26c281) !important; }
 .section-nav a.active { color: var(--blue); }
 .to-top { border: 1px solid rgba(240,185,11,.4) !important; }
-
-/* ---- Blockchain 深度打磨 ---- */
-/* 哈希标签：等宽字体 + 截断 */
-.fact dd, .cred-name, .contact-list a { font-variant-numeric: tabular-nums; }
-/* 打印 */
-@media print {
-  body { background-image: none !important; background: #fff !important; color: #000 !important; }
-  .card, .banner, .nav { background: #fff !important; color: #000 !important; box-shadow: none !important; border-color: #ccc !important; }
-  .card h2, .hero h1 { color: #000 !important; }
-  .btn { border: 1px solid #999 !important; color: #333 !important; background: #fff !important; box-shadow: none !important; }
-  .chip { border: 1px solid #999 !important; color: #333 !important; background: #fff !important; }
-  .banner { border-bottom: 2px solid #ccc !important; }
-}
