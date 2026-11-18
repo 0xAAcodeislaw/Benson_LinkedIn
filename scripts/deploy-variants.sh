@@ -34,7 +34,7 @@ for t in $TARGETS; do
   git checkout -q "$B"
 
   # 1) 主题 CSS
-  cp "themes/$t.css" "src/assets/theme-$t.css"
+  cp "themes/$t.css" src/assets/theme.css
 
   # 2) 独立 wrangler.toml：独立 Worker 名 + 独立 KV
   cat > wrangler.toml <<EOF
@@ -66,15 +66,16 @@ EOF
     const fs=require("fs");
     const c=JSON.parse(fs.readFileSync("content.json","utf8"));
     c.site.url=process.argv[1];
-    c.site.themeFile=process.argv[2];
+    // Minecraft 版启用专属增强脚本（像素化头像 + 物品栏）
+    c.site.themeFlag=process.argv[2]==="minecraft" ? "minecraft" : "";
     // 各风格独立统计：清空官方 token，避免 5 个站的数据混进同一个 Web Analytics 站点
     c.site.analyticsToken="";
     delete c._rev;
     fs.writeFileSync("content.json",JSON.stringify(c,null,2)+"\n");
-  ' "$URL" "theme-$t.css"
+  ' "$URL" "$t"
 
   # 4) 构建 + 校验
-  VARIANT="$t" SITE_URL="$URL" npm run build >/dev/null
+  npm run build >/dev/null
   npm run check >/dev/null
 
   # 5) 提交到各自分支
@@ -86,8 +87,6 @@ EOF
 
   # 7) 用默认内容初始化 KV（后台可改，主站数据不串）
   npx wrangler kv key put content --path=content.json --namespace-id="$K" --remote >/dev/null 2>&1 || true
-  # 清掉该 namespace 的 HTML 缓存，下次访问按最新内容渲染
-  for l in en fr zh; do npx wrangler kv key delete "html:$l" --namespace-id="$K" --remote >/dev/null 2>&1 || true; done
 
   echo "  ✓ $t 完成 → $URL"
 done
