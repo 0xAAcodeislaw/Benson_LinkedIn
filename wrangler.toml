@@ -1,6 +1,7 @@
 name = "benson-cyber"
 main = "src/worker.js"
 compatibility_date = "2026-11-12"
+workers_dev = false
 
 [assets]
 directory = "./public"
