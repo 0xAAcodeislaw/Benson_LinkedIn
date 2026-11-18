@@ -74,34 +74,3 @@ body::before {
   .lang-switch a { font-size: 11px !important; padding: 5px 5px !important; }
   .section-nav { overflow-x: auto !important; }
 }
-
-/* ---- Geek 深度打磨 ---- */
-/* 标题打字机闪烁光标 */
-.hero h1::after {
-  content: "▌";
-  animation: blink 1s step-end infinite;
-  color: var(--blue);
-  font-weight: normal;
-}
-@keyframes blink { 50% { opacity: 0; } }
-/* 卡片加代码窗口三圆点 */
-.card {
-  position: relative;
-  overflow: hidden;
-}
-.card::before {
-  content: "";
-  display: block;
-  height: 3px;
-  margin: -24px -24px 18px;
-  background: linear-gradient(90deg, var(--blue) 0%, transparent 50%);
-  opacity: .4;
-}
-.hero.card::before { display: none; }
-/* 扫描线降到不干扰阅读 */
-body::before { opacity: .25 !important; }
-/* 打印 */
-@media print {
-  body::before { display: none !important; }
-  .card::before { display: none !important; }
-}
