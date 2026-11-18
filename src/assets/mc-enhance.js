@@ -459,6 +459,7 @@
     var lvBadge = el("span", "mc-lv-badge", "Lv --");
     var dots = el("span", "mc-dots");
     var inv = el("span", "mc-game-inv", "Bag / 背包: --");
+    inv.setAttribute("aria-live", "polite"); // 读屏用户也能听到背包变化
     var goal = el("span", "mc-game-goal", "");
     hud.appendChild(lvBadge);
     hud.appendChild(dots);
@@ -486,6 +487,8 @@
     overlay.appendChild(frame);
     document.body.appendChild(overlay);
     document.body.style.overflow = "hidden";
+    // iOS/Safari：首次触摸解锁 AudioContext（否则无声）
+    document.addEventListener("pointerdown", function () { ac(); }, { once: true, capture: true });
 
     G = {
       overlay: overlay, frame: frame, grid: grid, panel: panel,
@@ -859,6 +862,7 @@
   // 用 pointerdown（鼠标/触屏统一），不用 click 避免连点双倍伤害
   function attachGridInput(G) {
     var holdTimer = null;
+    var px = null, py = null;
     function stopHold() { if (holdTimer) { clearInterval(holdTimer); holdTimer = null; } }
     G.grid.addEventListener("pointerdown", function (e) {
       if (!G || G.closed || G.panel.classList.contains("is-show")) return;
@@ -871,6 +875,7 @@
       }
       var t = e.target.closest(".mc-cell");
       if (!t) return;
+      px = e.clientX; py = e.clientY; // 触屏滑动移动光标的起点
       var r = Number(t.dataset.r), c = Number(t.dataset.c);
       digCell(r, c);
       stopHold();
@@ -880,8 +885,19 @@
       }, 240); // 略快于 280ms，连挖更顺
       achOnce("mc_ach_hold", "\u{1F576}\uFE0F", "Hold to mine! / 学会连挖！", "Hold to keep digging / 按住不放持续挖");
     });
+    // 触屏：按住后滑动 = 移动光标（顺带取消连挖）
+    G.grid.addEventListener("pointermove", function (e) {
+      if (px === null) return;
+      var dx = e.clientX - px, dy = e.clientY - py;
+      if (Math.abs(dx) > 26 || Math.abs(dy) > 26) {
+        stopHold();
+        if (Math.abs(dx) > Math.abs(dy)) moveCursor(0, dx > 0 ? 1 : -1);
+        else moveCursor(dy > 0 ? 1 : -1, 0);
+        px = e.clientX; py = e.clientY;
+      }
+    });
     ["pointerup", "pointercancel", "pointerleave"].forEach(function (ev) {
-      G.grid.addEventListener(ev, stopHold);
+      G.grid.addEventListener(ev, function (e) { stopHold(); if (ev !== "pointerleave") { px = null; py = null; } });
     });
     G.grid.addEventListener("contextmenu", function (e) { e.preventDefault(); }); // 长按别弹菜单
   }
