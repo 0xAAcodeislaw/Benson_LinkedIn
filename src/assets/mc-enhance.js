@@ -173,6 +173,102 @@
   var SEEN_TUT_KEY = "mc_dig_seen";   // 是否看过教学
   var DONE_KEY = "mc_dig_done";       // 是否通关过第 10 关
 
+  // ---- 音效引擎：Web Audio 合成，零资源文件；首次交互后自动解锁 ----
+  var audio = { ctx: null, on: null };
+  function soundOn() {
+    if (audio.on === null) {
+      try { audio.on = localStorage.getItem("mc_dig_sound") !== "0"; } catch (e) { audio.on = true; }
+    }
+    return audio.on;
+  }
+  function ac() {
+    if (!soundOn()) return null;
+    if (!audio.ctx) {
+      try { audio.ctx = new (window.AudioContext || window.webkitAudioContext)(); }
+      catch (e) { audio.on = false; return null; }
+    }
+    if (audio.ctx.state === "suspended") { try { audio.ctx.resume(); } catch (e) {} }
+    return audio.ctx;
+  }
+  function blip(freq, dur, type, vol, when) { // 像素风方波音符
+    var c = ac(); if (!c) return;
+    var o = c.createOscillator(), g = c.createGain();
+    o.type = type || "square"; o.frequency.value = freq;
+    var t = c.currentTime + (when || 0);
+    g.gain.setValueAtTime(vol || 0.04, t);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + (dur || 0.1));
+    o.connect(g); g.connect(c.destination);
+    o.start(t); o.stop(t + (dur || 0.1) + 0.02);
+  }
+  function noise(dur, vol, freq) { // 噪声 burst：敲击/碎裂质感
+    var c = ac(); if (!c) return;
+    var len = Math.max(1, Math.floor(c.sampleRate * (dur || 0.08)));
+    var buf = c.createBuffer(1, len, c.sampleRate);
+    var d = buf.getChannelData(0);
+    for (var i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / len);
+    var src = c.createBufferSource(); src.buffer = buf;
+    var f = c.createBiquadFilter(); f.type = "lowpass"; f.frequency.value = freq || 900;
+    var g = c.createGain(); g.gain.value = vol || 0.12;
+    src.connect(f); f.connect(g); g.connect(c.destination); src.start();
+  }
+  var SFX = {
+    tap:    function () { noise(0.05, 0.09, 1200 + Math.random() * 400); }, // 随机音高避免单调
+    crack:  function () { noise(0.04, 0.07, 2200); },
+    break_: function () { noise(0.12, 0.15, 700); blip(90, 0.1, "square", 0.05); },
+    gem:    function () { blip(880, 0.09, "square", 0.05); blip(1320, 0.12, "square", 0.05, 0.09); },
+    shutter:function () { noise(0.03, 0.14, 4000); noise(0.05, 0.09, 1500); },
+    ach:    function () { [523, 659, 784, 1047].forEach(function (f, i) { blip(f, 0.12, "square", 0.05, i * 0.09); }); },
+    win:    function () { [392, 523, 659, 784, 1047, 1319].forEach(function (f, i) { blip(f, 0.16, "square", 0.06, i * 0.11); }); },
+    click:  function () { blip(660, 0.05, "square", 0.04); },
+    tick:   function () { blip(1200, 0.04, "square", 0.03); }
+  };
+
+  // ---- 打击特效：粒子飞溅 / 掉落物飞入背包 / 涟漪 / 屏震（fixed 定位 + 自毁） ----
+  function fxParticles(cellEl, color, n) {
+    if (!cellEl) return;
+    var rect = cellEl.getBoundingClientRect();
+    for (var i = 0; i < (n || 6); i++) {
+      var p = el("span", "mc-particle");
+      p.style.left = rect.left + rect.width / 2 + "px";
+      p.style.top = rect.top + rect.height / 2 + "px";
+      p.style.background = color;
+      var ang = Math.random() * Math.PI * 2;
+      var dist = 18 + Math.random() * 28;
+      p.style.setProperty("--dx", Math.cos(ang) * dist + "px");
+      p.style.setProperty("--dy", (Math.sin(ang) * dist - 22) + "px");
+      document.body.appendChild(p);
+      setTimeout(function (node) { return function () { node.remove(); }; }(p), 640);
+    }
+  }
+  function fxFlyDrop(cellEl, color) {
+    if (!cellEl || !G || !G.inv) return;
+    var r = cellEl.getBoundingClientRect();
+    var t = G.inv.getBoundingClientRect();
+    var d = el("span", "mc-fly");
+    d.style.left = r.left + r.width / 2 + "px";
+    d.style.top = r.top + r.height / 2 + "px";
+    d.style.background = color;
+    d.style.setProperty("--tx", (t.left + t.width / 2 - r.left - r.width / 2) + "px");
+    d.style.setProperty("--ty", (t.top + t.height / 2 - r.top - r.height / 2) + "px");
+    document.body.appendChild(d);
+    setTimeout(function () { d.remove(); }, 500);
+    G.inv.classList.remove("is-pop");
+    void G.inv.offsetWidth; // 重新触发弹跳动画
+    G.inv.classList.add("is-pop");
+  }
+  function fxRipple(cellEl) {
+    if (!cellEl) return;
+    var s = el("span", "mc-ripple");
+    cellEl.appendChild(s);
+    setTimeout(function () { s.remove(); }, 320);
+  }
+  function fxShake() {
+    if (!G || !G.frame) return;
+    G.frame.classList.remove("is-shake");
+    void G.frame.offsetWidth;
+    G.frame.classList.add("is-shake");
+  }
+
   var BLOCKS = {
     grass:     { hp: 1, drop: "Grass / 草方块",    cn: "草",    color: "#5ea832" },
     dirt:      { hp: 1, drop: "Dirt / 泥土",       cn: "泥土",  color: "#8f6b42" },
@@ -285,12 +381,38 @@
     var titleRow = el("div", "mc-game-title");
     titleRow.appendChild(el("span", null, "\u26CF"));
     titleRow.appendChild(el("span", "mc-game-title-txt", "Mine for the photos & phone! / 挖矿闯关"));
+    var sndBtn = el("button", "mc-snd-btn", soundOn() ? "\u{1F50A}" : "\u{1F507}");
+    sndBtn.type = "button";
+    sndBtn.title = "Sound on/off / 音效开关";
+    sndBtn.setAttribute("aria-label", "Sound on/off");
+    sndBtn.addEventListener("click", function () {
+      audio.on = !soundOn();
+      try { localStorage.setItem("mc_dig_sound", audio.on ? "1" : "0"); } catch (e) {}
+      sndBtn.textContent = audio.on ? "\u{1F50A}" : "\u{1F507}";
+      SFX.click();
+    });
+    titleRow.appendChild(sndBtn);
+
     var resetBtn = el("button", "mc-reset-btn", "\u21BB");
     resetBtn.type = "button";
     resetBtn.title = "Reset progress / 重置进度（从第 1 关重来）";
+    var resetArmed = false, resetTimer = null;
     resetBtn.addEventListener("click", function () {
+      if (!resetArmed) { // 二次确认，防误触清档
+        resetArmed = true;
+        resetBtn.textContent = "\u2713?";
+        resetBtn.classList.add("is-armed");
+        SFX.click();
+        resetTimer = setTimeout(function () {
+          resetArmed = false;
+          resetBtn.textContent = "\u21BB";
+          resetBtn.classList.remove("is-armed");
+        }, 3000);
+        return;
+      }
+      clearTimeout(resetTimer);
       saveProgress(1);
-      try { localStorage.removeItem(SEEN_TUT_KEY); } catch (e) {}
+      try { localStorage.removeItem(SEEN_TUT_KEY); localStorage.removeItem(DONE_KEY); } catch (e) {}
       closeGame();
       openGame();
     });
@@ -596,12 +718,11 @@
   function render() {
     if (!G || !G.cells) return;
     var def = LEVELS[G.level - 1];
-    G.grid.textContent = "";
+    var frag = document.createDocumentFragment(); // 一次挂载，减少 176 次回流
     for (var r = 0; r < def.rows; r++) {
       for (var c = 0; c < def.cols; c++) {
         var type = G.cells[r][c];
-        // air 也渲染（.mc-cell-air 与棋盘底色同色 = 视觉上是洞），
-        // 这样光标移到洞上时黄环依然可见 —— 之前 air 不渲染，光标会「消失」
+        // air 也渲染（洞穴底色），光标移到洞上黄环依然可见
         var cracked = type !== "air" && G.hpMap[r][c] < BLOCKS[type].hp;
         var d = document.createElement("div");
         d.className = "mc-cell mc-cell-" + type +
@@ -611,9 +732,11 @@
         if (cracked) d.dataset.hits = String(G.hpMap[r][c]); // 剩余敲击数徽章
         d.dataset.r = String(r);
         d.dataset.c = String(c);
-        G.grid.appendChild(d);
+        frag.appendChild(d);
       }
     }
+    G.grid.textContent = "";
+    G.grid.appendChild(frag);
     var parts = [];
     Object.keys(G.bag).forEach(function (k) { parts.push(k + " x" + G.bag[k]); });
     G.inv.textContent = "Bag / 背包: " + (parts.length ? parts.join(" \u00B7 ") : "--");
@@ -658,11 +781,23 @@
     if (!exposed(r, c)) return;
     var type = G.cells[r][c];
     if (type === "air") return;
+    var cellEl = G.grid.querySelector('.mc-cell[data-r="' + r + '"][data-c="' + c + '"]');
     G.hpMap[r][c] -= 1;
-    if (G.hpMap[r][c] > 0) { render(); return; }
+    if (G.hpMap[r][c] > 0) {
+      // 裂纹：就地更新徽章与裂纹，不全量重渲染（涟漪不被打断）
+      SFX.crack();
+      fxRipple(cellEl);
+      if (cellEl) { cellEl.classList.add("is-cracking"); cellEl.dataset.hits = String(G.hpMap[r][c]); }
+      return;
+    }
     var drop = BLOCKS[type].drop;
+    var color = BLOCKS[type].color;
     G.cells[r][c] = "air";
     G.bag[drop] = (G.bag[drop] || 0) + 1;
+    SFX.break_();
+    fxParticles(cellEl, color, type === "deepslate" || type === "phone" ? 10 : 6);
+    fxFlyDrop(cellEl, color);
+    if (type === "deepslate" || type === "phone") fxShake();
     render();
     if (type === "camera" || type === "phone") {
       var won = type === "phone";
