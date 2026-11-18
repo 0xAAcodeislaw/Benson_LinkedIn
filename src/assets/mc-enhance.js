@@ -599,12 +599,15 @@
     for (var r = 0; r < def.rows; r++) {
       for (var c = 0; c < def.cols; c++) {
         var type = G.cells[r][c];
-        if (type === "air") continue; // 挖空 = 洞，不渲染
+        // air 也渲染（.mc-cell-air 与棋盘底色同色 = 视觉上是洞），
+        // 这样光标移到洞上时黄环依然可见 —— 之前 air 不渲染，光标会「消失」
+        var cracked = type !== "air" && G.hpMap[r][c] < BLOCKS[type].hp;
         var d = document.createElement("div");
         d.className = "mc-cell mc-cell-" + type +
-          (G.hpMap[r][c] < BLOCKS[type].hp ? " is-cracking" : "") +
+          (cracked ? " is-cracking" : "") +
           (G.cursor.r === r && G.cursor.c === c ? " is-cursor" : "") +
-          (exposed(r, c) ? "" : " is-buried");
+          (type === "air" || exposed(r, c) ? "" : " is-buried");
+        if (cracked) d.dataset.hits = String(G.hpMap[r][c]); // 剩余敲击数徽章
         d.dataset.r = String(r);
         d.dataset.c = String(c);
         G.grid.appendChild(d);

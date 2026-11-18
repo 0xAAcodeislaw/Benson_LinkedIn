@@ -708,7 +708,34 @@ body { padding-bottom: 76px !important; }
   50% { box-shadow: inset 0 0 16px rgba(255,255,255,.9); }
 }
 .mc-cell-air { background: #1a140c !important; }
-.mc-cell.is-cursor { outline: 2px solid #ffff55 !important; outline-offset: -2px; }
+/* 光标环：黄环+黑描边双色，任何底色都看得见；::after 层级高于遮罩(::before) */
+.mc-cell.is-cursor { z-index: 2; }
+.mc-cell.is-cursor::after {
+  content: "";
+  position: absolute;
+  inset: 1px;
+  border: 3px solid #ffff55;
+  box-shadow: inset 0 0 0 1px #1a1a1a;
+  animation: mc-cursor-ring .9s steps(2) infinite;
+  pointer-events: none;
+}
+@keyframes mc-cursor-ring {
+  50% { border-color: rgba(255,255,85,.25); }
+}
+/* 裂纹格中央显示剩余敲击数 */
+.mc-cell.is-cracking::before {
+  content: attr(data-hits);
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-family: "MinecraftPixel", monospace !important;
+  font-size: 13px !important;
+  color: #ffff55 !important;
+  text-shadow: 2px 2px 0 #1a1a1a !important;
+  z-index: 3;
+  pointer-events: none;
+}
 .mc-cell.is-cracking::after {
   content: "";
   position: absolute;
@@ -718,6 +745,8 @@ body { padding-bottom: 76px !important; }
     linear-gradient(45deg, transparent 40%, rgba(0,0,0,.55) 40% 45%, transparent 45%),
     linear-gradient(90deg, transparent 48%, rgba(0,0,0,.4) 48% 52%, transparent 52%) !important;
 }
+/* 鼠标悬停在可挖方块上：微微变亮提示「这一下会敲它」 */
+.mc-game-grid .mc-cell:not(.is-buried):hover { filter: brightness(1.25); }
 .mc-game-help {
   margin-top: 10px;
   font-family: "MinecraftPixel", monospace !important;
@@ -774,7 +803,8 @@ body { padding-bottom: 76px !important; }
 .mc-win-close:hover { background: #7cc94a !important; }
 
 /* 未暴露的方块：加暗遮罩，视觉提示「还没挖到这层」 */
-.mc-cell.is-buried::after {
+/* 遮罩用 ::before；::after 留给光标环（否则盖住光标） */
+.mc-cell.is-buried::before {
   content: "";
   position: absolute;
   inset: 0;
