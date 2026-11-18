@@ -174,7 +174,7 @@
   var DONE_KEY = "mc_dig_done";       // 是否通关过第 10 关
 
   // ---- 音效引擎：Web Audio 合成，零资源文件；首次交互后自动解锁 ----
-  var audio = { ctx: null, on: null };
+  var audio = { ctx: null, master: null, on: null };
   function soundOn() {
     if (audio.on === null) {
       try { audio.on = localStorage.getItem("mc_dig_sound") !== "0"; } catch (e) { audio.on = true; }
@@ -186,6 +186,9 @@
     if (!audio.ctx) {
       try { audio.ctx = new (window.AudioContext || window.webkitAudioContext)(); }
       catch (e) { audio.on = false; return null; }
+      audio.master = audio.ctx.createGain();
+      audio.master.gain.value = 0.8; // 主音量总线，统一平衡
+      audio.master.connect(audio.ctx.destination);
     }
     if (audio.ctx.state === "suspended") { try { audio.ctx.resume(); } catch (e) {} }
     return audio.ctx;
@@ -197,7 +200,7 @@
     var t = c.currentTime + (when || 0);
     g.gain.setValueAtTime(vol || 0.04, t);
     g.gain.exponentialRampToValueAtTime(0.0001, t + (dur || 0.1));
-    o.connect(g); g.connect(c.destination);
+    o.connect(g); g.connect(audio.master || c.destination);
     o.start(t); o.stop(t + (dur || 0.1) + 0.02);
   }
   function noise(dur, vol, freq) { // 噪声 burst：敲击/碎裂质感
@@ -209,16 +212,23 @@
     var src = c.createBufferSource(); src.buffer = buf;
     var f = c.createBiquadFilter(); f.type = "lowpass"; f.frequency.value = freq || 900;
     var g = c.createGain(); g.gain.value = vol || 0.12;
-    src.connect(f); f.connect(g); g.connect(c.destination); src.start();
+    src.connect(f); f.connect(g); g.connect(audio.master || c.destination); src.start();
   }
+  // 碎裂音按材质分级：软块轻快、石头厚、深板岩闷响
+  var BREAK_PITCH = { grass: 1500, dirt: 1300, stone: 900, coal: 850, gem: 2600, deepslate: 620, camera: 1100, phone: 500 };
   var SFX = {
     tap:    function () { noise(0.05, 0.09, 1200 + Math.random() * 400); }, // 随机音高避免单调
-    crack:  function () { noise(0.04, 0.07, 2200); },
-    break_: function () { noise(0.12, 0.15, 700); blip(90, 0.1, "square", 0.05); },
+    crack:  function (freq) { noise(0.04, 0.07, freq || 2200); },
+    break_: function (type, deep) { // deep = 下层回声更闷更长
+      var f = (BREAK_PITCH[type] || 900) * (deep ? 0.75 : 1);
+      noise(0.12 + (deep ? 0.05 : 0), 0.15, f);
+      blip(90, 0.1, "square", 0.05);
+    },
     gem:    function () { blip(880, 0.09, "square", 0.05); blip(1320, 0.12, "square", 0.05, 0.09); },
     shutter:function () { noise(0.03, 0.14, 4000); noise(0.05, 0.09, 1500); },
     ach:    function () { [523, 659, 784, 1047].forEach(function (f, i) { blip(f, 0.12, "square", 0.05, i * 0.09); }); },
     win:    function () { [392, 523, 659, 784, 1047, 1319].forEach(function (f, i) { blip(f, 0.16, "square", 0.06, i * 0.11); }); },
+    go:     function () { blip(880, 0.08, "square", 0.05); blip(1174, 0.12, "square", 0.05, 0.08); }, // GO! 上行提示音
     click:  function () { blip(660, 0.05, "square", 0.04); },
     tick:   function () { blip(1200, 0.04, "square", 0.03); }
   };
@@ -511,6 +521,10 @@
     }
     G.closeGame = closeGame;
     overlay.addEventListener("click", function (e) { if (e.target === overlay) closeGame(); });
+    // 所有游戏内按钮统一「咔哒」反馈音（一次委托全覆盖）
+    frame.addEventListener("click", function (e) {
+      if (e.target.closest("button")) SFX.click();
+    });
 
     // 首次玩 → 教学；否则直接关卡说明
     var seen = false;
@@ -792,7 +806,7 @@
         cd.remove();
         G.counting = false;
         G.t0 = Date.now();
-        SFX.click();
+        SFX.go(); // GO! 上行双音
       } else { cd.textContent = String(n); SFX.tick(); }
     }, 350);
 
@@ -951,8 +965,8 @@
     achOnce("mc_ach_dig", "\u26CF", "First dig! / 第一次挖掘！", "Welcome to the mine / 欢迎来挖矿"); // 成就：首次挖掘
     try { localStorage.setItem("mc_digs", String(Number(localStorage.getItem("mc_digs") || 0) + 1)); } catch (e) {} // 总挖掘数
     if (G.hpMap[r][c] > 0) {
-      // 裂纹：就地更新徽章与裂纹，不全量重渲染（涟漪不被打断）
-      SFX.crack();
+      // 裂纹：就地更新徽章与裂纹，不全量重渲染（涟漪不被打断）；音高随破坏度递进
+      SFX.crack(G.hpMap[r][c] === 1 ? 3000 : 2400);
       fxRipple(cellEl);
       if (cellEl) { cellEl.classList.add("is-cracking"); cellEl.dataset.hits = String(G.hpMap[r][c]); }
       return;
@@ -961,7 +975,7 @@
     var color = BLOCKS[type].color;
     G.cells[r][c] = "air";
     G.bag[drop] = (G.bag[drop] || 0) + 1;
-    SFX.break_();
+    SFX.break_(type, r > LEVELS[G.level - 1].rows * 0.6); // 下层回声更闷
     fxParticles(cellEl, color, type === "deepslate" || type === "phone" ? 10 : 6);
     fxFlyDrop(cellEl, color);
     if (type === "deepslate" || type === "phone") fxShake();
