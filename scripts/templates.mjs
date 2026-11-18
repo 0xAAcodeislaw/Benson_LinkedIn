@@ -417,6 +417,7 @@ export function buildPage({ lang, loc, site, profile, locales, langLinks }) {
     description: loc.meta.description,
     image: `${site.url}/assets/og-${lang}.png`,
     sameAs: [profile.github, profile.linkedin].filter(Boolean),
+    telephone: profile.phone || undefined,
     alumniOf: {
       "@type": "CollegeOrUniversity",
       name: loc.education?.school,

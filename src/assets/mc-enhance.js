@@ -3,13 +3,6 @@
 (function () {
   "use strict";
 
-  function el(tag, cls, text) {
-    var node = document.createElement(tag);
-    if (cls) node.className = cls;
-    if (text != null) node.textContent = text;
-    return node;
-  }
-
   function isMinecraft() {
     // 主题 CSS 里定义了 @font-face MinecraftPixel；用 canvas 探测像素字体是否加载
     try {
@@ -88,14 +81,10 @@
       var icon = document.createElement("span");
       icon.className = "mc-slot-icon";
       icon.textContent = d.icon;
-      var tip = document.createElement("span");
-      tip.className = "mc-tip";
-      tip.innerHTML = "<b>" + d.label + "</b>";
       var num = document.createElement("span");
       num.className = "mc-slot-num";
       num.textContent = String(i + 1);
       slot.appendChild(icon);
-      slot.appendChild(tip);
       slot.appendChild(num);
       slot.addEventListener("click", function () {
         var el = document.getElementById(d.id);
@@ -143,69 +132,6 @@
     });
   }
 
-  // ---- 4. banner 天空装饰：太阳/云（白天）、月亮/星星（夜晚）----
-  function decorateSky() {
-    var banner = document.querySelector(".banner");
-    if (!banner || banner.dataset.skyDecorated === "1") return;
-    banner.dataset.skyDecorated = "1";
-    var lang = document.documentElement.lang || "en";
-    var SPLASH = {
-      en: "100% blocky!",
-      zh: "100% 方块！",
-      fr: "100% bloc !"
-    };
-    var sun = document.createElement("span");
-    sun.className = "mc-sun";
-    var moon = document.createElement("span");
-    moon.className = "mc-moon";
-    var stars = document.createElement("span");
-    stars.className = "mc-stars";
-    var c1 = document.createElement("span");
-    c1.className = "mc-cloud";
-    var c2 = document.createElement("span");
-    c2.className = "mc-cloud c2";
-    var splash = document.createElement("span");
-    splash.className = "mc-splash";
-    splash.textContent = SPLASH[lang] || SPLASH.en;
-    banner.appendChild(sun);
-    banner.appendChild(moon);
-    banner.appendChild(stars);
-    banner.appendChild(c1);
-    banner.appendChild(c2);
-    banner.appendChild(splash);
-  }
-
-  // ---- 5. 开场成就弹窗 ----
-  function achievementToast() {
-    if (document.querySelector(".mc-achievement")) return;
-    var lang = document.documentElement.lang || "en";
-    var T = {
-      en: { title: "Achievement get!", desc: "Resume loaded" },
-      zh: { title: "成就达成！", desc: "简历已加载" },
-      fr: { title: "Succès obtenu !", desc: "CV chargé" }
-    };
-    var t = T[lang] || T.en;
-    var box = document.createElement("div");
-    box.className = "mc-achievement";
-    box.setAttribute("role", "status");
-    var icon = document.createElement("span");
-    icon.className = "mc-ach-icon";
-    icon.textContent = "\u2692";
-    var body = document.createElement("div");
-    body.className = "mc-ach-body";
-    body.appendChild(el("div", "mc-ach-title", t.title));
-    body.appendChild(el("div", "mc-ach-desc", t.desc));
-    box.appendChild(icon);
-    box.appendChild(body);
-    document.body.appendChild(box);
-    setTimeout(function () {
-      box.classList.add("is-out");
-    }, 4200);
-    setTimeout(function () {
-      box.remove();
-    }, 5200);
-  }
-
   // ---- 启动 ----
   function init() {
     if (!isMinecraft()) return; // 非 Minecraft 主题：什么都不做
@@ -216,8 +142,7 @@
     }
     buildHotbar();
     addBlockIcons();
-    decorateSky();
-    achievementToast();
+    injectEasterEggButton();
   }
 
   if (document.readyState === "loading") {
@@ -229,4 +154,211 @@
   if (document.fonts && document.fonts.ready) {
     document.fonts.ready.then(function () { init(); });
   }
+
+  // ---- 6. 彩蛋：Minecraft 挖矿小游戏 --------------------------------------
+  // 顶栏 ⛏ 按钮 → 全屏挖矿覆盖层。沿用 MC 操作：
+  //   点击 = 挖掘（不同方块硬度不同）；WASD/方向键 = 移动光标；空格 = 挖掘。
+  // 挖到底部的金色「电话方块」→ 解锁求职者电话号码。
+  var COLS = 14, ROWS = 10;
+  var BLOCKS = {
+    grass:     { hp: 1, face: "#5ea832", side: "#4a7d28", drop: "Grass / 草方块" },
+    dirt:      { hp: 1, face: "#8f6b42", side: "#6b5230", drop: "Dirt / 泥土" },
+    stone:     { hp: 2, face: "#8a8a8a", side: "#5f5f5f", drop: "Stone / 石头" },
+    coal:      { hp: 2, face: "#565656", side: "#333333", drop: "Coal / 煤矿" },
+    deepslate: { hp: 3, face: "#484850", side: "#2e2e36", drop: "Deepslate / 深板岩" },
+    phone:     { hp: 3, face: "#f0b90b", side: "#c99a08", drop: "Phone! / 电话方块" }
+  };
+
+  function readPhone() {
+    try {
+      var ld = document.querySelector('script[type="application/ld+json"]');
+      if (ld) {
+        var p = JSON.parse(ld.textContent);
+        if (p.telephone) return p.telephone;
+      }
+    } catch (e) {}
+    // 回落：从联系卡片找
+    var el2 = document.querySelector('[data-contact-phone]');
+    return el2 ? el2.getAttribute('data-contact-phone') : "";
+  }
+
+  function injectEasterEggButton() {
+    if (document.querySelector(".mc-easter-btn")) return;
+    var tools = document.querySelector(".nav-tools");
+    if (!tools) return;
+    var btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "mc-easter-btn";
+    btn.title = "Easter egg: mining mini-game / 彩蛋小游戏";
+    btn.setAttribute("aria-label", "Easter egg: mining mini-game");
+    btn.textContent = "\u26CF";
+    btn.addEventListener("click", openGame);
+    tools.appendChild(btn);
+  }
+
+  function openGame() {
+    if (document.getElementById("mc-game")) return;
+    var phone = readPhone();
+
+    var overlay = document.createElement("div");
+    overlay.className = "mc-game-overlay";
+    overlay.id = "mc-game";
+
+    var frame = el("div", "mc-game-frame");
+    var titleRow = el("div", "mc-game-title");
+    titleRow.appendChild(el("span", null, "\u26CF"));
+    titleRow.appendChild(el("span", null, "Dig for the phone! / 挖出电话方块"));
+    var closeBtn = el("button", "mc-game-close", "\u00D7");
+    closeBtn.type = "button";
+    closeBtn.setAttribute("aria-label", "Close");
+    closeBtn.addEventListener("click", closeGame);
+    titleRow.appendChild(closeBtn);
+
+    var hud = el("div", "mc-game-hud");
+    var inv = el("span", "mc-game-inv", "Bag / 背包: --");
+    var goal = el("span", "mc-game-goal", "Goal / 目标: find the golden phone / 挖出金色电话方块");
+    hud.appendChild(inv);
+    hud.appendChild(goal);
+
+    var grid = el("div", "mc-game-grid");
+
+    var help = el("div", "mc-game-help");
+    help.appendChild(el("span", null, "Click to dig / 点击挖掘 \u00B7 WASD move / 移动光标 \u00B7 Space dig / 空格挖 \u00B7 ESC close / 关闭"));
+
+    frame.appendChild(titleRow);
+    frame.appendChild(hud);
+    frame.appendChild(grid);
+    frame.appendChild(help);
+    overlay.appendChild(frame);
+    document.body.appendChild(overlay);
+    document.body.style.overflow = "hidden";
+
+    // ---- 世界生成 ----
+    var cells = [], hpMap = [];
+    for (var r = 0; r < ROWS; r++) {
+      var row = [], rowHp = [];
+      for (var c = 0; c < COLS; c++) {
+        var t;
+        if (r === 0) t = "grass";
+        else if (r <= 2) t = "dirt";
+        else if (r <= 5) t = Math.random() < 0.18 ? "coal" : "stone";
+        else t = Math.random() < 0.15 ? "coal" : "deepslate";
+        row.push(t);
+        rowHp.push(BLOCKS[t].hp);
+      }
+      cells.push(row);
+      hpMap.push(rowHp);
+    }
+    // 金色电话方块：埋在最底层随机列
+    var phoneCol = 3 + Math.floor(Math.random() * (COLS - 6));
+    cells[ROWS - 1][phoneCol] = "phone";
+
+    var inv = {};
+    var cursor = { r: 0, c: 0 };
+    var closed = false;
+
+    function render() {
+      grid.textContent = "";
+      for (var r = 0; r < ROWS; r++) {
+        for (var c = 0; c < COLS; c++) {
+          var type = cells[r][c];
+          var d = document.createElement("div");
+          d.className = "mc-cell mc-cell-" + type +
+            (hpMap[r][c] < BLOCKS[type].hp ? " is-cracking" : "") +
+            (cursor.r === r && cursor.c === c ? " is-cursor" : "");
+          d.dataset.r = String(r);
+          d.dataset.c = String(c);
+          grid.appendChild(d);
+        }
+      }
+      var parts = [];
+      Object.keys(inv).forEach(function (k) { parts.push(k + " x" + inv[k]); });
+      inv.textContent = "Bag / 背包: " + (parts.length ? parts.join(" \u00B7 ") : "--");
+    }
+
+    function digCell(r, c) {
+      if (closed) return;
+      var type = cells[r][c];
+      if (type === "air") return;
+      hpMap[r][c] -= 1;
+      if (hpMap[r][c] > 0) { render(); return; }
+      var drop = BLOCKS[type].drop;
+      cells[r][c] = "air";
+      inv[drop] = (inv[drop] || 0) + 1;
+      render();
+      if (type === "phone") {
+        closed = true;
+        document.removeEventListener("keydown", onKey);
+        winPanel(phone);
+      }
+    }
+
+    function moveCursor(dr, dc) {
+      var nr = Math.max(0, Math.min(ROWS - 1, cursor.r + dr));
+      var nc = Math.max(0, Math.min(COLS - 1, cursor.c + dc));
+      if (nr !== cursor.r || nc !== cursor.c) { cursor.r = nr; cursor.c = nc; render(); }
+    }
+
+    function onKey(e) {
+      if (closed) return;
+      var k = e.key.toLowerCase();
+      var map = { w: [-1, 0], a: [0, -1], s: [1, 0], d: [0, 1], arrowup: [-1, 0], arrowleft: [0, -1], arrowdown: [1, 0], arrowright: [0, 1] };
+      if (map[k]) { e.preventDefault(); moveCursor(map[k][0], map[k][1]); }
+      else if (k === " " || k === "enter") { e.preventDefault(); digCell(cursor.r, cursor.c); }
+      else if (k === "escape") { closeGame(); }
+    }
+    document.addEventListener("keydown", onKey);
+
+    grid.addEventListener("click", function (e) {
+      var t = e.target.closest(".mc-cell");
+      if (!t) return;
+      digCell(Number(t.dataset.r), Number(t.dataset.c));
+    });
+
+    function closeGame() {
+      closed = true;
+      document.removeEventListener("keydown", onKey);
+      var o = document.getElementById("mc-game");
+      if (o) o.remove();
+      document.body.style.overflow = "";
+    }
+    overlay.addEventListener("click", function (e) { if (e.target === overlay) closeGame(); });
+
+    render();
+  }
+
+  // ---- 7. 胜利面板：解锁电话号码 ----
+  function winPanel(phone) {
+    var overlay = el("div", "mc-game-overlay mc-win-overlay");
+    var frame = el("div", "mc-game-frame mc-win-frame");
+    frame.appendChild(el("div", "mc-ach-icon", "\u260F"));
+    frame.appendChild(el("div", "mc-ach-title", "Achievement get! / 成就达成！"));
+    frame.appendChild(el("div", "mc-ach-desc", "You found the phone block! / 你挖到了电话方块\uFF1A"));
+
+    var phoneRow = el("div", "mc-win-phone");
+    phoneRow.appendChild(el("span", "mc-win-num", phone || "benson.codeislaw.qzz.io"));
+    var copy = el("button", "mc-win-copy", "Copy / \u590D\u5236");
+    copy.type = "button";
+    copy.addEventListener("click", function () {
+      if (navigator.clipboard) navigator.clipboard.writeText(phone);
+      copy.textContent = "OK \u2713";
+      setTimeout(function () { copy.textContent = "Copy / \u590D\u5236"; }, 1600);
+    });
+    phoneRow.appendChild(copy);
+    frame.appendChild(phoneRow);
+
+    frame.appendChild(el("div", "mc-ach-desc mc-win-hint", "That phone was buried in the game \u2014 in real life, just call me :) / 游戏里埋的电话 \u2014\u2014 现实中直接打更快 :)"));
+
+    var close = el("button", "mc-win-close", "Close / \u5173\u95ED");
+    close.type = "button";
+    close.addEventListener("click", function () {
+      overlay.remove();
+      document.body.style.overflow = "";
+    });
+    frame.appendChild(close);
+    overlay.appendChild(frame);
+    document.body.appendChild(overlay);
+  }
+
+
 })();

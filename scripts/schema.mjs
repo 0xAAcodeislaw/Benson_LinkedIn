@@ -10,6 +10,7 @@ export const sharedSchema = {
         { path: "profile.name", label: "姓名", type: "text" },
         { path: "profile.initials", label: "头像缩写（1–2 个字母）", type: "text" },
         { path: "profile.email", label: "邮箱", type: "text" },
+        { path: "profile.phone", label: "电话号码（彩蛋游戏奖励展示用）", type: "text" },
         { path: "profile.github", label: "GitHub 链接", type: "text" },
         { path: "profile.linkedin", label: "LinkedIn 链接", type: "text" },
       ],
