@@ -10,13 +10,6 @@
     return node;
   }
 
-  function el(tag, cls, text) {
-    var node = document.createElement(tag);
-    if (cls) node.className = cls;
-    if (text != null) node.textContent = text;
-    return node;
-  }
-
   function isMinecraft() {
     // 主题 CSS 里定义了 @font-face MinecraftPixel；用 canvas 探测像素字体是否加载
     try {
@@ -267,7 +260,7 @@
     var phoneCol = 3 + Math.floor(Math.random() * (COLS - 6));
     cells[ROWS - 1][phoneCol] = "phone";
 
-    var inv = {};
+    var bag = {}; // 背包数据；inv 是上面的 HUD 文本节点，勿重名
     var cursor = { r: 0, c: 0 };
     var closed = false;
 
@@ -276,6 +269,7 @@
       for (var r = 0; r < ROWS; r++) {
         for (var c = 0; c < COLS; c++) {
           var type = cells[r][c];
+          if (type === "air") continue; // 挖空 = 洞，不渲染（BLOCKS 里也没有 air 条目）
           var d = document.createElement("div");
           var can = exposed(r, c);
           d.className = "mc-cell mc-cell-" + type +
@@ -288,7 +282,7 @@
         }
       }
       var parts = [];
-      Object.keys(inv).forEach(function (k) { parts.push(k + " x" + inv[k]); });
+      Object.keys(bag).forEach(function (k) { parts.push(k + " x" + bag[k]); });
       inv.textContent = "Bag / 背包: " + (parts.length ? parts.join(" \u00B7 ") : "--");
     }
 
@@ -312,7 +306,7 @@
       if (hpMap[r][c] > 0) { render(); return; }
       var drop = BLOCKS[type].drop;
       cells[r][c] = "air";
-      inv[drop] = (inv[drop] || 0) + 1;
+      bag[drop] = (bag[drop] || 0) + 1;
       render();
       if (type === "phone") {
         closed = true;
@@ -381,6 +375,8 @@
     close.type = "button";
     close.addEventListener("click", function () {
       overlay.remove();
+      var game = document.getElementById("mc-game");
+      if (game) game.remove(); // 胜利后把游戏层一并关掉
       document.body.style.overflow = "";
     });
     frame.appendChild(close);

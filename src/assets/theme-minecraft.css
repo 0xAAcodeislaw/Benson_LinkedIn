@@ -677,6 +677,7 @@ body { padding-bottom: 76px !important; }
 .mc-game-grid {
   display: grid;
   grid-template-columns: repeat(14, 1fr);
+  grid-auto-rows: 44px;
   gap: 0;
   border: 3px solid #3d2c15 !important;
   background: #1a140c !important;
@@ -685,7 +686,8 @@ body { padding-bottom: 76px !important; }
   touch-action: manipulation;
 }
 .mc-cell {
-  aspect-ratio: 1;
+  width: 100%;
+  height: 100%;
   position: relative;
   cursor: pointer;
   min-width: 0;
