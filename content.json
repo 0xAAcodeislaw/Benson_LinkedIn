@@ -15,7 +15,8 @@
       "radius": 8
     },
     "analyticsToken": "",
-    "themeFile": "theme-minecraft.css"
+    "themeFile": "theme-minecraft.css",
+    "themeFlag": "minecraft"
   },
   "profile": {
     "name": "Benson Ding",
