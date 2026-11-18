@@ -695,7 +695,7 @@
     G.cells = cells;
     G.hpMap = hpMap;
     updateHud();
-    render();
+    render(true); // 开局逐格落下入场
 
     if (!G.onKey) {
       G.onKey = function (e) {
@@ -715,21 +715,27 @@
     attachGridInput(G);
   }
 
-  function render() {
+  function render(dropIn) {
     if (!G || !G.cells) return;
     var def = LEVELS[G.level - 1];
     var frag = document.createDocumentFragment(); // 一次挂载，减少 176 次回流
+    var gp = G.goalPos || {};
     for (var r = 0; r < def.rows; r++) {
       for (var c = 0; c < def.cols; c++) {
         var type = G.cells[r][c];
         // air 也渲染（洞穴底色），光标移到洞上黄环依然可见
         var cracked = type !== "air" && G.hpMap[r][c] < BLOCKS[type].hp;
+        var isGoal = type === "camera" || type === "phone";
+        // 热感：光标逼近目标 3 格内，目标闪烁加速（找方块更爽）
+        var hot = isGoal && Math.max(Math.abs(gp.r - r), Math.abs(gp.c - c)) <= 3;
         var d = document.createElement("div");
         d.className = "mc-cell mc-cell-" + type +
           (cracked ? " is-cracking" : "") +
           (G.cursor.r === r && G.cursor.c === c ? " is-cursor" : "") +
-          (type === "air" || exposed(r, c) ? "" : " is-buried");
+          (type === "air" || exposed(r, c) ? "" : " is-buried") +
+          (hot ? " is-hot" : "");
         if (cracked) d.dataset.hits = String(G.hpMap[r][c]); // 剩余敲击数徽章
+        if (dropIn) { d.classList.add("is-drop"); d.style.animationDelay = ((r + c) * 16) + "ms"; }
         d.dataset.r = String(r);
         d.dataset.c = String(c);
         frag.appendChild(d);
