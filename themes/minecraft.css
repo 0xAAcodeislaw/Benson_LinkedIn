@@ -1210,3 +1210,26 @@ body { padding-bottom: 76px !important; }
     linear-gradient(180deg, #d8f2ff 0 30%, #4fd8ff 30%) !important;
   box-shadow: inset 0 2px 0 rgba(255,255,255,.5), inset 0 -3px 0 rgba(20,90,150,.5), 0 0 8px rgba(79,216,255,.5) !important;
 }
+
+/* ===== 遍5：关卡内容 ===== */
+.mc-lc-log {
+  font-size: 8px !important;
+  color: #a8946c !important;
+  font-style: italic;
+  margin-bottom: 10px;
+}
+.mc-lc-select { display: flex; gap: 4px; justify-content: center; margin-bottom: 12px; flex-wrap: wrap; }
+.mc-lv-pick {
+  width: 28px; height: 28px;
+  font-family: "MinecraftPixel", monospace !important;
+  font-size: 10px !important;
+  border: 2px solid #3d2c15 !important;
+  background: #6b583d !important;
+  color: #c4b28c !important;
+  cursor: pointer;
+}
+.mc-lv-pick.is-open { background: #5ea832 !important; color: #fff !important; }
+.mc-lv-pick.is-open:hover { background: #7cc94a !important; }
+.mc-lv-pick.is-cur { outline: 2px solid #ffff55 !important; outline-offset: 1px; }
+.mc-lv-pick:disabled { cursor: not-allowed; opacity: .55; }
+.mc-tut-skiprow { display: flex; flex-direction: column; align-items: center; gap: 2px; }

@@ -301,16 +301,16 @@
   };
 
   var LEVELS = [
-    { name: "草地试挖 · Grass Trial",       tip: "最简单的一关：全是软方块，点一下就碎。相机方块就埋在浅处。",                 cols: 10, rows: 6,  goalMin: 2, goalMax: 3, rock: "soft" },
-    { name: "泥土花园 · Dirt Garden",       tip: "还是软土，但相机埋深了一层。垂直往下挖一条井最快。",                         cols: 11, rows: 7,  goalMin: 3, goalMax: 4, rock: "soft" },
-    { name: "初见岩石 · First Stone",       tip: "石头出现了！要敲 2 下才碎。先挖穿土层，再往石头层找。",                     cols: 12, rows: 7,  goalMin: 3, goalMax: 5, rock: "mix"  },
-    { name: "煤层 · Coal Seam",             tip: "黑点的是煤矿，和石头一样敲 2 下。相机藏在中层。",                           cols: 12, rows: 8,  goalMin: 4, goalMax: 6, rock: "mix"  },
-    { name: "深板岩边缘 · Deepslate Edge",  tip: "最深的深板岩要敲 3 下。往下挖时留意：越深越硬。",                           cols: 13, rows: 8,  goalMin: 5, goalMax: 6, rock: "mix"  },
-    { name: "硬岩地带 · Hard Rock",         tip: "硬岩遍地。策略：选一列垂直打井，别到处乱挖。",                             cols: 13, rows: 9,  goalMin: 5, goalMax: 7, rock: "hard" },
-    { name: "幽深矿洞 · Deep Cave",         tip: "相机在下层，可能需要挖两条竖井。深板岩敲 3 下，要有耐心。",                 cols: 14, rows: 9,  goalMin: 6, goalMax: 7, rock: "hard" },
-    { name: "岩石迷宫 · Rock Maze",         tip: "地图更大、埋得更深。先下后横，路过煤矿顺手拿。",                           cols: 14, rows: 10, goalMin: 6, goalMax: 8, rock: "hard" },
-    { name: "最后一张照片 · Last Photo",    tip: "第 9 张靓照就在下面！挖到它，下一关就是终极电话。",                         cols: 15, rows: 10, goalMin: 7, goalMax: 8, rock: "hard" },
-    { name: "金色电话 · The Golden Phone",  tip: "最后一关！金色电话方块埋在最底层。挖穿整个世界，拿到求职者的电话号码！",     cols: 16, rows: 11, goalMin: 9, goalMax: 9, rock: "hard" }
+    { name: "草地试挖 · Grass Trial",      icon: "\u{1F331}", stars: 1, tip: "最简单的一关：全是软方块，点一下就碎。相机方块就埋在浅处。",   log: "矿工日志：今天是第一天，锄头还很新。",                              cols: 10, rows: 6,  goalMin: 2, goalMax: 3, rock: "soft" },
+    { name: "泥土花园 · Dirt Garden",      icon: "\u{1F33E}", stars: 1, tip: "还是软土，但相机埋深了一层。垂直往下挖一条井最快。",           log: "矿工日志：泥土的味道，让人想起家乡的农场。",                        cols: 11, rows: 7,  goalMin: 3, goalMax: 4, rock: "soft" },
+    { name: "初见岩石 · First Stone",      icon: "\u{1FAA8}", stars: 2, tip: "石头出现了！要敲 2 下才碎。先挖穿土层，再往石头层找。",         log: "矿工日志：镐子撞上石头的声音，意外地好听。",                        cols: 12, rows: 7,  goalMin: 3, goalMax: 5, rock: "mix"  },
+    { name: "煤层 · Coal Seam",            icon: "\u26CF",    stars: 2, tip: "黑点的是煤矿，和石头一样敲 2 下。相机藏在中层。",             log: "矿工日志：煤灰糊了一脸，但收获满满。",                              cols: 12, rows: 8,  goalMin: 4, goalMax: 6, rock: "mix"  },
+    { name: "深板岩边缘 · Deepslate Edge", icon: "\u{1F5C4}\uFE0F", stars: 2, tip: "最深的深板岩要敲 3 下。往下挖时留意：越深越硬。",     log: "矿工日志：这里的岩石硬得像教授的批改意见。",                        cols: 13, rows: 8,  goalMin: 5, goalMax: 6, rock: "mix"  },
+    { name: "硬岩地带 · Hard Rock",        icon: "\u{1F6E0}\uFE0F", stars: 3, tip: "硬岩遍地。策略：选一列垂直打井，别到处乱挖。",         log: "矿工日志：镐子磨损得厉害，经济学的耐心也派上了用场。",              cols: 13, rows: 9,  goalMin: 5, goalMax: 7, rock: "hard" },
+    { name: "幽深矿洞 · Deep Cave",        icon: "\u{1F576}\uFE0F", stars: 3, tip: "相机在下层，可能需要挖两条竖井。深板岩敲 3 下，要有耐心。", log: "矿工日志：越往深处越安静，只听得见自己的呼吸。",            cols: 14, rows: 9,  goalMin: 6, goalMax: 7, rock: "hard" },
+    { name: "岩石迷宫 · Rock Maze",        icon: "\u{1F9EE}", stars: 3, tip: "地图更大、埋得更深。先下后横，路过煤矿顺手拿。",             log: "矿工日志：在这里迷路的矿工，都成了地图的一部分。",                  cols: 14, rows: 10, goalMin: 6, goalMax: 8, rock: "hard" },
+    { name: "最后一张照片 · Last Photo",   icon: "\u{1F4F8}", stars: 3, tip: "第 9 张靓照就在下面！挖到它，下一关就是终极电话。",           log: "矿工日志：相册快满了，最后一页留给金色。",                          cols: 15, rows: 10, goalMin: 7, goalMax: 8, rock: "hard" },
+    { name: "金色电话 · The Golden Phone", icon: "\u260E",    stars: 3, tip: "最后一关！金色电话方块埋在最底层。挖穿整个世界，拿到求职者的电话号码！", log: "矿工日志：传说最深处埋着一台会响的电话。",                  cols: 16, rows: 11, goalMin: 9, goalMax: 9, rock: "hard" }
   ];
 
   // 1-9 关的像素靓照风格：同一张头像，不同像素尺寸 + 滤镜（滤镜用 CSS，兼容所有浏览器）
@@ -580,7 +580,18 @@
       tutStop = true;
       showLevelCard(G.level);
     });
-    card.appendChild(goBtn);
+    var skipRow = el("div", "mc-tut-skiprow");
+    goBtn.style.marginBottom = "8px";
+    var skip = el("button", "mc-lc-tut", "\u8DF3\u8FC7\u6559\u5B66 \u00BB Skip");
+    skip.type = "button";
+    skip.addEventListener("click", function () {
+      try { localStorage.setItem(SEEN_TUT_KEY, "1"); } catch (e) {}
+      tutStop = true;
+      showLevelCard(G.level);
+    });
+    skipRow.appendChild(goBtn);
+    skipRow.appendChild(skip);
+    card.appendChild(skipRow);
     G.panel.appendChild(card);
 
     // ---- 演示动画：光标移动 → 敲击 → 裂纹 → 碎裂 →（相机）金光 ----
@@ -639,8 +650,15 @@
     var card = el("div", "mc-level-card");
     card.appendChild(el("div", "mc-lc-num", "LEVEL " + lv + " / 10" +
       (lv < 10 ? " · 📸 靓照已收 " + (lv - 1) + "/9" : "")));
-    card.appendChild(el("div", "mc-lc-name", def.name));
+    card.appendChild(el("div", "mc-lc-name", def.icon + " " + def.name +
+      " · " + "\u2605".repeat(def.stars)));
     card.appendChild(el("div", "mc-lc-tip", def.tip + " 小技巧：按住方块不放会连续挖！"));
+    card.appendChild(el("div", "mc-lc-log", def.log));
+
+    // 本关最佳纪录
+    var best = null;
+    try { best = Number(localStorage.getItem("mc_best_" + lv)) || null; } catch (e) {}
+    if (best) card.appendChild(el("div", "mc-lc-stat", "\u{1F3C6} \u672C\u5173\u6700\u4F73\u7528\u65F6 " + best.toFixed(1) + "s"));
 
     // 目标方块大图 + 说明
     var goalRow = el("div", "mc-lc-goal");
@@ -655,6 +673,27 @@
         : "挖穿最底层，找到「金色电话方块」☎ —— 得到求职者的电话号码！按住方块不放会连续挖";
     goalRow.appendChild(el("span", "mc-lc-goal-txt", goalTxt));
     card.appendChild(goalRow);
+
+    // 关卡选择：已解锁的关可点击直接重玩
+    card.appendChild(el("div", "mc-lc-sub", "\u9009\u62E9\u5173\u5361 · Level select\uFF08\u70B9\u5DF2\u89E3\u9501\u7684\u5173\u53EF\u91CD\u73A9\uFF09"));
+    var selRow = el("div", "mc-lc-select");
+    var unlocked = loadProgress();
+    for (var i = 1; i <= 10; i++) {
+      (function (num) {
+        var b = el("button", "mc-lv-pick" + (num <= unlocked ? " is-open" : "") + (num === lv ? " is-cur" : ""));
+        b.type = "button";
+        b.textContent = num < 10 ? String(num) : "\u260E";
+        if (num <= unlocked) {
+          b.title = "Level " + num;
+          b.addEventListener("click", function () { SFX.click(); showLevelCard(num); });
+        } else {
+          b.disabled = true;
+          b.title = "\u901A\u5173\u524D\u9762\u7684\u5173\u5361\u89E3\u9501";
+        }
+        selRow.appendChild(b);
+      })(i);
+    }
+    card.appendChild(selRow);
 
     // 硬度速查表
     card.appendChild(el("div", "mc-lc-sub", "方块硬度 · Block hardness（敲几下）"));
@@ -994,6 +1033,11 @@
     }
     card.appendChild(dots);
 
+    // 本关收获统计
+    var haul = [];
+    Object.keys(G.bag).forEach(function (k) { haul.push(k.split(" /")[0] + " x" + G.bag[k]); });
+    card.appendChild(el("div", "mc-lc-stat", "\u{1F392} \u672C\u5173\u6536\u83B7\uFF1A" + (haul.length ? haul.join(" \u00B7 ") : "--")));
+
     var btnRow = el("div", "mc-photo-btns");
     var next = el("button", "mc-win-close", lv < 9 ? "下一关 Level " + (lv + 1) + " \u2192" : "最终关：金色电话 \u260E");
     next.type = "button";
@@ -1077,6 +1121,24 @@
 
     card.appendChild(el("div", "mc-ach-desc mc-win-hint",
       "That phone was buried 10 levels deep \u2014 in real life, just call me :) / 游戏里挖了十层才到的电话 \u2014\u2014 现实中直接打更快 :)"));
+
+    var btnRow2 = el("div", "mc-photo-btns");
+    var contact = el("button", "mc-win-close", "\u{1F4C4} \u67E5\u770B\u8054\u7CFB\u65B9\u5F0F · Contact");
+    contact.type = "button";
+    contact.addEventListener("click", function () {
+      var id = G && G.closeGame;
+      if (id) id();
+      setTimeout(function () {
+        var sec = document.getElementById("contact");
+        if (sec) sec.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 60);
+    });
+    btnRow2.appendChild(contact);
+    var again = el("button", "mc-photo-later", "\u{1F501} \u518D\u6316\u4E00\u904D · Again");
+    again.type = "button";
+    again.addEventListener("click", function () { if (G) showLevelCard(10); });
+    btnRow2.appendChild(again);
+    card.appendChild(btnRow2);
 
     var close = el("button", "mc-win-close", "Close / \u5173\u95ED");
     close.type = "button";
