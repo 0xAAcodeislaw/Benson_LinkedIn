@@ -1268,3 +1268,54 @@ body { padding-bottom: 76px !important; }
   outline: 3px solid #ffff55 !important;
   outline-offset: 2px;
 }
+
+/* ===== 遍9：精修打磨 ===== */
+/* 1. 棋盘 1px 砖缝（MC 方块贴图感） */
+.mc-game-grid { gap: 1px !important; background: #221a10 !important; }
+/* 2. HUD 面板化：分组有底 */
+.mc-game-hud {
+  background: rgba(240,224,184,.55);
+  border: 2px solid #3d2c15;
+  padding: 6px 10px;
+  margin-bottom: 6px;
+}
+/* 3. 标题行下像素分隔线 */
+.mc-game-title { border-bottom: 2px dashed #8a6d3b; padding-bottom: 6px; }
+/* 4. 照片卡标题金色渐变字 */
+.mc-ach-title {
+  background: linear-gradient(180deg, #fff3c4, #f0b90b);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(2px 2px 0 rgba(0,0,0,.35));
+}
+/* 5. MC 经典按钮手感：hover 抬起、active 按下 */
+.mc-lc-start, .mc-tut-go, .mc-win-close, .mc-photo-later { transition: none; }
+.mc-lc-start:hover, .mc-tut-go:hover, .mc-win-close:hover { transform: translate(-1px, -1px); box-shadow: 4px 4px 0 #2a1d0e !important; }
+.mc-lc-start:active, .mc-tut-go:active, .mc-win-close:active, .mc-photo-later:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 #2a1d0e !important; }
+/* 6. 电话号码鎏金渐变字 */
+.mc-win-num {
+  background: linear-gradient(180deg, #fff3c4 0 45%, #f0b90b 45%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(2px 2px 0 rgba(0,0,0,.4));
+}
+/* 7. 硬度表 swatch 统一像素方块（无圆角）+ 缩放一致 */
+.mc-lc-sw { width: 14px; height: 14px; border-radius: 0; image-rendering: pixelated; }
+/* 8. toast 图标底框 */
+.mc-toast-icon {
+  background: rgba(255,255,85,.12);
+  border: 2px solid #f0e0b8;
+  width: 40px; height: 40px;
+  display: flex; align-items: center; justify-content: center;
+}
+/* 9. 底部帮助行半透明底 + 居中 */
+.mc-game-help {
+  background: rgba(240,224,184,.4);
+  border-top: 2px solid #3d2c15;
+  text-align: center;
+  padding: 6px 8px;
+}
+/* 10. 关卡卡目标块复用呼吸动画 */
+.mc-lc-goal-block.mc-cell-camera, .mc-lc-goal-block.mc-cell-phone { animation: mc-cam-glow 1.4s steps(2) infinite; }
