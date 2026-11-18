@@ -22,5 +22,9 @@
   "allowScripts": {
     "workerd@1.20261110.1": true
   },
-  "private": "true"
+  "private": "true",
+  "dependencies": {
+    "@cloudflare/workerd-darwin-arm64": "^1.20261118.1",
+    "@esbuild/darwin-arm64": "^0.28.2"
+  }
 }
