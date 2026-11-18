@@ -18,6 +18,13 @@ get_branch() { case "$1" in
   geek) echo "style/geek" ;; cyber) echo "style/cyber" ;;
   minecraft) echo "style/minecraft" ;; blockchain) echo "style/blockchain" ;;
   corporate) echo "style/corporate" ;; esac; }
+# 私有预览域（与 PREVIEW-PRIVATE.md 保持同步；workers.dev 已全部关闭）
+get_url() { case "$1" in
+  geek) echo "https://pv-geek-30bd0d2250c1.codeislaw.qzz.io" ;;
+  cyber) echo "https://pv-cyber-de155beeeddc.codeislaw.qzz.io" ;;
+  minecraft) echo "https://pv-minecraft-9dcedbbff802.codeislaw.qzz.io" ;;
+  blockchain) echo "https://pv-blockchain-0e57d221e77d.codeislaw.qzz.io" ;;
+  corporate) echo "https://pv-corporate-b1158a55cd0d.codeislaw.qzz.io" ;; esac; }
 
 TARGETS="${1:-all}"
 if [ "$TARGETS" = "all" ]; then TARGETS="geek cyber minecraft blockchain corporate"; fi
@@ -26,6 +33,7 @@ for t in $TARGETS; do
   W="$(get_worker "$t")"
   K="$(get_kv "$t")"
   B="$(get_branch "$t")"
+  URL="$(get_url "$t")"
   echo ""
   echo "════════════════════════════════════════════════"
   echo "  $t → $W  (KV $K)"
@@ -37,10 +45,13 @@ for t in $TARGETS; do
   cp "themes/$t.css" src/assets/theme.css
 
   # 2) 独立 wrangler.toml：独立 Worker 名 + 独立 KV
+  #    workers_dev=false：workers.dev 路由必须关（防扫描），只走私有预览域。
+  #    此前靠部署后手工关闭、未进版本控制，重新 deploy 会复发 —— 已踩过坑。
   cat > wrangler.toml <<EOF
 name = "$W"
 main = "src/worker.js"
 compatibility_date = "2026-11-12"
+workers_dev = false
 
 [assets]
 directory = "./public"
@@ -60,8 +71,7 @@ tag = "v1"
 new_sqlite_classes = ["VisitCounter"]
 EOF
 
-  # 3) 站点 URL 指向各自 Worker（canonical / OG / sitemap 自洽）
-  URL="https://$W.deus-edge.workers.dev"
+  # 3) 站点 URL 指向私有预览域（canonical / OG / sitemap 自洽，不泄露 workers.dev）
   node -e '
     const fs=require("fs");
     const c=JSON.parse(fs.readFileSync("content.json","utf8"));
