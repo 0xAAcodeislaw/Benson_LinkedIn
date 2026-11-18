@@ -10,6 +10,13 @@
     return node;
   }
 
+  function el(tag, cls, text) {
+    var node = document.createElement(tag);
+    if (cls) node.className = cls;
+    if (text != null) node.textContent = text;
+    return node;
+  }
+
   function isMinecraft() {
     // 主题 CSS 里定义了 @font-face MinecraftPixel；用 canvas 探测像素字体是否加载
     try {
