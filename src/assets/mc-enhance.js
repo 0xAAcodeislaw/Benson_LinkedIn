@@ -161,6 +161,8 @@
   if (document.fonts && document.fonts.ready) {
     document.fonts.ready.then(function () { init(); });
   }
+  // 字体始终没就绪的兜底：3.5s 后再试一次（防止游戏入口永远不出现）
+  setTimeout(function () { init(); }, 3500);
 
   // =====================================================================
   // ---- 6. 彩蛋：挖矿闯关（10 关，1-9 关得像素靓照，第 10 关得电话） ----
@@ -380,8 +382,11 @@
     tools.appendChild(btn);
   }
 
-  // 生成一张像素靓照：头像降采样到 size×size 再放大回 256（nearest 保硬边）
+  // 生成一张像素靓照：头像降采样（结果按 style 记忆缓存，避免重复画布开销）
+  var photoCache = {};
   function makePhoto(style, cb) {
+    var key = style.size + "|" + style.filter;
+    if (photoCache[key]) { cb(photoCache[key]); return; }
     var srcImg = document.querySelector(".avatar");
     var src = srcImg ? (srcImg.currentSrc || srcImg.src) : "";
     if (!src) { cb(null); return; }
@@ -400,7 +405,9 @@
         var octx = out.getContext("2d");
         octx.imageSmoothingEnabled = false;
         octx.drawImage(c, 0, 0, 256, 256);
-        cb(out.toDataURL("image/png"));
+        var url = out.toDataURL("image/png");
+        photoCache[key] = url;
+        cb(url);
       } catch (e) { cb(null); }
     };
     work.onerror = function () { cb(null); };
@@ -514,12 +521,15 @@
       G.closed = true;
       if (G.onKey) document.removeEventListener("keydown", G.onKey);
       if (G.cdIv) { clearInterval(G.cdIv); G.cdIv = null; }
+      if (G.stopHold) G.stopHold(); // 清连挖定时器
       var o = document.getElementById("mc-game");
       if (o) o.remove();
       document.body.style.overflow = "";
       G = null;
     }
     G.closeGame = closeGame;
+    // 切后台 / 失焦时停掉连挖与倒计时
+    window.addEventListener("blur", function () { if (G && G.stopHold) G.stopHold(); });
     overlay.addEventListener("click", function (e) { if (e.target === overlay) closeGame(); });
     // 所有游戏内按钮统一「咔哒」反馈音（一次委托全覆盖）
     frame.addEventListener("click", function (e) {
@@ -877,7 +887,8 @@
   function attachGridInput(G) {
     var holdTimer = null;
     var px = null, py = null;
-    function stopHold() { if (holdTimer) { clearInterval(holdTimer); holdTimer = null; } }
+    function stopHold() { if (holdTimer) { clearInterval(holdTimer); holdTimer = null; px = null; py = null; } }
+    G.stopHold = stopHold; // 关卡/游戏关闭时一并清理（防定时器泄漏）
     G.grid.addEventListener("pointerdown", function (e) {
       if (!G || G.closed || G.panel.classList.contains("is-show")) return;
       if (G.counting) { // 倒计时中点击 = 跳过，直接开挖
@@ -894,6 +905,7 @@
       digCell(r, c);
       stopHold();
       holdTimer = setInterval(function () {
+        if (document.hidden) return; // 后台标签页暂停连挖，回来继续
         if (!G || G.closed || G.panel.classList.contains("is-show") || !G.cells || G.cells[r][c] === "air") { stopHold(); return; }
         digCell(r, c);
       }, 240); // 略快于 280ms，连挖更顺
