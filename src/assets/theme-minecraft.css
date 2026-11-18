@@ -43,6 +43,7 @@
   --text: #f2e8d0 !important; --text-2: #d8c9a8 !important; --text-3: #c2b28f !important;
   --border: #6b5230 !important; --border-strong: #a8946c !important;
   --blue: #5a8c2a !important; --on-accent: #1a140c !important;
+  --green: #b6ec7a !important;
   --green-bg: rgba(94,168,50,.2) !important; --chip-bg: #4a3f2c !important;
 }
 
@@ -359,4 +360,244 @@ body, .card, .btn, .entry-body, .fact dt, .fact dd, .headline, .hero h1,
   .card h2, .hero h1, .entry-body h3 { color: #000 !important; font-family: "Courier New", monospace !important; font-size: 12pt !important; }
   .chip, .project-metric { border: 1px solid #999 !important; color: #333 !important; background: #fff !important; }
   .banner, .project-thumb { display: none !important; }
+}
+
+/* ==========================================================================
+   Minecraft 强化第三波：天空装饰 / 成就弹窗 / 物品提示 / Splash
+   ========================================================================== */
+
+/* banner 变成「天空画布」：太阳（白天）/ 月亮星星（夜晚）/ 像素云 / Splash */
+.banner { position: relative !important; overflow: hidden !important; }
+
+.mc-sun {
+  position: absolute;
+  top: 10px;
+  left: 18px;
+  width: 26px;
+  height: 26px;
+  background: #fdf4a3 !important;
+  box-shadow: 0 0 0 3px rgba(253, 244, 163, 0.35), inset -4px -4px 0 rgba(0,0,0,.08) !important;
+}
+.mc-moon {
+  display: none;
+  position: absolute;
+  top: 10px;
+  left: 18px;
+  width: 22px;
+  height: 22px;
+  background: #e8e8e8 !important;
+  box-shadow: inset -4px -4px 0 rgba(0,0,0,.12), 0 0 14px rgba(232,232,232,.35) !important;
+}
+:root[data-theme="dark"] .mc-sun { display: none !important; }
+:root[data-theme="dark"] .mc-moon { display: block !important; }
+
+/* 夜晚星星：2×2 白点用 box-shadow 铺开 */
+.mc-stars {
+  display: none;
+  position: absolute;
+  top: 4px;
+  left: 0;
+  width: 2px;
+  height: 2px;
+  background: #ffffff;
+  box-shadow:
+    30px 6px #fff, 70px 14px #fff, 120px 4px #fff, 180px 18px #fff,
+    240px 8px #fff, 300px 16px #fff, 360px 10px #fff, 420px 20px #fff,
+    470px 6px #fff, 520px 14px #fff, 585px 8px #fff, 640px 18px #fff,
+    700px 4px #fff, 760px 12px #fff, 830px 8px #fff, 900px 16px #fff,
+    960px 6px #fff, 1030px 14px #fff, 1100px 10px #fff, 1160px 6px #fff;
+}
+:root[data-theme="dark"] .mc-stars { display: block !important; }
+
+/* 像素云：白天飘动，夜晚隐藏 */
+.mc-cloud {
+  position: absolute;
+  top: 22px;
+  left: -120px;
+  width: 72px;
+  height: 16px;
+  background: rgba(255, 255, 255, 0.92) !important;
+  box-shadow: 10px -10px 0 rgba(255,255,255,.9), 20px 0 0 rgba(255,255,255,.75) !important;
+  animation: mc-drift 80s linear infinite;
+}
+.mc-cloud.c2 {
+  top: 52px;
+  width: 96px;
+  height: 12px;
+  animation-duration: 110s;
+  animation-delay: -35s;
+  opacity: 0.75;
+}
+@keyframes mc-drift {
+  from { left: -140px; }
+  to { left: 100%; }
+}
+:root[data-theme="dark"] .mc-cloud { display: none !important; }
+
+/* Splash：标题画面黄字脉冲 */
+.mc-splash {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 150px;
+  text-align: center;
+  color: #ffff55 !important;
+  text-shadow: 2px 2px 0 #3f3f00 !important;
+  transform: rotate(-10deg);
+  font-family: "MinecraftPixel", "Courier New", monospace !important;
+  font-size: 9px !important;
+  line-height: 1.8 !important;
+  pointer-events: none;
+  animation: mc-splash-pulse 1.6s ease-in-out infinite;
+}
+@keyframes mc-splash-pulse {
+  0%, 100% { transform: rotate(-10deg) scale(1); }
+  50% { transform: rotate(-10deg) scale(1.1); }
+}
+:root[data-theme="dark"] .mc-splash { text-shadow: 2px 2px 0 #3f3f3f !important; }
+
+/* 物品栏 tooltip：黑底紫边物品提示 */
+.mc-slot { position: relative !important; }
+.mc-slot .mc-tip {
+  display: none;
+  position: absolute;
+  bottom: calc(100% + 12px);
+  left: 50%;
+  transform: translateX(-50%);
+  width: max-content;
+  max-width: 190px;
+  padding: 9px 11px;
+  background: rgba(16, 0, 16, 0.95) !important;
+  border: 2px solid #25015b !important;
+  box-shadow: 0 0 0 2px rgba(16, 0, 16, 0.9), 0 8px 20px rgba(0, 0, 0, 0.5) !important;
+  color: #ffffff !important;
+  font-family: "MinecraftPixel", "Courier New", monospace !important;
+  font-size: 8px !important;
+  line-height: 1.9 !important;
+  z-index: 60;
+  pointer-events: none;
+}
+.mc-slot .mc-tip b { color: #ffff55 !important; font-weight: normal !important; }
+.mc-slot:hover .mc-tip,
+.mc-slot:focus .mc-tip { display: block !important; }
+
+/* 成就弹窗（Advancement toast） */
+.mc-achievement {
+  position: fixed;
+  top: 14px;
+  right: 14px;
+  z-index: 80;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  width: 320px;
+  max-width: calc(100vw - 28px);
+  padding: 13px 15px;
+  background: #212121 !important;
+  border: 2px solid #1e1e1e !important;
+  box-shadow: inset 2px 2px 0 rgba(255,255,255,.14), inset -2px -2px 0 rgba(0,0,0,.4), 6px 6px 0 rgba(0,0,0,.35) !important;
+  color: #ffffff !important;
+  font-family: "MinecraftPixel", "Courier New", monospace !important;
+  font-size: 9px !important;
+  line-height: 1.9 !important;
+  pointer-events: none;
+  animation: mc-ach-in 0.45s steps(6) both;
+}
+.mc-achievement.is-out { animation: mc-ach-out 0.4s steps(5) both; }
+@keyframes mc-ach-in {
+  from { transform: translateX(130%); opacity: 0; }
+  to { transform: none; opacity: 1; }
+}
+@keyframes mc-ach-out {
+  from { transform: none; opacity: 1; }
+  to { transform: translateX(130%); opacity: 0; }
+}
+.mc-ach-icon {
+  flex: none;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #2f2f2f !important;
+  border: 2px solid #555 !important;
+  box-shadow: inset 2px 2px 0 rgba(255,255,255,.1) !important;
+  font-size: 20px !important;
+  color: #ffff55 !important;
+}
+.mc-ach-body { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.mc-ach-title { color: #ffff55 !important; font-size: 10px !important; }
+.mc-ach-desc { color: #ffffff !important; }
+
+@media (prefers-reduced-motion: reduce) {
+  .mc-cloud, .mc-splash, .mc-achievement { animation: none !important; }
+}
+
+
+/* ---------- 底部物品栏（9 格 hotbar）---------- */
+.mc-hotbar {
+  position: fixed;
+  left: 50%;
+  bottom: 14px;
+  transform: translateX(-50%);
+  z-index: 40;
+  display: flex;
+  gap: 3px;
+  padding: 5px;
+  background: #8b8b8b !important;
+  border: 3px solid #373737 !important;
+  box-shadow:
+    4px 4px 0 #1e1e1e,
+    inset 2px 2px 0 #c6c6c6,
+    inset -2px -2px 0 #4a4a4a !important;
+  image-rendering: pixelated;
+}
+.mc-slot {
+  position: relative;
+  width: 42px;
+  height: 42px;
+  flex: none;
+  padding: 0;
+  border: 2px solid #373737 !important;
+  border-radius: 0 !important;
+  background: #8b8b8b !important;
+  box-shadow: inset 2px 2px 0 #c6c6c6, inset -2px -2px 0 #4a4a4a !important;
+  color: #f2e8d0 !important;
+  cursor: pointer;
+  font-family: "MinecraftPixel", monospace !important;
+  transition: none !important;
+}
+.mc-slot:hover { background: #a3a3a3 !important; }
+.mc-slot.is-selected {
+  outline: 3px solid #ffffff !important;
+  outline-offset: -1px;
+  background: #6f9e3f !important;
+  box-shadow: inset 2px 2px 0 #b6d98a, inset -2px -2px 0 #3d5a1e, 0 0 0 2px #1e1e1e !important;
+}
+.mc-slot-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  font-size: 20px !important;
+  line-height: 1;
+  text-shadow: 2px 2px 0 #1e1e1e;
+}
+.mc-slot-num {
+  position: absolute;
+  right: 2px;
+  bottom: 0;
+  font-size: 7px !important;
+  color: #e8e8e8 !important;
+  text-shadow: 1px 1px 0 #1e1e1e;
+}
+/* 页面底部给物品栏留出空间 */
+body { padding-bottom: 76px !important; }
+.footer { margin-bottom: 8px !important; }
+@media (max-width: 640px) {
+  .mc-hotbar { bottom: 8px; gap: 2px; padding: 4px; }
+  .mc-slot { width: 32px; height: 32px; }
+  .mc-slot-icon { font-size: 15px !important; }
+  .mc-slot-num { font-size: 6px !important; }
+  body { padding-bottom: 64px !important; }
 }

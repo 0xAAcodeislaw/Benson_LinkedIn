@@ -3,6 +3,13 @@
 (function () {
   "use strict";
 
+  function el(tag, cls, text) {
+    var node = document.createElement(tag);
+    if (cls) node.className = cls;
+    if (text != null) node.textContent = text;
+    return node;
+  }
+
   function isMinecraft() {
     // 主题 CSS 里定义了 @font-face MinecraftPixel；用 canvas 探测像素字体是否加载
     try {
@@ -81,10 +88,14 @@
       var icon = document.createElement("span");
       icon.className = "mc-slot-icon";
       icon.textContent = d.icon;
+      var tip = document.createElement("span");
+      tip.className = "mc-tip";
+      tip.innerHTML = "<b>" + d.label + "</b>";
       var num = document.createElement("span");
       num.className = "mc-slot-num";
       num.textContent = String(i + 1);
       slot.appendChild(icon);
+      slot.appendChild(tip);
       slot.appendChild(num);
       slot.addEventListener("click", function () {
         var el = document.getElementById(d.id);
@@ -132,6 +143,69 @@
     });
   }
 
+  // ---- 4. banner 天空装饰：太阳/云（白天）、月亮/星星（夜晚）----
+  function decorateSky() {
+    var banner = document.querySelector(".banner");
+    if (!banner || banner.dataset.skyDecorated === "1") return;
+    banner.dataset.skyDecorated = "1";
+    var lang = document.documentElement.lang || "en";
+    var SPLASH = {
+      en: "100% blocky!",
+      zh: "100% 方块！",
+      fr: "100% bloc !"
+    };
+    var sun = document.createElement("span");
+    sun.className = "mc-sun";
+    var moon = document.createElement("span");
+    moon.className = "mc-moon";
+    var stars = document.createElement("span");
+    stars.className = "mc-stars";
+    var c1 = document.createElement("span");
+    c1.className = "mc-cloud";
+    var c2 = document.createElement("span");
+    c2.className = "mc-cloud c2";
+    var splash = document.createElement("span");
+    splash.className = "mc-splash";
+    splash.textContent = SPLASH[lang] || SPLASH.en;
+    banner.appendChild(sun);
+    banner.appendChild(moon);
+    banner.appendChild(stars);
+    banner.appendChild(c1);
+    banner.appendChild(c2);
+    banner.appendChild(splash);
+  }
+
+  // ---- 5. 开场成就弹窗 ----
+  function achievementToast() {
+    if (document.querySelector(".mc-achievement")) return;
+    var lang = document.documentElement.lang || "en";
+    var T = {
+      en: { title: "Achievement get!", desc: "Resume loaded" },
+      zh: { title: "成就达成！", desc: "简历已加载" },
+      fr: { title: "Succès obtenu !", desc: "CV chargé" }
+    };
+    var t = T[lang] || T.en;
+    var box = document.createElement("div");
+    box.className = "mc-achievement";
+    box.setAttribute("role", "status");
+    var icon = document.createElement("span");
+    icon.className = "mc-ach-icon";
+    icon.textContent = "\u2692";
+    var body = document.createElement("div");
+    body.className = "mc-ach-body";
+    body.appendChild(el("div", "mc-ach-title", t.title));
+    body.appendChild(el("div", "mc-ach-desc", t.desc));
+    box.appendChild(icon);
+    box.appendChild(body);
+    document.body.appendChild(box);
+    setTimeout(function () {
+      box.classList.add("is-out");
+    }, 4200);
+    setTimeout(function () {
+      box.remove();
+    }, 5200);
+  }
+
   // ---- 启动 ----
   function init() {
     if (!isMinecraft()) return; // 非 Minecraft 主题：什么都不做
@@ -142,6 +216,8 @@
     }
     buildHotbar();
     addBlockIcons();
+    decorateSky();
+    achievementToast();
   }
 
   if (document.readyState === "loading") {
