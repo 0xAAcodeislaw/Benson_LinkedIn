@@ -171,6 +171,7 @@
   //   挖到品红「相机方块」📷 = 解锁一张像素靓照；第 10 关挖金色「电话方块」☎ = 电话号码。
   var PROGRESS_KEY = "mc_dig_lv";     // 已通到第几关（1~10）
   var SEEN_TUT_KEY = "mc_dig_seen";   // 是否看过教学
+  var DONE_KEY = "mc_dig_done";       // 是否通关过第 10 关
 
   var BLOCKS = {
     grass:     { hp: 1, drop: "Grass / 草方块",    cn: "草",    color: "#5ea832" },
@@ -475,17 +476,22 @@
     G.grid.style.display = "none";
 
     var card = el("div", "mc-level-card");
-    card.appendChild(el("div", "mc-lc-num", "LEVEL " + lv + " / 10"));
+    card.appendChild(el("div", "mc-lc-num", "LEVEL " + lv + " / 10" +
+      (lv < 10 ? " · 📸 靓照已收 " + (lv - 1) + "/9" : "")));
     card.appendChild(el("div", "mc-lc-name", def.name));
-    card.appendChild(el("div", "mc-lc-tip", def.tip));
+    card.appendChild(el("div", "mc-lc-tip", def.tip + " 小技巧：按住方块不放会连续挖！"));
 
     // 目标方块大图 + 说明
     var goalRow = el("div", "mc-lc-goal");
     var goalBlock = el("div", "mc-lc-goal-block " + (lv < 10 ? "mc-cell-camera" : "mc-cell-phone"));
     goalRow.appendChild(goalBlock);
+    var done10 = false;
+    try { done10 = lv === 10 && !!localStorage.getItem(DONE_KEY); } catch (e) {}
     var goalTxt = lv < 10
       ? "挖到「相机方块」📷 得到第 " + lv + " 张像素靓照（埋在第 " + (def.goalMin + 1) + "~" + (def.goalMax + 1) + " 层）"
-      : "挖穿最底层，找到「金色电话方块」☎ —— 得到求职者的电话号码！";
+      : done10
+        ? "✅ 已通关！重玩可再看一次电话号码 —— 按住方块连挖更快"
+        : "挖穿最底层，找到「金色电话方块」☎ —— 得到求职者的电话号码！按住方块不放会连续挖";
     goalRow.appendChild(el("span", "mc-lc-goal-txt", goalTxt));
     card.appendChild(goalRow);
 
@@ -579,17 +585,12 @@
         var k = e.key.toLowerCase();
         var map = { w: [-1, 0], a: [0, -1], s: [1, 0], d: [0, 1], arrowup: [-1, 0], arrowleft: [0, -1], arrowdown: [1, 0], arrowright: [0, 1] };
         if (map[k]) { e.preventDefault(); moveCursor(map[k][0], map[k][1]); }
-        else if (k === " " || k === "enter") { e.preventDefault(); digCell(G.cursor.r, G.cursor.c); }
+        else if (k === " " || k === "enter") { e.preventDefault(); digCell(G.cursor.r, G.cursor.c); } // 空格按住 = 系统自带重复
         else if (k === "escape") { G.closeGame(); }
       };
       document.addEventListener("keydown", G.onKey);
-      G.grid.addEventListener("click", function (e) {
-        if (!G || G.closed || G.panel.classList.contains("is-show")) return;
-        var t = e.target.closest(".mc-cell");
-        if (!t) return;
-        digCell(Number(t.dataset.r), Number(t.dataset.c));
-      });
     }
+    attachGridInput(G);
   }
 
   function render() {
@@ -629,8 +630,31 @@
     return false;
   }
 
+  // 挖掘输入：按下即挖一下，按住不放 = 每 280ms 连挖（Minecraft 手感）
+  // 用 pointerdown（鼠标/触屏统一），不用 click 避免连点双倍伤害
+  function attachGridInput(G) {
+    var holdTimer = null;
+    function stopHold() { if (holdTimer) { clearInterval(holdTimer); holdTimer = null; } }
+    G.grid.addEventListener("pointerdown", function (e) {
+      if (!G || G.closed || G.panel.classList.contains("is-show")) return;
+      var t = e.target.closest(".mc-cell");
+      if (!t) return;
+      var r = Number(t.dataset.r), c = Number(t.dataset.c);
+      digCell(r, c);
+      stopHold();
+      holdTimer = setInterval(function () {
+        if (!G || G.closed || G.panel.classList.contains("is-show") || !G.cells || G.cells[r][c] === "air") { stopHold(); return; }
+        digCell(r, c);
+      }, 280);
+    });
+    ["pointerup", "pointercancel", "pointerleave"].forEach(function (ev) {
+      G.grid.addEventListener(ev, stopHold);
+    });
+    G.grid.addEventListener("contextmenu", function (e) { e.preventDefault(); }); // 长按别弹菜单
+  }
+
   function digCell(r, c) {
-    if (!G || G.closed || !G.cells) return;
+    if (!G || G.closed || !G.cells || G.panel.classList.contains("is-show")) return;
     if (!exposed(r, c)) return;
     var type = G.cells[r][c];
     if (type === "air") return;
@@ -642,9 +666,14 @@
     render();
     if (type === "camera" || type === "phone") {
       var won = type === "phone";
-      saveProgress(G.level + 1);
-      if (won) showPhoneCard();
-      else showPhotoCard(G.level);
+      if (won) {
+        saveProgress(10); // 终关通关后停在 10，可重玩
+        try { localStorage.setItem(DONE_KEY, "1"); } catch (e) {}
+        showPhoneCard();
+      } else {
+        saveProgress(G.level + 1);
+        showPhotoCard(G.level);
+      }
     }
   }
 

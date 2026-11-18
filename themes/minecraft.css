@@ -683,6 +683,7 @@ body { padding-bottom: 76px !important; }
   background: #1a140c !important;
   image-rendering: pixelated;
   user-select: none;
+  -webkit-touch-callout: none;
   touch-action: manipulation;
 }
 .mc-cell {
@@ -821,6 +822,11 @@ body { padding-bottom: 76px !important; }
     radial-gradient(circle at 75% 75%, #f5d0fe 0 2px, transparent 3px),
     linear-gradient(180deg, #f0abfc 0 25%, #d946ef 25%) !important;
   box-shadow: inset 0 0 10px rgba(255,255,255,.45) !important;
+  animation: mc-cam-glow 1.2s steps(2) infinite; /* 暴露后持续闪烁，一眼看到目标 */
+}
+@keyframes mc-cam-glow {
+  0%, 100% { box-shadow: inset 0 0 6px rgba(255,255,255,.5); }
+  50% { box-shadow: inset 0 0 14px rgba(255,255,255,.9); }
 }
 .mc-panel {
   display: none; /* 显示靠 .is-show（inline style 会输给这条规则，已踩坑） */
