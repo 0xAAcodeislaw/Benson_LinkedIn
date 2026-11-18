@@ -1178,3 +1178,35 @@ body { padding-bottom: 76px !important; }
   width: 0;
   transition: width .4s steps(8);
 }
+
+/* ===== 遍4：成就 toast + 钻石方块 ===== */
+.mc-toast {
+  position: fixed;
+  top: 18px; right: -340px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #2a1d0e;
+  border: 3px solid #f0e0b8;
+  box-shadow: 4px 4px 0 rgba(0,0,0,.5);
+  padding: 10px 16px;
+  z-index: 10000;
+  transition: right .35s steps(8);
+  max-width: 300px;
+}
+.mc-toast.is-out { right: -340px; }
+@keyframes mc-toast-in { to { right: 18px; } }
+.mc-toast { animation: mc-toast-in .35s steps(8) forwards; }
+.mc-toast-icon { font-size: 24px; flex: none; }
+.mc-toast-title { font-family: "MinecraftPixel", monospace !important; font-size: 10px !important; color: #ffff55 !important; }
+.mc-toast-desc { font-family: "MinecraftPixel", monospace !important; font-size: 8px !important; color: #f0e0b8 !important; margin-top: 3px; }
+/* 钻石方块：蓝底菱形钻 */
+.mc-cell-gem {
+  background: #bfe9ff !important;
+  background-image:
+    linear-gradient(135deg, rgba(255,255,255,.9) 0 18%, transparent 18% 82%, rgba(30,120,190,.55) 82%),
+    linear-gradient(45deg, transparent 0 30%, rgba(79,216,255,.75) 30% 70%, transparent 70%),
+    linear-gradient(-45deg, transparent 0 30%, rgba(79,216,255,.75) 30% 70%, transparent 70%),
+    linear-gradient(180deg, #d8f2ff 0 30%, #4fd8ff 30%) !important;
+  box-shadow: inset 0 2px 0 rgba(255,255,255,.5), inset 0 -3px 0 rgba(20,90,150,.5), 0 0 8px rgba(79,216,255,.5) !important;
+}

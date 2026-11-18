@@ -268,6 +268,26 @@
     void G.frame.offsetWidth;
     G.frame.classList.add("is-shake");
   }
+  // ---- 成就 toast：MC 风格右上角滑入 ----
+  function toast(icon, title, desc) {
+    var t = el("div", "mc-toast");
+    t.appendChild(el("span", "mc-toast-icon", icon));
+    var tx = el("div", "mc-toast-txt");
+    tx.appendChild(el("div", "mc-toast-title", title));
+    if (desc) tx.appendChild(el("div", "mc-toast-desc", desc));
+    t.appendChild(tx);
+    document.body.appendChild(t);
+    SFX.ach();
+    setTimeout(function () { t.classList.add("is-out"); }, 2600);
+    setTimeout(function () { t.remove(); }, 3150);
+  }
+  function achOnce(key, icon, title, desc) {
+    try {
+      if (localStorage.getItem(key)) return;
+      localStorage.setItem(key, "1");
+    } catch (e) { return; }
+    toast(icon, title, desc);
+  }
 
   var BLOCKS = {
     grass:     { hp: 1, drop: "Grass / 草方块",    cn: "草",    color: "#5ea832" },
@@ -275,6 +295,7 @@
     stone:     { hp: 2, drop: "Stone / 石头",      cn: "石头",  color: "#8a8a8a" },
     coal:      { hp: 2, drop: "Coal / 煤矿",       cn: "煤矿",  color: "#565656" },
     deepslate: { hp: 3, drop: "Deepslate / 深板岩", cn: "深板岩", color: "#484850" },
+    gem:       { hp: 2, drop: "Diamond / 钻石",     cn: "钻石",  color: "#4fd8ff" },
     camera:    { hp: 2, drop: "Camera / 相机方块",  cn: "相机",  color: "#d946ef" },
     phone:     { hp: 3, drop: "Phone / 电话方块",   cn: "电话",  color: "#f0b90b" }
   };
@@ -335,7 +356,17 @@
     btn.title = "Easter egg: 10-level mining game / 彩蛋闯关小游戏";
     btn.setAttribute("aria-label", "Easter egg: mining game");
     btn.textContent = "\u26CF";
-    btn.addEventListener("click", openGame);
+    var clicks10 = 0, clicksTimer = null;
+    btn.addEventListener("click", function () { // 彩蛋：⛏ 连点 10 次 → 隐藏成就
+      clicks10++;
+      clearTimeout(clicksTimer);
+      clicksTimer = setTimeout(function () { clicks10 = 0; }, 5000);
+      if (clicks10 >= 10) {
+        clicks10 = 0;
+        toast("\u{1F9D1}\u200D\u{1F33E}", "Persistent Miner! / 坚持矿工！", "You clicked the pickaxe 10 times / 你把镐子点了十下");
+      }
+      openGame();
+    });
     tools.appendChild(btn);
   }
 
@@ -678,13 +709,13 @@
         var t;
         if (r === 0) t = "grass";
         else if (r <= 2) t = "dirt";
-        else if (def.rock === "soft") t = Math.random() < 0.15 ? "coal" : "stone";
+        else if (def.rock === "soft") t = Math.random() < 0.15 ? "coal" : (Math.random() < 0.06 ? "gem" : "stone");
         else if (def.rock === "mix") {
-          if (r <= def.rows * 0.55) t = Math.random() < 0.18 ? "coal" : "stone";
+          if (r <= def.rows * 0.55) t = Math.random() < 0.18 ? "coal" : (Math.random() < 0.06 ? "gem" : "stone");
           else t = Math.random() < 0.15 ? "coal" : "deepslate";
         } else { // hard
-          if (r <= 3) t = Math.random() < 0.18 ? "coal" : "stone";
-          else t = Math.random() < 0.18 ? "coal" : "deepslate";
+          if (r <= 3) t = Math.random() < 0.18 ? "coal" : (Math.random() < 0.06 ? "gem" : "stone");
+          else t = Math.random() < 0.18 ? "coal" : (Math.random() < 0.04 ? "gem" : "deepslate");
         }
         row.push(t);
         rowHp.push(BLOCKS[t].hp);
@@ -807,7 +838,8 @@
       holdTimer = setInterval(function () {
         if (!G || G.closed || G.panel.classList.contains("is-show") || !G.cells || G.cells[r][c] === "air") { stopHold(); return; }
         digCell(r, c);
-      }, 280);
+      }, 240); // 略快于 280ms，连挖更顺
+      achOnce("mc_ach_hold", "\u{1F576}\uFE0F", "Hold to mine! / 学会连挖！", "Hold to keep digging / 按住不放持续挖");
     });
     ["pointerup", "pointercancel", "pointerleave"].forEach(function (ev) {
       G.grid.addEventListener(ev, stopHold);
@@ -861,6 +893,8 @@
     if (type === "air") return;
     var cellEl = G.grid.querySelector('.mc-cell[data-r="' + r + '"][data-c="' + c + '"]');
     G.hpMap[r][c] -= 1;
+    achOnce("mc_ach_dig", "\u26CF", "First dig! / 第一次挖掘！", "Welcome to the mine / 欢迎来挖矿"); // 成就：首次挖掘
+    try { localStorage.setItem("mc_digs", String(Number(localStorage.getItem("mc_digs") || 0) + 1)); } catch (e) {} // 总挖掘数
     if (G.hpMap[r][c] > 0) {
       // 裂纹：就地更新徽章与裂纹，不全量重渲染（涟漪不被打断）
       SFX.crack();
@@ -876,6 +910,11 @@
     fxParticles(cellEl, color, type === "deepslate" || type === "phone" ? 10 : 6);
     fxFlyDrop(cellEl, color);
     if (type === "deepslate" || type === "phone") fxShake();
+    if (type === "gem") { // 钻石彩蛋方块
+      SFX.gem();
+      toast("\u{1F48E}", "DIAMONDS! / 挖到钻石！", "Shiny bonus find / 意外的宝贝");
+      try { localStorage.setItem("mc_gems", String(Number(localStorage.getItem("mc_gems") || 0) + 1)); } catch (e) {}
+    }
     render();
     if (type === "camera" || type === "phone") {
       var won = type === "phone";
@@ -933,6 +972,7 @@
 
     // 结算：用时 / 最佳纪录 / 星级
     var secs = (Date.now() - (G.t0 || Date.now())) / 1000;
+    try { localStorage.setItem("mc_time_ms", String(Number(localStorage.getItem("mc_time_ms") || 0) + Math.round(secs * 1000))); } catch (e) {}
     var bestKey = "mc_best_" + lv;
     var prevBest = null;
     try { prevBest = Number(localStorage.getItem(bestKey)) || null; } catch (e) {}
@@ -1008,10 +1048,22 @@
     }
     card.appendChild(dots);
 
+    // 矿工生涯统计行
+    var totDigs = 0, totGems = 0, totMs = 0;
+    try {
+      totDigs = Number(localStorage.getItem("mc_digs") || 0);
+      totGems = Number(localStorage.getItem("mc_gems") || 0);
+      totMs = Number(localStorage.getItem("mc_time_ms") || 0);
+    } catch (e) {}
+    card.appendChild(el("div", "mc-lc-stat",
+      "\u{1F4CA} \u603B\u6316\u6398 " + totDigs + " \u00B7 \u{1F48E} \u94BB\u77F3 " + totGems +
+      " \u00B7 \u23F1 \u603B\u7528\u65F6 " + (totMs / 1000).toFixed(1) + "s"));
+
     // 9 张靓照缩略图墙
     var wall = el("div", "mc-photo-wall");
     PHOTO_STYLES.forEach(function (st, idx) {
       var box = el("div", "mc-photo-thumb");
+      box.title = st.name; // 悬停显示风格名
       var im = document.createElement("img");
       im.alt = "Photo " + (idx + 1);
       makePhoto(st, function (url) {
