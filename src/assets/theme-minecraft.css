@@ -1319,3 +1319,63 @@ body { padding-bottom: 76px !important; }
 }
 /* 10. 关卡卡目标块复用呼吸动画 */
 .mc-lc-goal-block.mc-cell-camera, .mc-lc-goal-block.mc-cell-phone { animation: mc-cam-glow 1.4s steps(2) infinite; }
+
+/* ===== 终极大祝贺：礼花秀 ===== */
+.mc-finale {
+  position: fixed;
+  inset: 0;
+  z-index: 9995;
+  pointer-events: none;
+  overflow: hidden;
+  background: radial-gradient(ellipse at 50% 30%, rgba(60,40,10,.55), rgba(0,0,0,.75));
+  animation: mc-finale-bg .38s steps(4) backwards;
+}
+@keyframes mc-finale-bg { 0% { opacity: 0; } 100% { opacity: 1; } }
+.mc-finale-banner {
+  position: absolute;
+  left: 50%;
+  top: 30vh;
+  transform: translateX(-50%);
+  text-align: center;
+  animation: mc-banner .55s steps(6) backwards;
+  width: max-content;
+  max-width: 94vw;
+}
+@keyframes mc-banner {
+  0% { transform: translateX(-50%) scale(0); }
+  70% { transform: translateX(-50%) scale(1.12); }
+  100% { transform: translateX(-50%) scale(1); }
+}
+.mc-finale-title {
+  font-family: "MinecraftPixel", monospace !important;
+  font-size: 30px !important;
+  background: linear-gradient(180deg, #fff3c4 0 45%, #f0b90b 45%, #c99a08 80%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(3px 3px 0 #1a140c) drop-shadow(6px 6px 0 rgba(0,0,0,.5));
+  animation: mc-banner-bounce .8s steps(4) .55s infinite alternate;
+}
+@keyframes mc-banner-bounce {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-7px); }
+}
+.mc-finale-sub {
+  font-family: "MinecraftPixel", monospace !important;
+  font-size: 14px !important;
+  color: #fff8e1 !important;
+  text-shadow: 3px 3px 0 #1a140c !important;
+  margin-top: 14px;
+}
+.mc-finale-sub2 { font-size: 10px !important; color: #ffff55 !important; margin-top: 8px; }
+.mc-fw {
+  position: absolute;
+  width: 5px; height: 5px;
+  image-rendering: pixelated;
+  animation: mc-fw 1.15s cubic-bezier(.15,.6,.6,1) forwards;
+}
+@keyframes mc-fw {
+  0% { transform: translate(0, 0) scale(1.4); opacity: 1; }
+  55% { opacity: 1; }
+  100% { transform: translate(var(--dx), var(--dy)) scale(.3); opacity: 0; }
+}

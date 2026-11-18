@@ -524,6 +524,8 @@
       if (G.stopHold) G.stopHold(); // 清连挖定时器
       var o = document.getElementById("mc-game");
       if (o) o.remove();
+      var fin = document.querySelector(".mc-finale"); // 礼花秀一并收场
+      if (fin) fin.remove();
       document.body.style.overflow = "";
       G = null;
     }
@@ -1003,7 +1005,7 @@
         fxGoldRipple(cellEl);
         saveProgress(10); // 终关通关后停在 10，可重玩
         try { localStorage.setItem(DONE_KEY, "1"); } catch (e) {}
-        showPhoneCard();
+        showFinale(); // 大祝贺 + 礼花秀，谢幕后自动进入电话卡
       } else {
         fxFlash();
         SFX.shutter();
@@ -1098,6 +1100,47 @@
 
     G.panel.appendChild(card);
     updateHud();
+  }
+
+  // ---- 大祝贺 + 礼花秀：挖出电话后的全屏谢幕（约 3.7s，随后进入电话卡） ----
+  function showFinale() {
+    SFX.win();
+    setTimeout(function () { SFX.ach(); }, 900); // 双段号角
+    var layer = el("div", "mc-finale");
+    var banner = el("div", "mc-finale-banner");
+    banner.appendChild(el("div", "mc-finale-title", "\u{1F389} CONGRATULATIONS! \u{1F389}"));
+    banner.appendChild(el("div", "mc-finale-sub", "\u5341\u5173\u5168\u901A \u00B7 ALL 10 LEVELS CLEAR!"));
+    banner.appendChild(el("div", "mc-finale-sub mc-finale-sub2", "\u{1F386} \u793C\u82B1\u79C0 for the miner \u{1F386}"));
+    layer.appendChild(banner);
+    document.body.appendChild(layer);
+    // 礼花弹幕：6 轮爆炸，像素碎屑带重力下坠
+    var colors = ["#ffff55", "#f0b90b", "#5ea832", "#d946ef", "#4fd8ff", "#ff7043", "#ffffff"];
+    for (var b = 0; b < 6; b++) {
+      (function (idx) {
+        setTimeout(function () {
+          if (!layer.parentNode) return; // 用户中途关闭
+          noise(0.22, 0.15, 500); blip(160, 0.3, "sawtooth", 0.05); // 爆竹声
+          var cx = 12 + Math.random() * 76;
+          var cy = 10 + Math.random() * 36;
+          var col = colors[idx % colors.length];
+          for (var i = 0; i < 16; i++) {
+            var p = el("span", "mc-fw");
+            var ang = (Math.PI * 2 * i) / 16 + Math.random() * 0.4;
+            var dist = 60 + Math.random() * 90;
+            p.style.left = cx + "vw";
+            p.style.top = cy + "vh";
+            p.style.background = col;
+            p.style.setProperty("--dx", Math.cos(ang) * dist + "px");
+            p.style.setProperty("--dy", (Math.sin(ang) * dist + 70) + "px");
+            layer.appendChild(p);
+          }
+        }, 200 + idx * 430);
+      })(b);
+    }
+    setTimeout(function () {
+      if (layer.parentNode) layer.remove();
+      showPhoneCard();
+    }, 3800);
   }
 
   // ---- 终极奖励：电话号码 ----
