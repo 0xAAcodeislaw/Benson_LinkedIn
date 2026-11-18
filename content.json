@@ -1,7 +1,7 @@
 {
   "_note": "这是全站唯一需要编辑的内容文件：改完运行 npm run deploy 即可更新网站。标有 placeholder/占位/à remplacer 的字段请替换为真实信息。可选区块（certifications / awards / quickFacts / projects[].featured）留空数组或删除字段时，页面会自动隐藏对应区块。",
   "site": {
-    "url": "https://benson-corporate.deus-edge.workers.dev",
+    "url": "https://pv-corporate-b1158a55cd0d.codeislaw.qzz.io",
     "author": "Benson Ding",
     "languageOrder": [
       "en",
@@ -15,7 +15,8 @@
       "radius": 8
     },
     "analyticsToken": "",
-    "themeFile": "theme-corporate.css"
+    "themeFile": "theme-corporate.css",
+    "themeFlag": ""
   },
   "profile": {
     "name": "Benson Ding",
