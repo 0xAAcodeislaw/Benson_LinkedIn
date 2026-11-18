@@ -770,3 +770,11 @@ body { padding-bottom: 76px !important; }
   box-shadow: 3px 3px 0 #2a1d0e !important;
 }
 .mc-win-close:hover { background: #7cc94a !important; }
+
+/* 未暴露的方块：加暗遮罩，视觉提示「还没挖到这层」 */
+.mc-cell.is-buried::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45) !important;
+}

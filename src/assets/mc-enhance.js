@@ -3,6 +3,13 @@
 (function () {
   "use strict";
 
+  function el(tag, cls, text) {
+    var node = document.createElement(tag);
+    if (cls) node.className = cls;
+    if (text != null) node.textContent = text;
+    return node;
+  }
+
   function isMinecraft() {
     // 主题 CSS 里定义了 @font-face MinecraftPixel；用 canvas 探测像素字体是否加载
     try {
@@ -263,9 +270,11 @@
         for (var c = 0; c < COLS; c++) {
           var type = cells[r][c];
           var d = document.createElement("div");
+          var can = exposed(r, c);
           d.className = "mc-cell mc-cell-" + type +
             (hpMap[r][c] < BLOCKS[type].hp ? " is-cracking" : "") +
-            (cursor.r === r && cursor.c === c ? " is-cursor" : "");
+            (cursor.r === r && cursor.c === c ? " is-cursor" : "") +
+            (can ? "" : " is-buried");
           d.dataset.r = String(r);
           d.dataset.c = String(c);
           grid.appendChild(d);
@@ -276,8 +285,20 @@
       inv.textContent = "Bag / 背包: " + (parts.length ? parts.join(" \u00B7 ") : "--");
     }
 
+    // 只能挖「暴露面」：表层或与已挖空方块相邻 —— 沿用 MC 的挖掘习惯
+    function exposed(r, c) {
+      if (r === 0) return true;
+      var dirs = [[-1, 0], [1, 0], [0, -1], [0, 1]];
+      for (var d = 0; d < 4; d++) {
+        var nr = r + dirs[d][0], nc = c + dirs[d][1];
+        if (nr >= 0 && nr < ROWS && nc >= 0 && nc < COLS && cells[nr][nc] === "air") return true;
+      }
+      return false;
+    }
+
     function digCell(r, c) {
       if (closed) return;
+      if (!exposed(r, c)) return;
       var type = cells[r][c];
       if (type === "air") return;
       hpMap[r][c] -= 1;
