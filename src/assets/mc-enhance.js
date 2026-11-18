@@ -434,6 +434,11 @@
     hud.appendChild(inv);
     hud.appendChild(goal);
 
+    // 总进度条（10 关全局）
+    var totalbar = el("div", "mc-totalbar");
+    var totalfill = el("div", "mc-totalbar-fill");
+    totalbar.appendChild(totalfill);
+
     var grid = el("div", "mc-game-grid");
 
     var help = el("div", "mc-game-help");
@@ -443,6 +448,7 @@
 
     frame.appendChild(titleRow);
     frame.appendChild(hud);
+    frame.appendChild(totalbar);
     frame.appendChild(grid);
     frame.appendChild(panel);
     frame.appendChild(help);
@@ -452,7 +458,7 @@
 
     G = {
       overlay: overlay, frame: frame, grid: grid, panel: panel,
-      lvBadge: lvBadge, dots: dots, inv: inv, goal: goal,
+      lvBadge: lvBadge, dots: dots, inv: inv, goal: goal, totalfill: totalfill,
       level: loadProgress(),
       cells: null, hpMap: null, cursor: { r: 0, c: 0 },
       closed: false, bag: {}, phone: readPhone(),
@@ -463,6 +469,7 @@
       if (!G) return;
       G.closed = true;
       if (G.onKey) document.removeEventListener("keydown", G.onKey);
+      if (G.cdIv) { clearInterval(G.cdIv); G.cdIv = null; }
       var o = document.getElementById("mc-game");
       if (o) o.remove();
       document.body.style.overflow = "";
@@ -493,6 +500,7 @@
       ? "Goal / 目标: dig the pink camera block \u{1F4F7} / 挖出品红相机方块"
       : "Goal / 目标: dig the golden phone \u260E / 挖出金色电话方块";
     G.goal.textContent = goalTxt;
+    if (G.totalfill) G.totalfill.style.width = (G.level / 10 * 100) + "%";
   }
 
   // ---- 教学面板（含自动演示动画） ----
@@ -697,6 +705,24 @@
     updateHud();
     render(true); // 开局逐格落下入场
 
+    // 3-2-1 倒计时（按住/点击可跳过）
+    G.counting = true;
+    G.t0 = 0;
+    var cd = el("div", "mc-countdown", "3");
+    SFX.tick();
+    G.frame.appendChild(cd);
+    var n = 3;
+    G.cdIv = setInterval(function () {
+      n--;
+      if (n <= 0) {
+        clearInterval(G.cdIv); G.cdIv = null;
+        cd.remove();
+        G.counting = false;
+        G.t0 = Date.now();
+        SFX.click();
+      } else { cd.textContent = String(n); SFX.tick(); }
+    }, 350);
+
     if (!G.onKey) {
       G.onKey = function (e) {
         if (!G || G.closed) return;
@@ -766,6 +792,13 @@
     function stopHold() { if (holdTimer) { clearInterval(holdTimer); holdTimer = null; } }
     G.grid.addEventListener("pointerdown", function (e) {
       if (!G || G.closed || G.panel.classList.contains("is-show")) return;
+      if (G.counting) { // 倒计时中点击 = 跳过，直接开挖
+        G.counting = false;
+        if (G.cdIv) { clearInterval(G.cdIv); G.cdIv = null; }
+        var cd = G.frame.querySelector(".mc-countdown");
+        if (cd) cd.remove();
+        if (!G.t0) G.t0 = Date.now();
+      }
       var t = e.target.closest(".mc-cell");
       if (!t) return;
       var r = Number(t.dataset.r), c = Number(t.dataset.c);
@@ -782,8 +815,47 @@
     G.grid.addEventListener("contextmenu", function (e) { e.preventDefault(); }); // 长按别弹菜单
   }
 
+  // 金色波纹（电话方块挖穿时从原地扩散）
+  function fxGoldRipple(cellEl) {
+    if (!cellEl) return;
+    var r = cellEl.getBoundingClientRect();
+    for (var i = 0; i < 3; i++) {
+      (function (idx) {
+        setTimeout(function () {
+          var s = el("span", "mc-gold-ripple");
+          s.style.left = r.left + r.width / 2 + "px";
+          s.style.top = r.top + r.height / 2 + "px";
+          document.body.appendChild(s);
+          setTimeout(function () { s.remove(); }, 900);
+        }, idx * 220);
+      })(i);
+    }
+  }
+  // 胜利彩带：顶部随机撒落像素彩纸
+  function fxConfetti() {
+    var colors = ["#5ea832", "#f0b90b", "#d946ef", "#4fd8ff", "#ffff55", "#ff7043"];
+    for (var i = 0; i < 24; i++) {
+      (function (idx) {
+        setTimeout(function () {
+          var p = el("span", "mc-confetti");
+          p.style.left = (Math.random() * 96) + "vw";
+          p.style.background = colors[idx % colors.length];
+          p.style.animationDuration = (0.9 + Math.random() * 0.9) + "s";
+          document.body.appendChild(p);
+          setTimeout(function () { p.remove(); }, 1900);
+        }, idx * 55);
+      })(i);
+    }
+  }
+  // 快门白闪
+  function fxFlash() {
+    var f = el("div", "mc-flash");
+    document.body.appendChild(f);
+    setTimeout(function () { f.remove(); }, 240);
+  }
+
   function digCell(r, c) {
-    if (!G || G.closed || !G.cells || G.panel.classList.contains("is-show")) return;
+    if (!G || G.closed || !G.cells || G.panel.classList.contains("is-show") || G.counting) return;
     if (!exposed(r, c)) return;
     var type = G.cells[r][c];
     if (type === "air") return;
@@ -808,10 +880,13 @@
     if (type === "camera" || type === "phone") {
       var won = type === "phone";
       if (won) {
+        fxGoldRipple(cellEl);
         saveProgress(10); // 终关通关后停在 10，可重玩
         try { localStorage.setItem(DONE_KEY, "1"); } catch (e) {}
         showPhoneCard();
       } else {
+        fxFlash();
+        SFX.shutter();
         saveProgress(G.level + 1);
         showPhotoCard(G.level);
       }
@@ -819,7 +894,7 @@
   }
 
   function moveCursor(dr, dc) {
-    if (!G || !G.cells) return;
+    if (!G || !G.cells || G.counting) return;
     var def = LEVELS[G.level - 1];
     var nr = Math.max(0, Math.min(def.rows - 1, G.cursor.r + dr));
     var nc = Math.max(0, Math.min(def.cols - 1, G.cursor.c + dc));
@@ -843,6 +918,7 @@
     img.alt = "Pixel photo " + lv;
     img.className = "mc-photo-img";
     polaroid.appendChild(img);
+    polaroid.appendChild(el("span", "mc-new-tag", "NEW!")); // 角标
     card.appendChild(polaroid);
 
     makePhoto(style, function (url) {
@@ -854,6 +930,20 @@
       }
     });
     card.appendChild(el("div", "mc-photo-cap", "Photo " + lv + "/9 · " + style.name));
+
+    // 结算：用时 / 最佳纪录 / 星级
+    var secs = (Date.now() - (G.t0 || Date.now())) / 1000;
+    var bestKey = "mc_best_" + lv;
+    var prevBest = null;
+    try { prevBest = Number(localStorage.getItem(bestKey)) || null; } catch (e) {}
+    var isRecord = !prevBest || secs < prevBest;
+    if (isRecord) { try { localStorage.setItem(bestKey, String(secs)); } catch (e) {} }
+    var stars = secs < 15 ? 3 : (secs < 30 ? 2 : 1);
+    var statRow = el("div", "mc-lc-stat",
+      "\u23F1 " + secs.toFixed(1) + "s · " + "\u2605".repeat(stars) +
+      " · \u6700\u4F73 " + (isRecord ? secs.toFixed(1) : prevBest.toFixed(1)) + "s" +
+      (isRecord ? " \u{1F389}NEW RECORD!" : ""));
+    card.appendChild(statRow);
 
     // 进度点
     var dots = el("div", "mc-dots mc-dots-big");
@@ -890,6 +980,8 @@
     G.grid.style.display = "none";
     G.panel.classList.add("is-show");
     G.panel.textContent = "";
+    fxConfetti();
+    SFX.win();
 
     var card = el("div", "mc-photo-card");
     card.appendChild(el("div", "mc-ach-icon", "\u260E"));

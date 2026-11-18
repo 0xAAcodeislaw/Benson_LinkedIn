@@ -1086,3 +1086,95 @@ body { padding-bottom: 76px !important; }
 .mc-photo-thumb:hover { transform: scale(1.18) rotate(-3deg); z-index: 2; }
 /* 照片卡 / 胜利卡阴影体系统一 */
 .mc-polaroid, .mc-win-phone, .mc-photo-thumb { box-shadow: 3px 3px 0 #2a1d0e, 6px 6px 0 rgba(0,0,0,.28) !important; }
+
+/* ===== 遍3：演出层 ===== */
+.mc-countdown {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: "MinecraftPixel", monospace !important;
+  font-size: 72px !important;
+  color: #ffff55 !important;
+  text-shadow: 4px 4px 0 #1a1a1a !important;
+  z-index: 5;
+  pointer-events: none;
+  animation: mc-cd .34s steps(3) infinite;
+}
+@keyframes mc-cd { 0% { transform: scale(1.25); } 100% { transform: scale(1); } }
+.mc-flash {
+  position: fixed; inset: 0;
+  background: #fff;
+  z-index: 9990;
+  pointer-events: none;
+  animation: mc-flashout .24s ease-out forwards;
+}
+@keyframes mc-flashout { 0% { opacity: .85; } 100% { opacity: 0; } }
+.mc-gold-ripple {
+  position: fixed;
+  width: 12px; height: 12px;
+  margin: -6px 0 0 -6px;
+  border: 3px solid #f0b90b;
+  border-radius: 50%;
+  z-index: 9991;
+  pointer-events: none;
+  animation: mc-gold-ring .85s ease-out forwards;
+}
+@keyframes mc-gold-ring {
+  0% { transform: scale(1); opacity: 1; }
+  100% { transform: scale(9); opacity: 0; }
+}
+.mc-confetti {
+  position: fixed;
+  top: -10px;
+  width: 7px; height: 7px;
+  z-index: 9992;
+  pointer-events: none;
+  animation: mc-confetti 1.4s linear forwards;
+}
+@keyframes mc-confetti {
+  0% { transform: translateY(0) rotate(0deg); }
+  100% { transform: translateY(105vh) rotate(540deg); }
+}
+.mc-photo-card .mc-polaroid { animation: mc-pola-drop .5s steps(6) backwards; }
+@keyframes mc-pola-drop {
+  0% { transform: translateY(-40px) rotate(-10deg); opacity: 0; }
+  70% { transform: translateY(4px) rotate(-1deg); opacity: 1; }
+  100% { transform: translateY(0) rotate(-2deg); opacity: 1; }
+}
+.mc-new-tag {
+  position: absolute;
+  top: -10px; right: -14px;
+  font-family: "MinecraftPixel", monospace !important;
+  font-size: 9px !important;
+  color: #1a140c !important;
+  background: #ffff55;
+  border: 2px solid #1a140c;
+  padding: 3px 6px;
+  transform: rotate(12deg);
+  animation: mc-inv-pop .5s steps(4) .3s backwards;
+  z-index: 2;
+}
+.mc-polaroid { position: relative; }
+.mc-lc-stat {
+  font-size: 9px !important;
+  color: #8a6d3b !important;
+  background: rgba(240,224,184,.5);
+  border: 2px solid #3d2c15;
+  padding: 5px 9px;
+  margin-bottom: 10px;
+}
+.mc-totalbar {
+  height: 7px;
+  background: rgba(0,0,0,.4);
+  border: 2px solid #3d2c15;
+  margin: 0 0 8px;
+  overflow: hidden;
+}
+.mc-totalbar-fill {
+  height: 100%;
+  background: repeating-linear-gradient(90deg, #5ea832 0 6px, #7cc94a 6px 12px);
+  width: 0;
+  transition: width .4s steps(8);
+}
