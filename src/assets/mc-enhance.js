@@ -376,7 +376,7 @@
   function showTutorial() {
     if (!G) return;
     G.grid.style.display = "none";
-    G.panel.style.display = "";
+    G.panel.classList.add("is-show");
     G.panel.textContent = "";
 
     var card = el("div", "mc-tut");
@@ -470,7 +470,7 @@
   function showLevelCard(lv) {
     if (!G) return;
     var def = LEVELS[lv - 1];
-    G.panel.style.display = "";
+    G.panel.classList.add("is-show");
     G.panel.textContent = "";
     G.grid.style.display = "none";
 
@@ -529,7 +529,7 @@
     if (!G) return;
     var def = LEVELS[lv - 1];
     G.level = lv;
-    G.panel.style.display = "none";
+    G.panel.classList.remove("is-show");
     G.grid.style.display = "";
     G.grid.style.gridTemplateColumns = "repeat(" + def.cols + ", 1fr)";
     G.cursor = { r: 0, c: 0 };
@@ -572,7 +572,7 @@
     if (!G.onKey) {
       G.onKey = function (e) {
         if (!G || G.closed) return;
-        if (G.panel.style.display !== "none") {
+        if (G.panel.classList.contains("is-show")) {
           if (e.key === "Escape") G.closeGame();
           return;
         }
@@ -584,7 +584,7 @@
       };
       document.addEventListener("keydown", G.onKey);
       G.grid.addEventListener("click", function (e) {
-        if (!G || G.closed || G.panel.style.display !== "none") return;
+        if (!G || G.closed || G.panel.classList.contains("is-show")) return;
         var t = e.target.closest(".mc-cell");
         if (!t) return;
         digCell(Number(t.dataset.r), Number(t.dataset.c));
@@ -657,7 +657,7 @@
   function showPhotoCard(lv) {
     if (!G) return;
     G.grid.style.display = "none";
-    G.panel.style.display = "";
+    G.panel.classList.add("is-show");
     G.panel.textContent = "";
     var style = PHOTO_STYLES[lv - 1];
 
@@ -715,7 +715,7 @@
   function showPhoneCard() {
     if (!G) return;
     G.grid.style.display = "none";
-    G.panel.style.display = "";
+    G.panel.classList.add("is-show");
     G.panel.textContent = "";
 
     var card = el("div", "mc-photo-card");
