@@ -120,17 +120,19 @@
       lv: loadLv(), grid: null, started: false, over: false,
       flags: 0, revealed: 0, sec: 0, tick: null, firstClick: null
     };
-    M.close = function () {
-      if (!M) return;
-      M.over = true;
-      if (M.tick) { clearInterval(M.tick); M.tick = null; }
-      var o = document.getElementById("ms-game"); if (o) o.remove();
-      document.body.style.overflow = "";
-      M = null;
-    };
+      M.close = function () {
+        if (!M) return;
+        M.over = true;
+        if (M.tick) { clearInterval(M.tick); M.tick = null; }
+        if (M.key) document.removeEventListener("keydown", M.key);
+        var o = document.getElementById("ms-game"); if (o) o.remove();
+        document.body.style.overflow = "";
+        M = null;
+      };
+      M.key = function (e) { if (e.key === "Escape" && M) M.close(); };
+      document.addEventListener("keydown", M.key);
     ov.addEventListener("click", function (e) { if (e.target === ov && M) M.close(); });
     M.onKey = function (e) { if (e.key === "Escape" && M) M.close(); };
-    document.addEventListener("keydown", M.onKey);
     showCard(M.lv);
   }
 
@@ -351,14 +353,7 @@
         (function (rr, cc) {
           d.addEventListener("click", function (e) { reveal(rr, cc); });
           d.addEventListener("contextmenu", function (e) { e.preventDefault(); toggleFlag(rr, cc); });
-          var hold = null;
-          d.addEventListener("pointerdown", function (e) {
-            if (e.pointerType !== "touch") return;
-            hold = setTimeout(function () { toggleFlag(rr, cc); hold = "done"; }, 430);
-          });
-          function cancel() { if (hold && hold !== "done") clearTimeout(hold); hold = null; }
-          d.addEventListener("pointerup", cancel);
-          d.addEventListener("pointerleave", cancel);
+          // 触屏长按由浏览器原生派发 contextmenu，统一走上面那条路径（不再叠加自定义 timer，避免双插旗）
         })(r, c);
         frag.appendChild(d);
       }

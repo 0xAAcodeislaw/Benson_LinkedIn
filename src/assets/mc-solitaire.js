@@ -70,7 +70,9 @@
     S = { ov:ov, frame:frame, stock:stock, waste:waste, found:found, tableau:tableau, panel:panel,
       badge:badge, statEl:stat, clockEl:clock, lv:loadLv(), deck:[], stockPile:[], wastePile:[], foundPile:[], cols:[],
       sel:null, moves:0, sec:0, over:false, timer:null };
-    S.close = function () { if (!S) return; S.over = true; if (S.timer) { clearInterval(S.timer); S.timer = null; } var o = document.getElementById("sl-game"); if (o) o.remove(); document.body.style.overflow = ""; S = null; };
+    S.close = function () { if (!S) return; S.over = true; if (S.timer) { clearInterval(S.timer); S.timer = null; } if (S.key) document.removeEventListener("keydown", S.key); var o = document.getElementById("sl-game"); if (o) o.remove(); document.body.style.overflow = ""; S = null; };
+    S.key = function (e) { if (e.key === "Escape" && S) S.close(); };
+    document.addEventListener("keydown", S.key);
     ov.addEventListener("click", function (e) { if (e.target === ov && S) S.close(); });
     showCard(S.lv);
   }
@@ -94,6 +96,7 @@
     SUITS.forEach(function (s) { for (var r = 1; r <= 13; r++) deck.push({ suit:s, rank:r, face:rankStr(r), up:false }); });
     for (var i = deck.length - 1; i > 0; i--) { var j = Math.floor(Math.random()*(i+1)); var t = deck[i]; deck[i] = deck[j]; deck[j] = t; }
     S.deck = deck; S.stockPile = []; S.wastePile = []; S.foundPile = [[],[],[],[]]; S.cols = [];
+    S.lv = lv;   // 必须更新：否则关卡时限/存档/横幅都用旧关卡号
     S.moves = 0; S.sec = 0; S.over = false; S.sel = null;
     for (var c = 0; c < 7; c++) {
       var col = [];
@@ -107,6 +110,7 @@
   }
   function draw() {
     if (!S || S.over) return;
+    S.sel = null; // 抽牌即取消选择（否则 removeSel 会 pop 错牌）
     if (!S.stockPile.length) { // 回收
       while (S.wastePile.length) { var w = S.wastePile.pop(); w.up = false; S.stockPile.push(w); }
       SFX.flip();
@@ -151,13 +155,18 @@
     if (!S || !S.sel || S.over) return;
     var card = S.sel.card;
     if (SUITS.indexOf(card.suit) !== si) { SFX.move(); return; }
-    if (canFound(card, S.foundPile[si])) {
+    if (canFound(card, si)) {
       removeSel(); S.foundPile[si].push(card); card.up = true;
       S.moves++; S.statEl.textContent = "Moves: " + S.moves; SFX.clear(); render(); checkWin();
     }
   }
   function removeSel() {
     var s = S.sel;
+    if (!s) return;
+    // 防御：目标堆顶必须仍是选中的牌，否则直接取消（防止换牌/抽牌后 pop 错牌）
+    if (s.loc === "waste" && S.wastePile[S.wastePile.length - 1] !== s.card) { S.sel = null; return; }
+    if (s.loc === "col" && S.cols[s.idx][S.cols[s.idx].length - 1] !== s.card) { S.sel = null; return; }
+    if (s.loc === "found" && S.foundPile[s.idx][S.foundPile[s.idx].length - 1] !== s.card) { S.sel = null; return; }
     if (s.loc === "waste") S.wastePile.pop();
     else if (s.loc === "col") S.cols[s.idx].pop();
     else if (s.loc === "found") S.foundPile[s.idx].pop();

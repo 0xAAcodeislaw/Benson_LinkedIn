@@ -129,8 +129,8 @@
     return false;
   }
   function spawn() {
-    A.next = rand();
-    var k = A.next; A.cur = { k: k, m: copy(SH[k]), r: 0, c: Math.floor((10 - SH[k][0].length) / 2) };
+    var k = A.next || rand(); // 当前方块用已显示的预览（否则 Next 提示永远不兑现）
+    A.cur = { k: k, m: copy(SH[k]), r: 0, c: Math.floor((10 - SH[k][0].length) / 2) };
     A.next = rand();
     if (hit(A.cur.m, A.cur.r, A.cur.c)) over();
     render();
@@ -147,22 +147,25 @@
     A.timer = setInterval(function () { if (A && !A.over && !A.panel.classList.contains("is-show")) step(false); }, LV[lv - 1].speed);
     render();
   }
-  function mv(d) { if (!A || !A.cur || A.over) return; if (!hit(A.cur.m, A.cur.r, A.cur.c + d)) { A.cur.c += d; render(); } }
+  function mv(d) { if (!A || !A.cur || A.over || A.locking) return; if (!hit(A.cur.m, A.cur.r, A.cur.c + d)) { A.cur.c += d; render(); } }
   function rot() {
-    if (!A || !A.cur || A.over) return;
+    if (!A || !A.cur || A.over || A.locking) return;
     var m = A.cur.m, rm = [];
     for (var j = 0; j < m[0].length; j++) { rm.push([]); for (var i = m.length - 1; i >= 0; i--) rm[j].push(m[i][j]); }
     var offs = [0,-1,1,-2,2];
     for (var k = 0; k < offs.length; k++) if (!hit(rm, A.cur.r, A.cur.c + offs[k])) { A.cur.m = rm; A.cur.c += offs[k]; SFX.tick(); render(); return; }
   }
   function step(soft) {
-    if (!A || !A.cur || A.over) return;
+    if (!A || !A.cur || A.over || A.locking) return;
     if (!hit(A.cur.m, A.cur.r + 1, A.cur.c)) { A.cur.r++; if (soft) A.score += 1; render(); }
     else lock();
   }
-  function hard() { if (!A || !A.cur || A.over) return; var n = 0; while (!hit(A.cur.m, A.cur.r + 1, A.cur.c)) { A.cur.r++; n++; } A.score += n * 2; lock(); }
+  function hard() { if (!A || !A.cur || A.over || A.locking) return; var n = 0; while (!hit(A.cur.m, A.cur.r + 1, A.cur.c)) { A.cur.r++; n++; } A.score += n * 2; lock(); }
   function lock() {
+    if (!A || !A.cur || A.locking) return;
     var m = A.cur.m, r = A.cur.r, c = A.cur.c, k = A.cur.k;
+    A.cur = null; // 立即锁定：清行动画窗口内输入自然失效（防重入 lock）
+    A.locking = true;
     for (var i = 0; i < m.length; i++) for (var j = 0; j < m[i].length; j++) if (m[i][j] && r + i >= 0) A.g[r + i][c + j] = k;
     SFX.tap();
     var full = [];
@@ -172,16 +175,18 @@
       full.forEach(function (fr) { for (var cc = 0; cc < 10; cc++) A.g[fr][cc] = "CLEAR"; });
       render(); SFX.clear();
       var self = full.slice();
+      var snapshot = A; // 捕获本局实例：窗口内关闭再重开时旧回调不污染新局
       setTimeout(function () {
-        if (!A) return;
+        if (A !== snapshot || !A || A.over) return;
+        A.locking = false;
         self.sort(function (a,b) { return a-b; }).forEach(function (fr) { A.g.splice(fr,1); A.g.unshift(new Array(10).fill(0)); });
         A.lines += self.length;
         A.linesEl.textContent = "Lines / \u884C: " + A.lines + "/" + LV[A.lv - 1].lines;
         A.scoreEl.textContent = "Score / \u5206: " + A.score;
         if (A.lines >= LV[A.lv - 1].lines) { clearlv(); return; }
-        A.cur = null; spawn();
+        spawn();
       }, 130);
-    } else { A.scoreEl.textContent = "Score / \u5206: " + A.score; spawn(); }
+    } else { A.locking = false; A.scoreEl.textContent = "Score / \u5206: " + A.score; spawn(); }
   }
   function over() {
     if (!A) return; A.over = true;

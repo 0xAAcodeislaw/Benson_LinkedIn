@@ -219,7 +219,7 @@
     src.connect(f); f.connect(g); g.connect(audio.master || c.destination); src.start();
   }
   // 碎裂音按材质分级：软块轻快、石头厚、深板岩闷响
-  var BREAK_PITCH = { grass: 1500, dirt: 1300, stone: 900, coal: 850, gem: 2600, deepslate: 620, camera: 1100, phone: 500 };
+  var BREAK_PITCH = { grass: 1500, dirt: 1300, stone: 900, coal: 850, gem: 2600, deepslate: 620, obsidian: 420, camera: 1100, phone: 500 };
   var SFX = {
     tap:    function () { noise(0.05, 0.09, 1200 + Math.random() * 400); }, // 随机音高避免单调
     crack:  function (freq) { noise(0.04, 0.07, freq || 2200); },
@@ -644,7 +644,7 @@
       "① 点方块 = 挖。硬度不同敲的次数不同：草/泥 1 下、石头/煤矿/相机 2 下、深板岩/电话 3 下（点击: 1 hit for grass & dirt, 2 for stone/coal/camera, 3 for deepslate/phone）",
       "② 只能挖「露出来」的方块：最表层，或紧挨着已挖开的洞 —— 和 Minecraft 一样（Only exposed blocks can be dug, just like Minecraft）",
       "③ 键盘党：WASD/方向键移动黄色光标，空格挖掘（Keyboard: WASD/arrows to move cursor, Space to dig）",
-      "④ 挖到品红相机方块 \u{1F4F7} = 得一张像素靓照，共 19 关 19 张；第 20 关挖出金色电话 \u260E = 求职者电话号码！"
+      "④ 挖到品红相机方块 \u{1F4F7} = 得一张像素靓照，共 18 张靓照；第 20 关挖出金色电话 \u260E = 求职者电话号码！"
     ].forEach(function (t) { steps.appendChild(el("li", null, t)); });
     card.appendChild(steps);
 
@@ -673,9 +673,9 @@
     var tutStop = false;
     var seq = [
       { r: 0, c: 1, type: "grass",   hits: 1, say: "点草方块… 1 下就碎！ / Click grass… 1 hit!" },
-      { r: 1, c: 1, type: "dirt",    hits: 1, say: "露出来的泥土也能直接挖 / Exposed dirt is diggable" },
+      { r: 2, c: 1, type: "dirt",    hits: 1, say: "露出来的泥土也能直接挖 / Exposed dirt is diggable" },
       { r: 0, c: 3, type: "stone",   hits: 2, say: "石头要敲 2 下：裂纹→碎 / Stone needs 2 hits: crack → break" },
-      { r: 1, c: 2, type: "camera",  hits: 2, say: "品红相机方块！挖到 = 得靓照 \u{1F4F7} / Pink camera = a photo!" }
+      { r: 1, c: 1, type: "camera",  hits: 2, say: "品红相机方块！挖到 = 得靓照 \u{1F4F7} / Pink camera = a photo!" }
     ];
     function cellAt(r, c) { return tutCells[r * 4 + c]; }
     function runStep(i) {
@@ -900,7 +900,7 @@
       };
       document.addEventListener("keydown", G.onKey);
     }
-    attachGridInput(G);
+    attachGridInput(G); // 幂等：同一 grid 只绑一次（曾每关重复绑定，一次点击扣 N 次硬度）
   }
 
   function render(dropIn) {
@@ -950,6 +950,8 @@
   // 挖掘输入：按下即挖一下，按住不放 = 每 280ms 连挖（Minecraft 手感）
   // 用 pointerdown（鼠标/触屏统一），不用 click 避免连点双倍伤害
   function attachGridInput(G) {
+    if (G.gridInputBound) return; // 防重复绑定（grid 跨关复用）
+    G.gridInputBound = true;
     var holdTimer = null;
     var px = null, py = null;
     function stopHold() { if (holdTimer) { clearInterval(holdTimer); holdTimer = null; px = null; py = null; } }
@@ -1048,6 +1050,7 @@
       if (cellEl) { cellEl.classList.add("is-cracking"); cellEl.dataset.hits = String(G.hpMap[r][c]); }
       return;
     }
+    var cellRect = cellEl ? cellEl.getBoundingClientRect() : null; // render() 前缓存：render 会重建格子，之后 rect 全 0
     var drop = BLOCKS[type].drop;
     var color = BLOCKS[type].color;
     G.cells[r][c] = "air";
@@ -1058,11 +1061,10 @@
     if (type === "deepslate" || type === "phone") fxShake();
     if (type === "gem") { // 钻石彩蛋方块：烟花 + 成就
       SFX.gem();
-      if (cellEl) {
-        var gr2 = cellEl.getBoundingClientRect();
-        fxFirework(gr2.left + gr2.width / 2, gr2.top + gr2.height / 2,
-          ["#4fd8ff", "#ffffff", "#ffff55", "#bfe9ff"], 16, 1.2);
-      }
+    if (cellRect) {
+      fxFirework(cellRect.left + cellRect.width / 2, cellRect.top + cellRect.height / 2,
+        ["#4fd8ff", "#ffffff", "#ffff55", "#bfe9ff"], 16, 1.2);
+    }
       toast("\u{1F48E}", "DIAMONDS! / 挖到钻石！", "Shiny bonus find / 意外的宝贝");
       try { localStorage.setItem("mc_gems", String(Number(localStorage.getItem("mc_gems") || 0) + 1)); } catch (e) {}
     }
@@ -1070,15 +1072,14 @@
     if (type === "camera" || type === "phone") {
       var won = type === "phone";
       if (won) {
-        fxGoldRipple(cellEl);
+        fxGoldRipple(cellRect); // 用缓存坐标（cellEl 已在 render 中脱离文档）
         saveProgress(G.level + 1); // 篇章终关（L10→11 / L20→封顶20）
         if (G.level === 20) { try { localStorage.setItem(DONE_KEY, "1"); } catch (e) {} }
         showFinale(G.level); // 大祝贺 + 礼花秀，谢幕后自动进入电话卡
       } else {
         // 相机方块 = 宝！原地粉紫烟花 + 快门白闪；靓照编号 = 已收集数
-        if (cellEl) {
-          var gr3 = cellEl.getBoundingClientRect();
-          fxFirework(gr3.left + gr3.width / 2, gr3.top + gr3.height / 2,
+        if (cellRect) {
+          fxFirework(cellRect.left + cellRect.width / 2, cellRect.top + cellRect.height / 2,
             ["#d946ef", "#f0abfc", "#ffff55", "#ffffff"], 16, 1.1);
         }
         fxFlash();
@@ -1293,7 +1294,7 @@
       box.appendChild(im);
       wall.appendChild(box);
     });
-    card.appendChild(el("div", "mc-lc-sub", "\u{1F4F8} Collected photos / 靓照图鉴 19/19"));
+    card.appendChild(el("div", "mc-lc-sub", "\u{1F4F8} Collected photos / 靓照图鉴 18/18"));
     card.appendChild(wall);
 
     card.appendChild(el("div", "mc-ach-desc mc-win-hint",
