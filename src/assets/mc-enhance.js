@@ -857,6 +857,15 @@
           return;
         }
         var k = e.key.toLowerCase();
+        var isOp = k === " " || k === "enter" || k === "w" || k === "a" || k === "s" || k === "d" ||
+          k === "arrowup" || k === "arrowleft" || k === "arrowdown" || k === "arrowright";
+        if (G.counting && isOp) { // 键盘操作键同样可跳过倒计时（与鼠标一致），否则输入被静默吞掉
+          G.counting = false;
+          if (G.cdIv) { clearInterval(G.cdIv); G.cdIv = null; }
+          var cd = G.frame.querySelector(".mc-countdown");
+          if (cd) cd.remove();
+          if (!G.t0) G.t0 = Date.now();
+        }
         var map = { w: [-1, 0], a: [0, -1], s: [1, 0], d: [0, 1], arrowup: [-1, 0], arrowleft: [0, -1], arrowdown: [1, 0], arrowright: [0, 1] };
         if (map[k]) { e.preventDefault(); moveCursor(map[k][0], map[k][1]); }
         else if (k === " " || k === "enter") { e.preventDefault(); digCell(G.cursor.r, G.cursor.c); } // 空格按住 = 系统自带重复
