@@ -1390,3 +1390,107 @@ body { padding-bottom: 76px !important; }
   55% { opacity: 1; }
   100% { transform: translate(var(--dx), var(--dy)) scale(.3); opacity: 0; }
 }
+
+/* ===== 第二篇章：黑曜石方块（hp4，敲 4 下） ===== */
+.mc-cell-obsidian {
+  background: #1b1023 !important;
+  background-image:
+    linear-gradient(135deg, rgba(180,130,255,.28) 0 14%, transparent 14% 46%, rgba(90,50,150,.32) 46% 58%, transparent 58%),
+    repeating-linear-gradient(90deg, transparent 0 5px, rgba(140,90,220,.14) 5px 7px),
+    repeating-linear-gradient(0deg, transparent 0 6px, rgba(0,0,0,.28) 6px 9px) !important;
+  box-shadow: inset 0 2px 0 rgba(190,140,255,.22), inset 0 -3px 0 rgba(0,0,0,.55), 0 0 6px rgba(120,70,200,.18) !important;
+}
+
+/* ===== 彩蛋游戏②：扫雷 10 关 ===== */
+.ms-btn {
+  background: none; border: none; font-size: 16px; cursor: pointer;
+  padding: 0 4px; line-height: 1;
+}
+.ms-reset { background: none; border: none; font-size: 14px; color: #3d2c15; cursor: pointer; }
+.ms-frame { max-width: 760px; width: 94vw; }
+.ms-board {
+  display: grid;
+  gap: 2px;
+  background: #2a1d0e;
+  border: 4px solid #3d2c15;
+  padding: 3px;
+  margin: 8px auto;
+  width: fit-content;
+  image-rendering: pixelated;
+}
+.ms-cell {
+  width: 34px; height: 34px;
+  background: #6b8c3a;
+  border: 2px solid;
+  border-color: #9fd45e #2e4a18 #2e4a18 #9fd45e;
+  font-family: "MinecraftPixel", monospace !important;
+  font-size: 12px !important;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  color: #fff;
+}
+.ms-cell:hover { filter: brightness(1.18); }
+.ms-cell.is-open {
+  background: #c9b78c;
+  border: 1px solid #8a7959;
+  cursor: default;
+}
+.ms-cell.is-flag { color: #ff5555; }
+.ms-cell.is-boom { background: #b3261e !important; }
+.ms-cell.n1 { color: #1e4fd8 !important; }
+.ms-cell.n2 { color: #2e7d32 !important; }
+.ms-cell.n3 { color: #c62828 !important; }
+.ms-cell.n4 { color: #6a1b9a !important; }
+.ms-cell.n5 { color: #8d4a00 !important; }
+.ms-cell.n6 { color: #00796b !important; }
+.ms-timer { font-size: 10px !important; color: #8a6d3b !important; }
+.ms-confetti {
+  position: fixed; top: -10px; width: 7px; height: 7px;
+  z-index: 9992; pointer-events: none;
+  animation: mc-confetti 1.6s linear forwards;
+}
+@media (max-width: 640px) { .ms-cell { width: 26px; height: 26px; font-size: 9px !important; } }
+
+/* ===== 彩蛋③：俄罗斯方块 10 关 ===== */
+.tt-btn { background: none; border: none; font-size: 16px; cursor: pointer; padding: 0 4px; }
+.tt-frame { width: 94vw; max-width: 660px; }
+.tt-playrow { display: flex; gap: 12px; justify-content: center; align-items: flex-start; }
+.tt-board {
+  display: grid; grid-template-columns: repeat(10, 1fr); gap: 1px;
+  background: #1a140c; border: 4px solid #3d2c15; padding: 2px;
+}
+.tt-cell { width: 20px; height: 20px; background: #221a10; box-shadow: inset 0 0 0 1px rgba(255,255,255,.04); }
+.tt-cell.on { box-shadow: inset 2px 2px 0 rgba(255,255,255,.4), inset -2px -2px 0 rgba(0,0,0,.4); }
+.tt-cell.cur { filter: brightness(1.25); }
+.tt-cell.is-clear { background: #ffff55 !important; animation: mc-inv-pop .12s steps(2) infinite; }
+.tt-side { display: flex; flex-direction: column; gap: 8px; }
+.tt-next { display: grid; grid-template-columns: repeat(4, 16px); grid-auto-rows: 16px; gap: 1px; background: #1a140c; border: 3px solid #3d2c15; padding: 4px; width: fit-content; }
+.tt-pad { display: grid; grid-template-columns: repeat(3, 34px); gap: 4px; }
+.tt-padbtn {
+  font-family: "MinecraftPixel", monospace !important; font-size: 12px !important;
+  background: #5a4526; color: #fff8e1; border: 2px solid #3d2c15; cursor: pointer;
+  min-height: 32px;
+}
+.tt-padbtn:active { background: #7cc94a; }
+@media (max-width: 640px) { .tt-cell { width: 15px; height: 15px; } .tt-padbtn { min-height: 40px; } }
+
+/* ===== 彩蛋④：纸牌接龙 10 关 ===== */
+.sl-btn { background: none; border: none; font-size: 16px; cursor: pointer; padding: 0 4px; }
+.sl-frame { width: 94vw; max-width: 780px; }
+.sl-top { display: flex; gap: 12px; align-items: flex-start; margin-bottom: 12px; flex-wrap: wrap; }
+.sl-stock, .sl-waste { min-width: 64px; min-height: 90px; }
+.sl-foundations, .sl-tableau { display: flex; gap: 8px; flex-wrap: wrap; }
+.sl-tableau { justify-content: center; }
+.sl-col { width: 72px; min-height: 120px; position: relative; }
+.sl-card {
+  width: 64px; height: 90px;
+  background: #fff8e1; border: 2px solid #3d2c15;
+  box-shadow: 2px 2px 0 rgba(0,0,0,.4);
+  font-family: "MinecraftPixel", monospace !important; font-size: 12px !important;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; position: relative; user-select: none;
+}
+.sl-card.sl-back { background: #3d2c15; color: #f0b90b; }
+.sl-card.sl-empty { background: rgba(255,255,255,.12); border-style: dashed; color: rgba(255,255,255,.3); }
+.sl-card.is-sel { outline: 3px solid #ffff55; outline-offset: 1px; }
+@media (max-width: 640px) { .sl-card { width: 44px; height: 64px; font-size: 9px !important; } .sl-col { width: 50px; } }

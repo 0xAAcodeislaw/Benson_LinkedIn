@@ -173,9 +173,9 @@
   //   点击 = 挖掘（硬度不同敲的次数不同）；WASD/方向键 = 移动光标；空格 = 挖掘。
   //   只能挖「暴露」的方块：表层，或紧挨着已挖开的洞。
   //   挖到品红「相机方块」📷 = 解锁一张像素靓照；第 10 关挖金色「电话方块」☎ = 电话号码。
-  var PROGRESS_KEY = "mc_dig_lv";     // 已通到第几关（1~10）
+  var PROGRESS_KEY = "mc_dig_lv";     // 已通到第几关（1~20）
   var SEEN_TUT_KEY = "mc_dig_seen";   // 是否看过教学
-  var DONE_KEY = "mc_dig_done";       // 是否通关过第 10 关
+  var DONE_KEY = "mc_dig_done";       // 是否通关过第 20 关
 
   // ---- 音效引擎：Web Audio 合成，零资源文件；首次交互后自动解锁 ----
   var audio = { ctx: null, master: null, on: null };
@@ -332,6 +332,7 @@
     coal:      { hp: 2, drop: "Coal / 煤矿",       cn: "煤矿",  color: "#565656" },
     deepslate: { hp: 3, drop: "Deepslate / 深板岩", cn: "深板岩", color: "#484850" },
     gem:       { hp: 2, drop: "Diamond / 钻石",     cn: "钻石",  color: "#4fd8ff" },
+    obsidian:  { hp: 4, drop: "Obsidian / 黑曜石",  cn: "黑曜石", color: "#2a1a3e" },
     camera:    { hp: 2, drop: "Camera / 相机方块",  cn: "相机",  color: "#d946ef" },
     phone:     { hp: 3, drop: "Phone / 电话方块",   cn: "电话",  color: "#f0b90b" }
   };
@@ -346,7 +347,17 @@
     { name: "幽深矿洞 · Deep Cave",        icon: "\u{1F576}\uFE0F", stars: 3, tip: "相机在下层，可能需要挖两条竖井。深板岩敲 3 下，要有耐心。", log: "矿工日志：越往深处越安静，只听得见自己的呼吸。",            cols: 14, rows: 9,  goalMin: 6, goalMax: 7, rock: "hard" },
     { name: "岩石迷宫 · Rock Maze",        icon: "\u{1F9EE}", stars: 3, tip: "地图更大、埋得更深。先下后横，路过煤矿顺手拿。",             log: "矿工日志：在这里迷路的矿工，都成了地图的一部分。",                  cols: 14, rows: 10, goalMin: 6, goalMax: 8, rock: "hard" },
     { name: "最后一张照片 · Last Photo",   icon: "\u{1F4F8}", stars: 3, tip: "第 9 张靓照就在下面！挖到它，下一关就是终极电话。",           log: "矿工日志：相册快满了，最后一页留给金色。",                          cols: 15, rows: 10, goalMin: 7, goalMax: 8, rock: "hard" },
-    { name: "金色电话 · The Golden Phone", icon: "\u260E",    stars: 3, tip: "最后一关！金色电话方块埋在最底层。挖穿整个世界，拿到求职者的电话号码！", log: "矿工日志：传说最深处埋着一台会响的电话。",                  cols: 16, rows: 11, goalMin: 9, goalMax: 9, rock: "hard" }
+    { name: "金色电话 · The Golden Phone", icon: "\u260E",    stars: 3, tip: "第一篇章终关！金色电话方块埋在最底层。挖穿整个世界，拿到求职者的电话号码！", log: "矿工日志：传说最深处埋着一台会响的电话。",                        cols: 16, rows: 11, goalMin: 9,  goalMax: 9,  rock: "hard" },
+    { name: "观测台 · The Lookout",        icon: "\u{1F50D}", stars: 3, tip: "第二篇章开启！更大、更深，也出现了新的挑战。",                 log: "矿工日志：第一篇章的奖杯还在包里叮当作响。",                      cols: 14, rows: 10, goalMin: 7,  goalMax: 8,  rock: "hard" },
+    { name: "双子矿脉 · Twin Veins",       icon: "\u26CF",    stars: 3, tip: "两条矿脉交错。深板岩敲 3 下，耐心是唯一攻略。",               log: "矿工日志：左手煤，右手石，哪条都不亏。",                          cols: 15, rows: 10, goalMin: 7,  goalMax: 8,  rock: "hard" },
+    { name: "岩浆房 · Magma Hall",         icon: "\u{1F525}", stars: 3, tip: "越深越热。相机会藏在最难啃的那一层。",                       log: "矿工日志：汗滴进眼睛里，比岩浆还烫。",                            cols: 15, rows: 11, goalMin: 8,  goalMax: 9,  rock: "hard" },
+    { name: "水晶洞 · Crystal Cave",       icon: "\u{1F48E}", stars: 3, tip: "钻石概率提升的洞窟！顺手敲两下就是收藏品。",                 log: "矿工日志：洞壁上的反光，让人忘记疲惫。",                          cols: 16, rows: 11, goalMin: 8,  goalMax: 9,  rock: "hard" },
+    { name: "黑曜石门 · Obsidian Gate",    icon: "\u{1F576}\uFE0F", stars: 3, tip: "警告：黑曜石出现 —— 要敲 4 下！按住连挖是唯一正解。",   log: "矿工日志：黑得发亮的石头，硬得像拒绝信。",                        cols: 16, rows: 11, goalMin: 9,  goalMax: 9,  rock: "deep" },
+    { name: "无底竖井 · Bottomless",       icon: "\u{1F30A}", stars: 3, tip: "深不见底。选好井位，一挖到底别回头。",                       log: "矿工日志：往下看是深渊，往上看是来路。",                          cols: 17, rows: 12, goalMin: 9,  goalMax: 10, rock: "deep" },
+    { name: "遗失神殿 · Lost Temple",      icon: "\u{1F3DB}\uFE0F", stars: 3, tip: "神殿地基全是黑曜石。相机埋在神殿之心。",               log: "矿工日志：墙上刻着：财务自由者止步。",                            cols: 17, rows: 12, goalMin: 10, goalMax: 10, rock: "deep" },
+    { name: "星辰之层 · Star Stratum",     icon: "\u2B50",    stars: 3, tip: "矿层里有星光碎屑。黑曜石与煤矿交错成阵。",                   log: "矿工日志：这一层的黑曜石，亮得像夜空。",                          cols: 18, rows: 12, goalMin: 10, goalMax: 11, rock: "deep" },
+    { name: "皇冠密室 · Crown Vault",      icon: "\u{1F451}", stars: 3, tip: "倒数第二关！最后一张靓照就埋在皇冠之下。",                   log: "矿工日志：皇冠之下，不是王座，是电话。",                          cols: 18, rows: 12, goalMin: 11, goalMax: 11, rock: "deep" },
+    { name: "终极电话 · The Ultimate Phone", icon: "\u260E",  stars: 3, tip: "最终关！二十关的终点。挖穿一切，让那台电话响起来！",         log: "矿工日志：所有篇章，都在此刻合而为一。",                          cols: 19, rows: 13, goalMin: 11, goalMax: 12, rock: "deep" }
   ];
 
   // 1-9 关的像素靓照风格：同一张头像，不同像素尺寸 + 滤镜（滤镜用 CSS，兼容所有浏览器）
@@ -359,15 +370,23 @@
     { name: "Negative / 负片",     size: 24, filter: "invert(1)" },
     { name: "Emerald / 翡翠",      size: 16, filter: "hue-rotate(90deg) saturate(1.9)" },
     { name: "Royal Gold / 鎏金",   size: 24, filter: "sepia(1) saturate(3.2) hue-rotate(-10deg) brightness(1.08)" },
-    { name: "Blossom / 樱花",      size: 32, filter: "hue-rotate(300deg) saturate(1.6) brightness(1.1)" }
+    { name: "Blossom / 樱花",      size: 32, filter: "hue-rotate(300deg) saturate(1.6) brightness(1.1)" },
+    { name: "Aqua / 水蓝",         size: 16, filter: "hue-rotate(180deg) saturate(1.5)" },
+    { name: "Neon / 霓虹",         size: 24, filter: "saturate(2.6) contrast(1.35)" },
+    { name: "Mono / 黑白经典",     size: 32, filter: "grayscale(1) contrast(1.2)" },
+    { name: "Frost / 冰霜",        size: 24, filter: "hue-rotate(160deg) brightness(1.2) saturate(1.3)" },
+    { name: "Lava / 熔岩",         size: 24, filter: "sepia(1) hue-rotate(-30deg) saturate(3)" },
+    { name: "Toxic / 毒液",        size: 16, filter: "hue-rotate(60deg) saturate(2) brightness(1.08)" },
+    { name: "Candy / 糖果",        size: 32, filter: "hue-rotate(330deg) saturate(1.8) brightness(1.15)" },
+    { name: "Ultimate / 终极",     size: 64, filter: "contrast(1.35) saturate(1.5)" }
   ];
 
   function loadProgress() {
     var n = Number(localStorage.getItem(PROGRESS_KEY) || 1);
-    return Math.min(10, Math.max(1, n));
+    return Math.min(20, Math.max(1, n));
   }
   function saveProgress(lv) {
-    try { localStorage.setItem(PROGRESS_KEY, String(Math.min(10, lv))); } catch (e) {}
+    try { localStorage.setItem(PROGRESS_KEY, String(Math.min(20, lv))); } catch (e) {}
   }
 
   function readPhone() {
@@ -389,7 +408,7 @@
     var btn = document.createElement("button");
     btn.type = "button";
     btn.className = "mc-easter-btn";
-    btn.title = "Easter egg: 10-level mining game / 彩蛋闯关小游戏";
+    btn.title = "Easter egg: 20-level mining game / 彩蛋闯关小游戏";
     btn.setAttribute("aria-label", "Easter egg: mining game");
     btn.textContent = "\u26CF";
     var clicks10 = 0, clicksTimer = null;
@@ -575,19 +594,19 @@
   function updateHud() {
     if (!G) return;
     var def = LEVELS[G.level - 1];
-    G.lvBadge.textContent = "Lv " + G.level + "/10 · " + def.name;
-    // 照片进度点：9 张照片 + 1 个电话
+    G.lvBadge.textContent = "Lv " + G.level + "/20 · " + def.name;
+    // 照片进度点：19 张照片 + 1 个电话
     G.dots.textContent = "";
-    for (var i = 1; i <= 10; i++) {
+    for (var i = 1; i <= 20; i++) {
       var d = el("span", "mc-dot" + (i < G.level ? " is-on" : ""));
-      d.textContent = i < 10 ? "\u25A0" : "\u260E";
+      d.textContent = i < 20 ? "\u25A0" : "\u260E";
       G.dots.appendChild(d);
     }
-    var goalTxt = G.level < 10
+    var goalTxt = G.level < 20
       ? "Goal / 目标: dig the pink camera block \u{1F4F7} / 挖出品红相机方块"
       : "Goal / 目标: dig the golden phone \u260E / 挖出金色电话方块";
     G.goal.textContent = goalTxt;
-    if (G.totalfill) G.totalfill.style.width = (G.level / 10 * 100) + "%";
+    if (G.totalfill) G.totalfill.style.width = (G.level / 20 * 100) + "%";
   }
 
   // ---- 教学面板（含自动演示动画） ----
@@ -625,7 +644,7 @@
       "① 点方块 = 挖。硬度不同敲的次数不同：草/泥 1 下、石头/煤矿/相机 2 下、深板岩/电话 3 下（点击: 1 hit for grass & dirt, 2 for stone/coal/camera, 3 for deepslate/phone）",
       "② 只能挖「露出来」的方块：最表层，或紧挨着已挖开的洞 —— 和 Minecraft 一样（Only exposed blocks can be dug, just like Minecraft）",
       "③ 键盘党：WASD/方向键移动黄色光标，空格挖掘（Keyboard: WASD/arrows to move cursor, Space to dig）",
-      "④ 挖到品红相机方块 \u{1F4F7} = 得一张像素靓照，共 9 关 9 张；第 10 关挖出金色电话 \u260E = 求职者电话号码！"
+      "④ 挖到品红相机方块 \u{1F4F7} = 得一张像素靓照，共 19 关 19 张；第 20 关挖出金色电话 \u260E = 求职者电话号码！"
     ].forEach(function (t) { steps.appendChild(el("li", null, t)); });
     card.appendChild(steps);
 
@@ -704,8 +723,10 @@
     G.grid.style.display = "none";
 
     var card = el("div", "mc-level-card");
-    card.appendChild(el("div", "mc-lc-num", "LEVEL " + lv + " / 10" +
-      (lv < 10 ? " · 📸 靓照已收 " + (lv - 1) + "/9" : "")));
+    // 章节内已收靓照数（L10 是电话关，不计靓照）
+    var photos = lv <= 10 ? lv - 1 : Math.min(lv - 2, 18);
+    card.appendChild(el("div", "mc-lc-num", "LEVEL " + lv + " / 20" +
+      (lv !== 10 && lv < 20 ? " · 📸 靓照已收 " + photos + "/18" : (lv === 10 ? " · ⚑ 第一篇章终关" : ""))));
     card.appendChild(el("div", "mc-lc-name", def.icon + " " + def.name +
       " · " + "\u2605".repeat(def.stars)));
     card.appendChild(el("div", "mc-lc-tip", def.tip + " 小技巧：按住方块不放会连续挖！"));
@@ -718,15 +739,17 @@
 
     // 目标方块大图 + 说明
     var goalRow = el("div", "mc-lc-goal");
-    var goalBlock = el("div", "mc-lc-goal-block " + (lv < 10 ? "mc-cell-camera" : "mc-cell-phone"));
+    var goalBlock = el("div", "mc-lc-goal-block " + (lv === 10 || lv === 20 ? "mc-cell-phone" : "mc-cell-camera"));
     goalRow.appendChild(goalBlock);
-    var done10 = false;
-    try { done10 = lv === 10 && !!localStorage.getItem(DONE_KEY); } catch (e) {}
-    var goalTxt = lv < 10
-      ? "挖到「相机方块」📷 得到第 " + lv + " 张像素靓照（埋在第 " + (def.goalMin + 1) + "~" + (def.goalMax + 1) + " 层）"
-      : done10
-        ? "✅ 已通关！重玩可再看一次电话号码 —— 按住方块连挖更快"
-        : "挖穿最底层，找到「金色电话方块」☎ —— 得到求职者的电话号码！按住方块不放会连续挖";
+    var doneAll = false;
+    try { doneAll = lv === 20 && !!localStorage.getItem(DONE_KEY); } catch (e) {}
+    var goalTxt = lv === 10
+      ? "第一篇章终关：挖出「金色电话方块」☎ —— 然后进入第二篇章（11-19 关继续收集靓照）！"
+      : lv === 20
+        ? (doneAll
+          ? "✅ 已通关！重玩可再看一次电话号码 —— 按住方块连挖更快"
+          : "挖穿最底层，找到「金色电话方块」☎ —— 得到求职者的电话号码！按住方块不放会连续挖")
+      : "挖到「相机方块」📷 得到第 " + (photos + 1) + " 张像素靓照（埋在第 " + (def.goalMin + 1) + "~" + (def.goalMax + 1) + " 层）";
     goalRow.appendChild(el("span", "mc-lc-goal-txt", goalTxt));
     card.appendChild(goalRow);
 
@@ -734,11 +757,11 @@
     card.appendChild(el("div", "mc-lc-sub", "\u9009\u62E9\u5173\u5361 · Level select\uFF08\u70B9\u5DF2\u89E3\u9501\u7684\u5173\u53EF\u91CD\u73A9\uFF09"));
     var selRow = el("div", "mc-lc-select");
     var unlocked = loadProgress();
-    for (var i = 1; i <= 10; i++) {
+    for (var i = 1; i <= 20; i++) {
       (function (num) {
         var b = el("button", "mc-lv-pick" + (num <= unlocked ? " is-open" : "") + (num === lv ? " is-cur" : ""));
         b.type = "button";
-        b.textContent = num < 10 ? String(num) : "\u260E";
+        b.textContent = num === 20 ? "\u260E" : String(num);
         if (num <= unlocked) {
           b.title = "Level " + num;
           b.addEventListener("click", function () { SFX.click(); showLevelCard(num); });
@@ -808,6 +831,10 @@
         else if (def.rock === "mix") {
           if (r <= def.rows * 0.55) t = Math.random() < 0.18 ? "coal" : (Math.random() < 0.06 ? "gem" : "stone");
           else t = Math.random() < 0.15 ? "coal" : "deepslate";
+        } else if (def.rock === "deep") { // 第二篇章：黑曜石深层
+          if (r <= 3) t = Math.random() < 0.18 ? "coal" : (Math.random() < 0.05 ? "gem" : "stone");
+          else if (r <= 7) t = Math.random() < 0.15 ? "coal" : (Math.random() < 0.04 ? "gem" : "deepslate");
+          else t = Math.random() < 0.15 ? "coal" : (Math.random() < 0.06 ? "gem" : "obsidian");
         } else { // hard
           if (r <= 3) t = Math.random() < 0.18 ? "coal" : (Math.random() < 0.06 ? "gem" : "stone");
           else t = Math.random() < 0.18 ? "coal" : (Math.random() < 0.04 ? "gem" : "deepslate");
@@ -821,7 +848,7 @@
     // 目标方块：goalMin~goalMax 行内随机列（避开最左最右 2 列，保证可达）
     var gr = def.goalMin + Math.floor(Math.random() * (def.goalMax - def.goalMin + 1));
     var gc = 2 + Math.floor(Math.random() * (def.cols - 4));
-    var goalType = lv < 10 ? "camera" : "phone";
+    var goalType = (lv === 10 || lv === 20) ? "phone" : "camera"; // L10/L20 篇章终关=电话，其余=相机靓照
     cells[gr][gc] = goalType;
     hpMap[gr][gc] = BLOCKS[goalType].hp;
     G.goalPos = { r: gr, c: gc };
@@ -1044,11 +1071,11 @@
       var won = type === "phone";
       if (won) {
         fxGoldRipple(cellEl);
-        saveProgress(10); // 终关通关后停在 10，可重玩
-        try { localStorage.setItem(DONE_KEY, "1"); } catch (e) {}
-        showFinale(); // 大祝贺 + 礼花秀，谢幕后自动进入电话卡
+        saveProgress(G.level + 1); // 篇章终关（L10→11 / L20→封顶20）
+        if (G.level === 20) { try { localStorage.setItem(DONE_KEY, "1"); } catch (e) {} }
+        showFinale(G.level); // 大祝贺 + 礼花秀，谢幕后自动进入电话卡
       } else {
-        // 相机方块 = 宝！原地粉紫烟花 + 快门白闪
+        // 相机方块 = 宝！原地粉紫烟花 + 快门白闪；靓照编号 = 已收集数
         if (cellEl) {
           var gr3 = cellEl.getBoundingClientRect();
           fxFirework(gr3.left + gr3.width / 2, gr3.top + gr3.height / 2,
@@ -1057,7 +1084,8 @@
         fxFlash();
         SFX.shutter();
         saveProgress(G.level + 1);
-        showPhotoCard(G.level);
+        var photoN = G.level <= 10 ? G.level : Math.min(G.level - 1, 18); // L10 无靓照，L11 是第 10 张
+        showPhotoCard(G.level, photoN);
       }
     }
   }
@@ -1071,14 +1099,14 @@
   }
 
   // ---- 照片卡：拍立得风格 ----
-  function showPhotoCard(lv) {
+  function showPhotoCard(lv, photoN) {
     if (!G) return;
     G.grid.style.display = "none";
     G.panel.classList.add("is-show");
     G.panel.textContent = "";
-    var style = PHOTO_STYLES[lv - 1];
+    var style = PHOTO_STYLES[Math.max(0, Math.min(photoN - 1, PHOTO_STYLES.length - 1))] || PHOTO_STYLES[0];
     SFX.clear(); // 过关小调
-    SFX.note(lv - 1); // 音阶上行：第 N 张靓照 = 第 N 级音符
+    SFX.note(photoN - 1); // 音阶上行：第 N 张靓照 = 第 N 级音符
 
     var card = el("div", "mc-photo-card");
     card.appendChild(el("div", "mc-ach-title", "\u{1F4F8} New photo! / 新靓照到手！"));
@@ -1100,7 +1128,7 @@
         img.replaceWith(el("div", "mc-photo-fallback", "\u{1F4F8}"));
       }
     });
-    card.appendChild(el("div", "mc-photo-cap", "Photo " + lv + "/9 · " + style.name));
+    card.appendChild(el("div", "mc-photo-cap", "Photo " + photoN + "/18 · " + style.name));
 
     // 结算：用时 / 最佳纪录 / 星级
     var secs = (Date.now() - (G.t0 || Date.now())) / 1000;
@@ -1119,9 +1147,9 @@
 
     // 进度点
     var dots = el("div", "mc-dots mc-dots-big");
-    for (var i = 1; i <= 10; i++) {
+    for (var i = 1; i <= 20; i++) {
       var d = el("span", "mc-dot" + (i <= lv ? " is-on" : ""));
-      d.textContent = i < 10 ? "\u25A0" : "\u260E";
+      d.textContent = i < 20 ? "\u25A0" : "\u260E";
       dots.appendChild(d);
     }
     card.appendChild(dots);
@@ -1132,7 +1160,7 @@
     card.appendChild(el("div", "mc-lc-stat", "\u{1F392} \u672C\u5173\u6536\u83B7\uFF1A" + (haul.length ? haul.join(" \u00B7 ") : "--")));
 
     var btnRow = el("div", "mc-photo-btns");
-    var next = el("button", "mc-win-close", lv < 9 ? "下一关 Level " + (lv + 1) + " \u2192" : "最终关：金色电话 \u260E");
+    var next = el("button", "mc-win-close", lv < 19 ? "下一关 Level " + (lv + 1) + " \u2192" : "最终关：金色电话 \u260E");
     next.type = "button";
     next.addEventListener("click", function () { showLevelCard(lv + 1); });
     btnRow.appendChild(next);
@@ -1143,9 +1171,9 @@
     card.appendChild(btnRow);
 
     card.appendChild(el("div", "mc-ach-desc mc-win-hint",
-      lv < 9
-        ? "再挖 " + (9 - lv) + " 张，最后一关挖出电话号码！"
-        : "靓照集齐 9 张！最后一关：挖出金色电话 \u260E"));
+      photoN < 18
+        ? "再挖 " + (18 - photoN) + " 张，最终关挖出电话号码！"
+        : "靓照集齐 18 张！最终关：挖出金色电话 \u260E"));
 
     G.panel.appendChild(card);
     updateHud();
@@ -1163,13 +1191,15 @@
       }, 260);
     }, 520);
   }
-  function showFinale() {
+  function showFinale(lv) {
     SFX.win();
     setTimeout(function () { SFX.ach(); }, 900); // 双段号角
     var layer = el("div", "mc-finale");
     var banner = el("div", "mc-finale-banner");
     banner.appendChild(el("div", "mc-finale-title", "\u{1F389} CONGRATULATIONS! \u{1F389}"));
-    banner.appendChild(el("div", "mc-finale-sub", "\u5341\u5173\u5168\u901A \u00B7 ALL 10 LEVELS CLEAR!"));
+    banner.appendChild(el("div", "mc-finale-sub", lv === 20
+      ? "\u4E8C\u5341\u5173\u5168\u901A \u00B7 ALL 20 LEVELS CLEAR!"
+      : "\u7B2C\u4E00\u7BC7\u7AE0\u5B8C\u6210 \u00B7 CHAPTER 1 CLEAR!"));
     banner.appendChild(el("div", "mc-finale-sub mc-finale-sub2", "\u{1F386} \u793C\u82B1\u79C0 for the miner \u{1F386}"));
     layer.appendChild(banner);
     document.body.appendChild(layer);
@@ -1199,12 +1229,12 @@
     }
     setTimeout(function () {
       if (layer.parentNode) layer.remove();
-      showPhoneCard();
+      showPhoneCard(lv);
     }, 3800);
   }
 
   // ---- 终极奖励：电话号码 ----
-  function showPhoneCard() {
+  function showPhoneCard(lv) {
     if (!G) return;
     G.grid.style.display = "none";
     G.panel.classList.add("is-show");
@@ -1214,7 +1244,9 @@
 
     var card = el("div", "mc-photo-card");
     card.appendChild(el("div", "mc-ach-icon", "\u260E"));
-    card.appendChild(el("div", "mc-ach-title", "ALL 10 LEVELS CLEAR! / 十关全通！"));
+    card.appendChild(el("div", "mc-ach-title", lv === 20
+      ? "ALL 20 LEVELS CLEAR! / 二十关全通！"
+      : "CHAPTER 1 CLEAR! / 第一章通关！"));
     card.appendChild(el("div", "mc-ach-desc", "You dug out the phone! / 你挖到了求职者的电话："));
 
     var phoneRow = el("div", "mc-win-phone");
@@ -1230,9 +1262,9 @@
     card.appendChild(phoneRow);
 
     var dots = el("div", "mc-dots mc-dots-big");
-    for (var i = 1; i <= 10; i++) {
+    for (var i = 1; i <= 20; i++) {
       var d = el("span", "mc-dot is-on");
-      d.textContent = i < 10 ? "\u25A0" : "\u260E";
+      d.textContent = i < 20 ? "\u25A0" : "\u260E";
       dots.appendChild(d);
     }
     card.appendChild(dots);
@@ -1261,11 +1293,11 @@
       box.appendChild(im);
       wall.appendChild(box);
     });
-    card.appendChild(el("div", "mc-lc-sub", "\u{1F4F8} Collected photos / 靓照图鉴 9/9"));
+    card.appendChild(el("div", "mc-lc-sub", "\u{1F4F8} Collected photos / 靓照图鉴 19/19"));
     card.appendChild(wall);
 
     card.appendChild(el("div", "mc-ach-desc mc-win-hint",
-      "That phone was buried 10 levels deep \u2014 in real life, just call me :) / 游戏里挖了十层才到的电话 \u2014\u2014 现实中直接打更快 :)"));
+      "That phone was buried 20 levels deep \u2014 in real life, just call me :) / 游戏里挖了二十层才到的电话 \u2014\u2014 现实中直接打更快 :)"));
 
     var btnRow2 = el("div", "mc-photo-btns");
     var contact = el("button", "mc-win-close", "\u{1F4C4} \u67E5\u770B\u8054\u7CFB\u65B9\u5F0F · Contact");

@@ -476,7 +476,7 @@ export function buildPage({ lang, loc, site, profile, locales, langLinks }) {
   ${site.themeFile ? `<link rel="stylesheet" href="/assets/${site.themeFile}">` : ""}
   ${themeStyle(site)}
   <script src="/assets/main.js" defer></script>
-  ${site && site.themeFlag === "minecraft" ? '<script src="/assets/mc-enhance.js" defer></script>' : ""}
+  ${site && site.themeFlag === "minecraft" ? '<script src="/assets/mc-enhance.js" defer></script><script src="/assets/mc-minesweeper.js" defer></script><script src="/assets/mc-tetris.js" defer></script><script src="/assets/mc-solitaire.js" defer></script>' : ""}
   <script type="application/ld+json">
 ${JSON.stringify(structured, null, 2)}
   </script>
