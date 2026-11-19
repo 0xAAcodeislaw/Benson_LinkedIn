@@ -996,9 +996,9 @@
   }
 
   // 金色波纹（电话方块挖穿时从原地扩散）
-  function fxGoldRipple(cellEl) {
-    if (!cellEl) return;
-    var r = cellEl.getBoundingClientRect();
+  function fxGoldRipple(rect) {
+    if (!rect) return;
+    var r = rect; // 调用方传缓存 rect（cellEl 在 render 后已脱离文档，getBoundingClientRect 全 0）
     for (var i = 0; i < 3; i++) {
       (function (idx) {
         setTimeout(function () {
