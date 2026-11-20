@@ -1494,3 +1494,34 @@ body { padding-bottom: 76px !important; }
 .sl-card.sl-empty { background: rgba(255,255,255,.12); border-style: dashed; color: rgba(255,255,255,.3); }
 .sl-card.is-sel { outline: 3px solid #ffff55; outline-offset: 1px; }
 @media (max-width: 640px) { .sl-card { width: 44px; height: 64px; font-size: 9px !important; } .sl-col { width: 50px; } }
+
+/* ===== 彩蛋⑤：雷电 10 关 ===== */
+.rd-btn { background: none; border: none; font-size: 16px; cursor: pointer; padding: 0 4px; }
+.rd-frame { width: 94vw; max-width: 620px; }
+.rd-playrow { display: flex; gap: 12px; justify-content: center; align-items: flex-start; }
+.rd-canvas {
+  width: 300px; height: 420px;
+  image-rendering: pixelated;
+  border: 4px solid #3d2c15;
+  background: #0b0d16;
+  touch-action: none;
+  cursor: crosshair;
+}
+.rd-side { display: flex; flex-direction: column; gap: 6px; min-width: 110px; }
+.rd-fire {
+  font-family: "MinecraftPixel", monospace !important;
+  font-size: 14px !important; color: #4fd8ff !important;
+  background: rgba(79,216,255,.12); border: 2px solid #3d2c15;
+  padding: 6px 10px; width: fit-content;
+}
+.rd-ops { white-space: pre-line; font-size: 8px !important; color: #6b583d !important; line-height: 1.9; }
+.rd-bosswrap { height: 9px; background: rgba(0,0,0,.45); border: 2px solid #b3261e; margin: 0 0 6px; overflow: hidden; }
+.rd-bossfill {
+  height: 100%; width: 100%;
+  background: repeating-linear-gradient(90deg, #c62828 0 6px, #ff7043 6px 12px);
+  transition: width .18s steps(4);
+}
+@media (max-width: 640px) {
+  .rd-canvas { width: 76vw; height: 106vw; max-height: 62vh; }
+  .rd-side { flex-direction: row; flex-wrap: wrap; align-items: center; }
+}
