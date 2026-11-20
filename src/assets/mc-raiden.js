@@ -41,6 +41,45 @@
     win:   function () { [392, 523, 659, 784, 1047, 1319].forEach(function (f, i) { beep(f, 0.15, "square", 0.06, i * 0.11); }); }
   };
 
+  // ---- BGM：Web Audio 合成配乐，两套序列（普通 / Boss 战），遵守全局静音 ----
+  var BGM = {
+    t: null, step: 0, mode: null,
+    seq: {
+      normal: {
+        bpm: 150,
+        bass: [110, 0, 110, 0, 130.8, 0, 98, 0, 110, 0, 110, 0, 146.8, 0, 130.8, 0],
+        lead: [440, 0, 0, 0, 523, 0, 659, 0, 880, 0, 0, 0, 659, 0, 523, 0],
+        hat:  [1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 1]
+      },
+      boss: {
+        bpm: 172,
+        bass: [73.4, 0, 73.4, 77.8, 73.4, 0, 87.3, 0, 73.4, 0, 73.4, 77.8, 82.4, 0, 87.3, 0],
+        lead: [587, 0, 698, 0, 880, 0, 698, 0, 587, 0, 698, 0, 932, 0, 880, 698],
+        hat:  [1, 1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1]
+      }
+    },
+    start: function (mode) {
+      this.stop();
+      if (muted()) return;
+      var c = ac(); if (!c) return;
+      var s = this.seq[mode]; if (!s) return;
+      this.mode = mode; this.step = 0;
+      var self = this;
+      var iv = Math.round(60 / s.bpm * 1000 / 4); // 16 分音符
+      this.t = setInterval(function () { self.tick(); }, iv);
+    },
+    stop: function () { if (this.t) { clearInterval(this.t); this.t = null; } },
+    tick: function () {
+      if (muted()) return;
+      var s = this.seq[this.mode]; if (!s) return;
+      var i = this.step % 16;
+      if (s.bass[i]) beep(s.bass[i], 0.12, "sawtooth", 0.026);
+      if (s.lead[i]) beep(s.lead[i], 0.09, "square", 0.02);
+      if (s.hat[i]) noise(0.02, 0.012, 6000);
+      this.step++;
+    }
+  };
+
   var LV = [
     { name: "起飞 · Takeoff",      spawn: 1400, ehp: 1, esp: 1.2, brate: 2600, boss: 26,  mix: ["drop"] },
     { name: "巡逻 · Patrol",       spawn: 1250, ehp: 1, esp: 1.4, brate: 2400, boss: 34,  mix: ["drop", "sine"] },
@@ -138,6 +177,7 @@
       if (R.raf) cancelAnimationFrame(R.raf);
       if (R.key) document.removeEventListener("keydown", R.key);
       if (R.onFs) document.removeEventListener("fullscreenchange", R.onFs);
+      BGM.stop();
       if (document.fullscreenElement) { try { document.exitFullscreen(); } catch (e) {} }
       var o = document.getElementById("rd-game"); if (o) o.remove();
       document.body.style.overflow = "";
@@ -146,7 +186,7 @@
     R.key = function (e) {
       if (!R) return;
       if (e.key === "Escape") { R.close(); return; }
-      if (e.key === "p" || e.key === "P") { if (R.g) R.g.paused = !R.g.paused; }
+      if (e.key === "p" || e.key === "P") { if (R.g) { R.g.paused = !R.g.paused; if (R.g.paused) BGM.stop(); else BGM.start(R.g.phase === "boss" ? "boss" : "normal"); } }
       if (R.g && !R.g.over) {
         if (["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", "a", "d", "w", "s"].includes(e.key)) e.preventDefault();
         R.g.keys[e.key.toLowerCase()] = true;
@@ -171,6 +211,7 @@
       "\u6D88\u706D\u654C\u673A\uFF0C\u4E00\u6BB5\u65F6\u95F4\u540E BOSS \u767B\u573A\uFF08WARNING\uFF01\uFF09\u3002\u51FB\u8D25 BOSS \u8FC7\u5173\u3002\u5403\u84DD\u8272 P \u5347\u706B\u529B\uFF1A\u5355\u53D1\u2192\u53CC\u53D1\u2192\u4E09\u5411\u2192\u4E94\u5411\u3002\u88AB\u51FB\u4E2D\u6389\u4E00\u7EA7\u706B\u529B\u3001\u6389\u4E00\u6761\u547D\uFF08\u5171 3 \u6761\uFF09\u3002\u638C\u63E1\uFF1A\u81EA\u52A8\u5F00\u706B\uFF0C\u4E13\u5FC3\u8D70\u4F4D\uFF01"));
     var best = Number(localStorage.getItem("rd_best_" + lv)) || 0;
     if (best) card.appendChild(el("div", "mc-lc-stat", "\u{1F3C6} \u672C\u5173\u6700\u4F73 " + best + "\u5206"));
+    card.appendChild(el("div", "mc-lc-stat", "\u2708\uFE0F\u2708\uFE0F\u2708\uFE0F \u6BCF\u5173\u914D 3 \u6761\u547D \u00B7 \u914D\u4E50 BGM \u5DF2\u5F00"));
     var b = el("button", "mc-lc-start", "\u2708 \u8D77\u98DE \u00B7 START");
     b.type = "button";
     b.addEventListener("click", function () { start(lv); });
@@ -181,6 +222,7 @@
     R.livesEl.textContent = "\u2708\uFE0F\u2708\uFE0F\u2708\uFE0F";
     R.fireEl.textContent = "P1";
     R.bossWrap.style.display = "none";
+    BGM.stop();
     drawIdle();
   }
 
@@ -216,6 +258,7 @@
     R.livesEl.textContent = "\u2708\uFE0F\u2708\uFE0F\u2708\uFE0F";
     R.fireEl.textContent = "P1";
     R.bossWrap.style.display = "none";
+    BGM.start("normal");
     // 触屏拖动
     R.cv.onpointerdown = R.cv.onpointermove = function (e) {
       if (!R || !R.g || R.g.over) return;
@@ -402,6 +445,7 @@
     g.phase = "warn"; g.warn = 130;
     g.enemies.length = 0; g.eshots.length = 0;
     SFX.warn();
+    BGM.start("boss"); // Boss 战配乐（更紧张的低音序列）
   }
   function spawnBoss() {
     var g = R.g;
@@ -436,7 +480,7 @@
     if (g.lives <= 0) gameOver();
   }
   function gameOver() {
-    var g = R.g; g.over = true;
+    var g = R.g; g.over = true; BGM.stop();
     SFX.boomB();
     R.panel.classList.add("is-show"); R.panel.textContent = "";
     var card = el("div", "mc-level-card");
@@ -449,7 +493,7 @@
     R.panel.appendChild(card);
   }
   function levelClear() {
-    var g = R.g; g.over = true;
+    var g = R.g; g.over = true; BGM.stop();
     var lv = g.lv, sc = g.score;
     var prev = Number(localStorage.getItem("rd_best_" + lv)) || 0;
     if (sc > prev) { try { localStorage.setItem("rd_best_" + lv, String(sc)); } catch (e) {} }
