@@ -1525,3 +1525,35 @@ body { padding-bottom: 76px !important; }
   .rd-canvas { width: 76vw; height: 106vw; max-height: 62vh; }
   .rd-side { flex-direction: row; flex-wrap: wrap; align-items: center; }
 }
+
+/* ===== 雷电：全屏（is-fs class 由 fullscreenchange/伪全屏驱动） ===== */
+.rd-fsbtn { background: none; border: none; font-size: 14px; color: #3d2c15; cursor: pointer; padding: 0 5px; }
+.rd-fsbtn:hover { color: #f0b90b; }
+.rd-frame.is-fs {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  width: 100vw !important;
+  max-width: none !important;
+  height: 100vh;
+  background: #12100b;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.rd-frame.is-fs .rd-playrow { flex: 1; min-height: 0; align-items: center; justify-content: center; position: relative; background: #0b0d16; }
+.rd-frame.is-fs .rd-canvas { height: 100%; width: auto; max-width: 94vw; border-color: #1a140c; }
+.rd-frame.is-fs .rd-side { display: none; }
+.rd-frame.is-fs .rd-bosswrap { width: min(72vw, 560px); margin: 0 auto 5px; }
+.rd-frame.is-fs .mc-panel {
+  position: absolute;
+  left: 50%; top: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 10;
+  background: #f4ecd4;
+  border: 4px solid #3d2c15;
+  box-shadow: 8px 8px 0 rgba(0,0,0,.55);
+  max-height: 86vh;
+  overflow: auto;
+  padding: 18px 22px !important;
+}

@@ -68,7 +68,7 @@
   function injectBtn() {
     if (document.querySelector(".rd-btn")) return;
     var tools = document.querySelector(".nav-tools"); if (!tools) return;
-    var b = el("button", "rd-btn", "\u2708");
+    var b = el("button", "rd-btn", "\u2708\uFE0F");
     b.type = "button";
     b.title = "Easter egg: RAIDEN (10 levels) / 彩蛋：雷电 10 关";
     b.setAttribute("aria-label", "Easter egg: Raiden shooter");
@@ -83,8 +83,18 @@
     var ov = el("div", "mc-game-overlay"); ov.id = "rd-game";
     var frame = el("div", "mc-game-frame rd-frame");
     var title = el("div", "mc-game-title");
-    title.appendChild(el("span", null, "\u2708"));
+    title.appendChild(el("span", null, "\u2708\uFE0F"));
     title.appendChild(el("span", "mc-game-title-txt", "RAIDEN · 10 \u5173 / \u96F7\u7535"));
+    var fsBtn = el("button", "rd-fsbtn", "\u26F6");
+    fsBtn.type = "button"; fsBtn.title = "\u5168\u5C4F / Fullscreen";
+    fsBtn.addEventListener("click", function () {
+      if (!R) return;
+      if (document.fullscreenElement) { document.exitFullscreen(); return; }
+      var p = R.frame.requestFullscreen && R.frame.requestFullscreen();
+      if (p && p.catch) p.catch(function () { if (R) R.frame.classList.toggle("is-fs"); }); // 非手势环境：伪全屏兜底
+      setTimeout(function () { if (R && !document.fullscreenElement) R.frame.classList.toggle("is-fs"); }, 140);
+    });
+    title.appendChild(fsBtn);
     var x = el("button", "mc-game-close", "\u00D7"); x.type = "button"; x.setAttribute("aria-label", "Close");
     x.addEventListener("click", function () { R && R.close(); }); title.appendChild(x);
     var hud = el("div", "mc-game-hud");
@@ -120,11 +130,15 @@
       bossWrap: bossBarWrap, bossFill: bossFill, fireEl: fire,
       lv: loadLv(), over: false, raf: null, key: null
     };
+    R.onFs = function () { if (R) R.frame.classList.toggle("is-fs", !!document.fullscreenElement); };
+    document.addEventListener("fullscreenchange", R.onFs);
     R.close = function () {
       if (!R) return;
       R.over = true;
       if (R.raf) cancelAnimationFrame(R.raf);
       if (R.key) document.removeEventListener("keydown", R.key);
+      if (R.onFs) document.removeEventListener("fullscreenchange", R.onFs);
+      if (document.fullscreenElement) { try { document.exitFullscreen(); } catch (e) {} }
       var o = document.getElementById("rd-game"); if (o) o.remove();
       document.body.style.overflow = "";
       R = null;
@@ -164,7 +178,7 @@
     R.panel.appendChild(card);
     R.badge.textContent = "Lv " + lv + "/10 \u00B7 " + d.name;
     R.scoreEl.textContent = "\u5206: 0";
-    R.livesEl.textContent = "\u2708\u2708\u2708";
+    R.livesEl.textContent = "\u2708\uFE0F\u2708\uFE0F\u2708\uFE0F";
     R.fireEl.textContent = "P1";
     R.bossWrap.style.display = "none";
     drawIdle();
@@ -182,10 +196,24 @@
       spawnT: 0, phase: "waves", phaseT: 0, boss: null, warn: 0,
       bossT: 0, shake: 0, best: 0
     };
-    for (var i = 0; i < 46; i++) R.g.stars.push({ x: Math.random() * W, y: Math.random() * H, v: 0.4 + Math.random() * 1.8, s: Math.random() < 0.3 ? 2 : 1 });
+    for (var i = 0; i < 52; i++) {
+      var layer = i < 24 ? 0 : (i < 42 ? 1 : 2);
+      var cfg = [
+        { v: 0.5,  c: "#2a355c", s: 1, tw: 0 },
+        { v: 1.1,  c: "#5d6fa8", s: 1, tw: 0 },
+        { v: 2.3,  c: "#c7d2ff", s: 2, tw: 40 + Math.floor(Math.random() * 60) }
+      ][layer];
+      R.g.stars.push({ x: Math.random() * W, y: Math.random() * H, layer: layer, v: cfg.v * (0.8 + Math.random() * 0.5), s: cfg.s, c: cfg.c, tw: cfg.tw });
+    }
+    R.g.nebulae = [];
+    for (var nI = 0; nI < 3; nI++) {
+      R.g.nebulae.push({ x: Math.random() * (W - 90), y: Math.random() * H, w: 60 + Math.random() * 70, h: 40 + Math.random() * 60,
+        v: 0.25 + Math.random() * 0.3, c: nI === 0 ? "rgba(70,50,120,0.20)" : (nI === 1 ? "rgba(30,60,110,0.18)" : "rgba(90,40,90,0.16)") });
+    }
+    R.g.shocks = [];
     R.panel.classList.remove("is-show");
     R.scoreEl.textContent = "\u5206: 0";
-    R.livesEl.textContent = "\u2708\u2708\u2708";
+    R.livesEl.textContent = "\u2708\uFE0F\u2708\uFE0F\u2708\uFE0F";
     R.fireEl.textContent = "P1";
     R.bossWrap.style.display = "none";
     // 触屏拖动
@@ -214,8 +242,9 @@
     var g = R.g, d = g.def;
     g.t++;
     if (g.shake > 0) g.shake--;
-    // 星空
+    // 星空 / 星云
     g.stars.forEach(function (s) { s.y += s.v; if (s.y > H) { s.y = -2; s.x = Math.random() * W; } });
+    g.nebulae.forEach(function (n) { n.y += n.v; if (n.y > H) { n.y = -n.h; n.x = Math.random() * (W - 90); } });
     // 玩家移动
     var sp = 3.2;
     if (g.keys["arrowleft"] || g.keys["a"]) g.px -= sp;
@@ -326,6 +355,8 @@
     // 粒子/飘字
     g.parts.forEach(function (p) { p.x += p.vx; p.y += p.vy; p.life--; });
     g.parts = g.parts.filter(function (p) { return p.life > 0; });
+    g.shocks.forEach(function (s) { s.r += 2.6; s.life--; });
+    g.shocks = g.shocks.filter(function (s) { return s.life > 0; });
   }
 
   function fire() {
@@ -384,6 +415,7 @@
     g.score += 2000 * g.lv;
     R.scoreEl.textContent = "\u5206: " + g.score;
     var bx = g.boss.x, by = g.boss.y;
+    g.shocks.push({ x: bx, y: by, r: 6, life: 26, c: "#f0b90b" });
     for (var i = 0; i < 5; i++) (function (k) {
       setTimeout(function () { burst(bx + (Math.random() - 0.5) * 50, by + (Math.random() - 0.5) * 30, "#ffff55", 14); SFX.boomB(); shake(); }, k * 160);
     })(i);
@@ -394,7 +426,7 @@
   function hitPlayer() {
     var g = R.g;
     if (g.lives > 0) g.lives--;
-    R.livesEl.textContent = "\u2708".repeat(Math.max(0, g.lives));
+    R.livesEl.textContent = "\u2708\uFE0F".repeat(Math.max(0, g.lives));
     g.power = Math.max(1, g.power - 1);
     R.fireEl.textContent = "P" + g.power;
     burst(g.px, g.py, "#5ea832", 14);
@@ -465,12 +497,15 @@
   }
 
   // 爆炸粒子（canvas 内绘制，不进 DOM —— 雷电高频爆炸不走 DOM 粒子）
+  var BOOM_COLORS = ["#ffff55", "#ff7043", "#f0b90b", "#ffffff"];
   function burst(x, y, color, n) {
     var g = R.g;
+    g.shocks.push({ x: x, y: y, r: 3, life: 16, c: "rgba(255,255,255,0.85)" });
     for (var i = 0; i < n; i++) {
       var ang = Math.random() * Math.PI * 2;
       var v = 1 + Math.random() * 3;
-      g.parts.push({ x: x, y: y, vx: Math.cos(ang) * v, vy: Math.sin(ang) * v, life: 14 + Math.random() * 12, c: color });
+      var c = i % 2 === 0 ? color : BOOM_COLORS[i % BOOM_COLORS.length];
+      g.parts.push({ x: x, y: y, vx: Math.cos(ang) * v, vy: Math.sin(ang) * v, life: 14 + Math.random() * 12, c: c });
     }
   }
   function shake() { var g = R.g; if (g) g.shake = 10; }
@@ -484,11 +519,19 @@
   }
   function drawShip(ctx, x, y, color, s) {
     ctx.fillStyle = color;
-    ctx.fillRect(x - 3 * s, y - 10 * s, 6 * s, 16 * s);
-    ctx.fillRect(x - 11 * s, y - 2 * s, 8 * s, 8 * s);
-    ctx.fillRect(x + 3 * s, y - 2 * s, 8 * s, 8 * s);
+    ctx.fillRect(x - 3 * s, y - 9 * s, 6 * s, 15 * s);       // 机身
+    ctx.fillRect(x - 11 * s, y + 1 * s, 8 * s, 6 * s);      // 左后掠翼
+    ctx.fillRect(x + 3 * s, y + 1 * s, 8 * s, 6 * s);       // 右后掠翼
+    ctx.fillStyle = "#2e5a18";
+    ctx.fillRect(x - 12 * s, y - 2 * s, 2 * s, 5 * s);      // 翼尖导弹
+    ctx.fillRect(x + 10 * s, y - 2 * s, 2 * s, 5 * s);
+    ctx.fillStyle = "#4fd8ff";
+    ctx.fillRect(x - 2 * s, y - 7 * s, 4 * s, 4 * s);       // 座舱
     ctx.fillStyle = "#ffff55";
-    ctx.fillRect(x - 2 * s, y - 14 * s, 4 * s, 4 * s);
+    ctx.fillRect(x - 2 * s, y - 12 * s, 4 * s, 3 * s);      // 机头
+    ctx.fillStyle = Math.random() < 0.5 ? "#f0b90b" : "#ff7043";
+    ctx.fillRect(x - 4 * s, y + 7 * s, 2 * s, 2 * s + Math.random() * 3 * s);  // 双引擎焰
+    ctx.fillRect(x + 2 * s, y + 7 * s, 2 * s, 2 * s + Math.random() * 3 * s);
   }
   function draw() {
     if (!R) return;
@@ -500,74 +543,140 @@
     ctx.save();
     ctx.translate(ox, oy);
     if (!g) { ctx.restore(); drawIdle(); return; }
-    // 星空
+    // 星云
+    g.nebulae.forEach(function (n) { ctx.fillStyle = n.c; ctx.fillRect(n.x, n.y, n.w, n.h); });
+    // 雷达网格（缓慢下移）
+    ctx.strokeStyle = "rgba(90,110,170,0.10)";
+    ctx.lineWidth = 1;
+    var gy = (g.t * 1.1) % 40;
+    for (var yy = -40 + gy; yy < H; yy += 40) { ctx.beginPath(); ctx.moveTo(0, yy); ctx.lineTo(W, yy); ctx.stroke(); }
+    for (var xx = 15; xx < W; xx += 30) { ctx.beginPath(); ctx.moveTo(xx, 0); ctx.lineTo(xx, H); ctx.stroke(); }
+    // 三层星空（近层闪烁）
     g.stars.forEach(function (s) {
-      ctx.fillStyle = s.s === 2 ? "#8fa3d9" : "#3c4a75";
-      ctx.fillRect(s.x, s.y, s.s, s.s + 1);
+      var tw = s.tw && (g.t % (s.tw * 2) < s.tw);
+      ctx.fillStyle = tw ? "#ffffff" : s.c;
+      ctx.fillRect(s.x, s.y, s.s, s.s + (s.layer === 2 ? 2 : 1));
     });
-    // 掉落 P
+    // 掉落 P（发光）
     g.enemies.forEach(function (e) {
       if (e.type === "pw") {
+        e.y += e.vy;
+        ctx.fillStyle = "rgba(79,216,255,0.35)";
+        ctx.fillRect(e.x - 9, e.y - 9, 18, 18);
         ctx.fillStyle = "#4fd8ff";
         ctx.fillRect(e.x - 7, e.y - 7, 14, 14);
         ctx.fillStyle = "#0b0d16";
         ctx.fillRect(e.x - 4, e.y - 3, 8, 6);
-        e.y += e.vy;
       }
     });
     g.enemies = g.enemies.filter(function (e) { return !(e.type === "pw" && e.y > H + 10); });
-    // 敌机
+    // 敌机（四种造型）
     g.enemies.forEach(function (e) {
       if (e.type === "pw") return;
-      ctx.fillStyle = e.type === "hover" ? "#c62828" : "#e05252";
-      ctx.fillRect(e.x - 8, e.y - 6, 16, 10);
-      ctx.fillRect(e.x - 3, e.y + 4, 6, 8);
-      ctx.fillStyle = "#8a1f1f";
-      ctx.fillRect(e.x - 10, e.y - 3, 4, 6);
-      ctx.fillRect(e.x + 6, e.y - 3, 4, 6);
+      if (e.type === "drop") {
+        ctx.fillStyle = "#e05252";
+        ctx.fillRect(e.x - 7, e.y - 7, 14, 9);
+        ctx.fillRect(e.x - 4, e.y + 2, 8, 7);
+        ctx.fillStyle = "#8a1f1f";
+        ctx.fillRect(e.x - 9, e.y - 5, 3, 5);
+        ctx.fillRect(e.x + 6, e.y - 5, 3, 5);
+      } else if (e.type === "sine") {
+        ctx.fillStyle = "#d946ef";
+        ctx.fillRect(e.x - 10, e.y - 4, 6, 8);
+        ctx.fillRect(e.x + 4, e.y - 4, 6, 8);
+        ctx.fillStyle = "#9c27b0";
+        ctx.fillRect(e.x - 4, e.y - 6, 8, 10);
+      } else if (e.type === "dive") {
+        ctx.fillStyle = "#ff7043";
+        ctx.fillRect(e.x - 5, e.y - 8, 10, 6);
+        ctx.fillRect(e.x - 3, e.y - 2, 6, 8);
+        ctx.fillRect(e.x - 1, e.y + 6, 2, 4);
+      } else {
+        ctx.fillStyle = "#c62828";
+        ctx.fillRect(e.x - 10, e.y - 5, 20, 10);
+        ctx.fillRect(e.x - 14, e.y - 2, 5, 5);
+        ctx.fillRect(e.x + 9, e.y - 2, 5, 5);
+        ctx.fillStyle = "#ffff55";
+        ctx.fillRect(e.x - 2, e.y + 3, 4, 4);
+      }
+      if (e.hp === 1 && e.t % 7 === 0) burst(e.x + (Math.random() - 0.5) * 10, e.y - 6, "#555b70", 1); // 受损冒烟
     });
-    // Boss
+    // Boss（多层舰体 + 核心脉冲 + 炮塔 + 受损反馈）
     if (g.boss) {
       var b = g.boss;
+      ctx.fillStyle = "#5c1440";
+      ctx.fillRect(b.x - 32, b.y - 12, 64, 26);
       ctx.fillStyle = "#8a1f5c";
-      ctx.fillRect(b.x - 30, b.y - 10, 60, 22);
-      ctx.fillRect(b.x - 42, b.y, 16, 12);
-      ctx.fillRect(b.x + 26, b.y, 16, 12);
+      ctx.fillRect(b.x - 26, b.y - 8, 52, 20);
+      ctx.fillRect(b.x - 44, b.y - 2, 14, 14);
+      ctx.fillRect(b.x + 30, b.y - 2, 14, 14);
+      var pulse = 4 + Math.floor(g.t / 6) % 3;
       ctx.fillStyle = "#d946ef";
-      ctx.fillRect(b.x - 8, b.y + 8, 16, 8);
+      ctx.fillRect(b.x - pulse, b.y + 2, pulse * 2, pulse);
       ctx.fillStyle = "#ffff55";
-      ctx.fillRect(b.x - 20, b.y - 4, 8, 4);
-      ctx.fillRect(b.x + 12, b.y - 4, 8, 4);
+      ctx.fillRect(b.x - 22, b.y + 6, 6, 5);
+      ctx.fillRect(b.x + 16, b.y + 6, 6, 5);
+      if (b.hp < b.maxHp * 0.5 && g.t % 6 === 0) burst(b.x + (Math.random() - 0.5) * 50, b.y + 12, "#555b70", 2);
+      if (b.hp < b.maxHp * 0.25 && Math.floor(g.t / 5) % 2 === 0) {
+        ctx.fillStyle = "rgba(255,85,85,0.35)";
+        ctx.fillRect(b.x - 32, b.y - 12, 64, 26);
+      }
     }
     // 玩家
     var blink = g.inv > 0 && Math.floor(g.t / 4) % 2 === 0;
     if (!blink) drawShip(ctx, g.px, g.py, "#5ea832", 1);
-    // 尾焰
-    if (!g.over) {
-      ctx.fillStyle = Math.random() < 0.5 ? "#f0b90b" : "#ff7043";
-      ctx.fillRect(g.px - 2, g.py + 12, 4, 4 + Math.random() * 4);
-    }
-    // 子弹
-    ctx.fillStyle = "#ffff55";
-    g.shots.forEach(function (s) { ctx.fillRect(s.x - 1.5, s.y - 6, 3, 8); });
-    ctx.fillStyle = "#ff5555";
-    g.eshots.forEach(function (s) { ctx.fillRect(s.x - 2, s.y - 2, 4, 4); });
-    // 粒子
+    // 玩家弹（光晕 + 白芯）
+    g.shots.forEach(function (s) {
+      ctx.fillStyle = "rgba(255,255,85,0.35)";
+      ctx.fillRect(s.x - 3, s.y - 8, 6, 12);
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(s.x - 1.5, s.y - 6, 3, 8);
+    });
+    // 敌弹（红光晕 + 白芯）
+    g.eshots.forEach(function (s) {
+      ctx.fillStyle = "rgba(255,85,85,0.4)";
+      ctx.fillRect(s.x - 4, s.y - 4, 8, 8);
+      ctx.fillStyle = "#ff5555";
+      ctx.fillRect(s.x - 2, s.y - 2, 4, 4);
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(s.x - 1, s.y - 1, 2, 2);
+    });
+    // 冲击波
+    g.shocks.forEach(function (s) {
+      ctx.globalAlpha = Math.max(0, s.life / 16);
+      ctx.strokeStyle = s.c;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+      ctx.stroke();
+    });
+    ctx.globalAlpha = 1;
+    // 爆炸粒子
     g.parts.forEach(function (p) {
       ctx.globalAlpha = Math.max(0, p.life / 24);
       ctx.fillStyle = p.c;
       ctx.fillRect(p.x, p.y, 3, 3);
     });
     ctx.globalAlpha = 1;
-    // WARNING
+    // WARNING（红色条纹带 + 大字 + 副标）
     if (g.warn > 0 && Math.floor(g.warn / 8) % 2 === 0) {
+      ctx.fillStyle = "rgba(255,85,85,0.22)";
+      ctx.fillRect(0, H / 2 - 58, W, 22);
+      ctx.fillRect(0, H / 2 + 26, W, 22);
       ctx.fillStyle = "#ff5555";
-      ctx.font = '16px "MinecraftPixel", monospace';
+      ctx.font = '18px "MinecraftPixel", monospace';
       ctx.textAlign = "center";
-      ctx.fillText("W A R N I N G", W / 2, H / 2 - 30);
+      ctx.fillText("W A R N I N G", W / 2, H / 2 - 8);
       ctx.font = '8px "MinecraftPixel", monospace';
-      ctx.fillText("LARGE ENEMY APPROACHING", W / 2, H / 2 - 12);
+      ctx.fillStyle = "#ffb0b0";
+      ctx.fillText("LARGE ENEMY APPROACHING", W / 2, H / 2 + 12);
     }
+    // 暗角
+    ctx.fillStyle = "rgba(0,0,0,0.35)";
+    ctx.fillRect(0, 0, W, 8);
+    ctx.fillRect(0, H - 8, W, 8);
+    ctx.fillRect(0, 0, 8, H);
+    ctx.fillRect(W - 8, 0, 8, H);
     ctx.restore();
   }
 
