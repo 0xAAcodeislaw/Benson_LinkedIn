@@ -81,9 +81,9 @@
   };
 
   var LV = [
-    { name: "起飞 · Takeoff",      spawn: 1400, ehp: 1, esp: 1.2, brate: 2600, boss: 26,  mix: ["drop"] },
-    { name: "巡逻 · Patrol",       spawn: 1250, ehp: 1, esp: 1.4, brate: 2400, boss: 34,  mix: ["drop", "sine"] },
-    { name: "遭遇 · Skirmish",     spawn: 1100, ehp: 2, esp: 1.6, brate: 2200, boss: 42,  mix: ["drop", "sine", "dive"] },
+    { name: "起飞 · Takeoff",      spawn: 1550, ehp: 1, esp: 1.2, brate: 2900, boss: 22,  mix: ["drop"] },
+    { name: "巡逻 · Patrol",       spawn: 1350, ehp: 1, esp: 1.4, brate: 2600, boss: 30,  mix: ["drop", "sine"] },
+    { name: "遭遇 · Skirmish",     spawn: 1200, ehp: 2, esp: 1.6, brate: 2400, boss: 38,  mix: ["drop", "sine", "dive"] },
     { name: "空战 · Dogfight",     spawn: 1000, ehp: 2, esp: 1.8, brate: 2000, boss: 52,  mix: ["drop", "sine", "dive"] },
     { name: "雷区 · Echelon",      spawn: 900,  ehp: 3, esp: 2.0, brate: 1800, boss: 64,  mix: ["sine", "dive", "hover"] },
     { name: "风暴 · Storm",        spawn: 820,  ehp: 3, esp: 2.2, brate: 1650, boss: 78,  mix: ["drop", "dive", "hover"] },
@@ -129,9 +129,11 @@
     fsBtn.addEventListener("click", function () {
       if (!R) return;
       if (document.fullscreenElement) { document.exitFullscreen(); return; }
-      var p = R.frame.requestFullscreen && R.frame.requestFullscreen();
-      if (p && p.catch) p.catch(function () { if (R) R.frame.classList.toggle("is-fs"); }); // 非手势环境：伪全屏兜底
-      setTimeout(function () { if (R && !document.fullscreenElement) R.frame.classList.toggle("is-fs"); }, 140);
+      var want = !R.frame.classList.contains("is-fs") && !document.fullscreenElement; // 显式目标态
+      if (document.fullscreenElement) { document.exitFullscreen(); return; }
+      var p = R.frame.requestFullscreen && want && R.frame.requestFullscreen();
+      if (p && p.catch) p.catch(function () { if (R) R.frame.classList.toggle("is-fs", want); }); // 非手势环境：伪全屏兜底
+      setTimeout(function () { if (R && !document.fullscreenElement) R.frame.classList.toggle("is-fs", want); }, 140);
     });
     title.appendChild(fsBtn);
     var x = el("button", "mc-game-close", "\u00D7"); x.type = "button"; x.setAttribute("aria-label", "Close");
@@ -177,6 +179,8 @@
       if (R.raf) cancelAnimationFrame(R.raf);
       if (R.key) document.removeEventListener("keydown", R.key);
       if (R.onFs) document.removeEventListener("fullscreenchange", R.onFs);
+      if (R.keyUp) document.removeEventListener("keyup", R.keyUp);
+      if (R.onBlur) window.removeEventListener("blur", R.onBlur);
       BGM.stop();
       if (document.fullscreenElement) { try { document.exitFullscreen(); } catch (e) {} }
       var o = document.getElementById("rd-game"); if (o) o.remove();
@@ -186,7 +190,7 @@
     R.key = function (e) {
       if (!R) return;
       if (e.key === "Escape") { R.close(); return; }
-      if (e.key === "p" || e.key === "P") { if (R.g) { R.g.paused = !R.g.paused; if (R.g.paused) BGM.stop(); else BGM.start(R.g.phase === "boss" ? "boss" : "normal"); } }
+      if ((e.key === "p" || e.key === "P") && !e.repeat) { if (R.g && !R.g.over) { R.g.paused = !R.g.paused; if (R.g.paused) BGM.stop(); else BGM.start(R.g.phase === "boss" || R.g.phase === "warn" ? "boss" : "normal"); } }
       if (R.g && !R.g.over) {
         if (["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", "a", "d", "w", "s"].includes(e.key)) e.preventDefault();
         R.g.keys[e.key.toLowerCase()] = true;
@@ -196,12 +200,15 @@
     R.keyUp = function (e) { if (R && R.g) { R.g.keys[e.key.toLowerCase()] = false; R.g.keys[e.key] = false; } };
     document.addEventListener("keydown", R.key);
     document.addEventListener("keyup", R.keyUp);
+    R.onBlur = function () { if (R && R.g) R.g.keys = {}; };
+    window.addEventListener("blur", R.onBlur);
     ov.addEventListener("click", function (e) { if (e.target === ov && R) R.close(); });
     showCard(R.lv);
   }
 
   function showCard(lv) {
     if (!R) return;
+    R.g = null; // 结束/待机态：停用旧对局渲染（RAF 循环画待机画面）
     var d = LV[lv - 1];
     R.panel.classList.add("is-show"); R.panel.textContent = "";
     var card = el("div", "mc-level-card");
@@ -233,7 +240,7 @@
     R.lv = lv;
     R.g = {
       lv: lv, def: d, paused: false, over: false, t: 0, score: 0,
-      keys: {}, px: W / 2, py: H - 60, power: 1, lives: 3, inv: 120,
+      keys: {}, px: W / 2, py: H - 60, power: 1, lives: 3, inv: INV_MS,
       shots: [], eshots: [], enemies: [], parts: [], stars: [],
       spawnT: 0, phase: "waves", phaseT: 0, boss: null, warn: 0,
       bossT: 0, shake: 0, best: 0
@@ -273,75 +280,86 @@
     if (!R.raf) loop();
   }
 
-  function loop() {
+  var lastTs = 0;
+  function loop(ts) {
     R.raf = requestAnimationFrame(loop);
-    if (!R || !R.g) return;
+    if (!R || !R.g) { lastTs = 0; return; }
     var g = R.g;
-    if (!g.paused && !g.over && !R.panel.classList.contains("is-show")) step();
+    var dt = lastTs ? Math.min(50, ts - lastTs) : 16.7; // 毫秒，切页跳帧钳制
+    lastTs = ts;
+    if (!g.paused && !g.over && !R.panel.classList.contains("is-show")) step(dt);
     draw();
   }
 
-  function step() {
+  var WAVE_MS = 22000, INV_MS = 2400, WARN_MS = 2100;
+  function step(dt) {
     var g = R.g, d = g.def;
-    g.t++;
-    if (g.shake > 0) g.shake--;
+    var f = dt / 16.7; // 60fps 基准因子：所有速度量乘 f，计时量用毫秒 —— 帧率无关
+    g.t += f;
+    if (g.shake > 0) g.shake = Math.max(0, g.shake - f);
     // 星空 / 星云
-    g.stars.forEach(function (s) { s.y += s.v; if (s.y > H) { s.y = -2; s.x = Math.random() * W; } });
-    g.nebulae.forEach(function (n) { n.y += n.v; if (n.y > H) { n.y = -n.h; n.x = Math.random() * (W - 90); } });
+    g.stars.forEach(function (s) { s.y += s.v * f; if (s.y > H) { s.y = -2; s.x = Math.random() * W; } });
+    g.nebulae.forEach(function (n) { n.y += n.v * f; if (n.y > H) { n.y = -n.h; n.x = Math.random() * (W - 90); } });
     // 玩家移动
-    var sp = 3.2;
+    var sp = 3.2 * f;
     if (g.keys["arrowleft"] || g.keys["a"]) g.px -= sp;
     if (g.keys["arrowright"] || g.keys["d"]) g.px += sp;
     if (g.keys["arrowup"] || g.keys["w"]) g.py -= sp;
     if (g.keys["arrowdown"] || g.keys["s"]) g.py += sp;
     g.px = Math.max(14, Math.min(W - 14, g.px));
     g.py = Math.max(24, Math.min(H - 18, g.py));
-    if (g.inv > 0) g.inv--;
-    // 自动开火
-    if (g.t % 6 === 0) fire();
+    if (g.inv > 0) g.inv -= dt;
+    // 自动开火（100ms 一轮，帧率无关）
+    g.fireMs = (g.fireMs || 0) + dt;
+    if (g.fireMs >= 100) { g.fireMs = 0; fire(); }
     // 玩家子弹
-    g.shots.forEach(function (s) { s.x += s.vx; s.y += s.vy; });
+    g.shots.forEach(function (s) { s.x += s.vx * f; s.y += s.vy * f; });
     g.shots = g.shots.filter(function (s) { return s.y > -10 && s.x > -10 && s.x < W + 10; });
-    // 出敌（wave 阶段）
+    // 出敌（wave 阶段，22 秒后 Boss）
     if (g.phase === "waves") {
-      g.phaseT++;
-      g.spawnT += 16.7; // 帧时长≈16.7ms，spawnT 用毫秒口径与 LV 配置对齐
-      if (g.spawnT >= d.spawn && g.phaseT < 60 * 22) {
+      g.phaseT += dt;
+      g.spawnT += dt;
+      if (g.spawnT >= d.spawn) {
         g.spawnT = 0;
         var type = d.mix[Math.floor(Math.random() * d.mix.length)];
         spawnEnemy(type);
       }
-      if (g.phaseT >= 60 * 22 && !g.boss) { startWarn(); }
+      if (g.phaseT >= WAVE_MS && !g.boss) { startWarn(); }
     }
     // WARNING 倒计时 → 出 Boss
     if (g.warn > 0) {
-      g.warn--;
-      if (g.warn === 0) spawnBoss();
+      g.warn -= dt;
+      if (g.warn <= 0) { g.warn = 0; spawnBoss(); }
     }
     // 敌机
     g.enemies.forEach(function (e) {
-      e.t++;
-      if (e.type === "drop") { e.y += e.vy; }
-      else if (e.type === "sine") { e.y += e.vy * 0.7; e.x = e.cx + Math.sin(e.t * 0.05) * 60; }
-      else if (e.type === "dive") { e.y += e.vy + e.t * 0.04; }
+      e.t += f;
+      if (e.type === "pw") { e.y += e.vy * f; return; }
+      if (e.type === "drop") { e.y += e.vy * f; }
+      else if (e.type === "sine") { e.y += e.vy * 0.7 * f; e.x = e.cx + Math.sin(e.t * 0.05) * 60; }
+      else if (e.type === "dive") { e.y += (e.vy + e.t * 0.04) * f; }
       else if (e.type === "hover") {
-        if (e.y < e.stopY) e.y += e.vy;
-        else if (e.t % Math.max(40, Math.round(g.def.brate / 16.7 / 4)) === 0) { var v = aim(e.x, e.y + 10); eshoot(e.x, e.y + 10, v.vx, v.vy); }
-        if (e.t > 320) e.y += 2.5;
+        if (e.y < e.stopY) e.y += e.vy * f;
+        else {
+          e.shootMs = (e.shootMs || 0) + dt;
+          if (e.shootMs >= Math.max(1000, Math.round(g.def.brate / 4))) { e.shootMs = 0; var v = aim(e.x, e.y + 10); eshoot(e.x, e.y + 10, v.vx, v.vy); }
+        }
+        if (e.t > 320) e.y += 2.5 * f;
       }
+      if (e.hp === 1 && Math.random() < 0.02 * f) burst(e.x + (Math.random() - 0.5) * 10, e.y - 6, "#555b70", 1); // 受损冒烟
       if (e.hp <= 0) return;
       // 敌机撞玩家（pw 是补给，不撞）
       if (e.type !== "pw" && g.inv <= 0 && Math.abs(e.x - g.px) < 18 && Math.abs(e.y - g.py) < 18) hitPlayer();
     });
     g.enemies = g.enemies.filter(function (e) { return e.y < H + 30 && e.hp > 0; });
     // 敌弹
-    g.eshots.forEach(function (s) { s.x += s.vx; s.y += s.vy; });
+    g.eshots.forEach(function (s) { s.x += s.vx * f; s.y += s.vy * f; });
     g.eshots = g.eshots.filter(function (s) { return s.y < H + 10 && s.x > -10 && s.x < W + 10 && s.y > -10; });
-    // 玩家弹 × 敌机
+    // 玩家弹 × 敌机 / Boss
     g.shots.forEach(function (s) {
       if (s.dead) return;
       g.enemies.forEach(function (e) {
-        if (e.hp <= 0 || s.dead) return;
+        if (e.hp <= 0 || s.dead || e.type === "pw") return; // 补给不吃子弹
         if (Math.abs(s.x - e.x) < 16 && Math.abs(s.y - e.y) < 16) {
           s.dead = true; e.hp--; SFX.boomS();
           if (e.hp <= 0) killEnemy(e);
@@ -370,7 +388,7 @@
         burst(g.px, g.py, "#4fd8ff", 8);
       }
     });
-    // 敌弹/敌机 × 玩家
+    // 敌弹 × 玩家
     if (g.inv <= 0) {
       for (var i = 0; i < g.eshots.length; i++) {
         var s = g.eshots[i];
@@ -380,25 +398,27 @@
     // Boss 移动/弹幕
     if (g.boss && g.boss.hp > 0) {
       var b = g.boss;
-      b.t++;
-      b.x += b.dir * b.spd;
+      b.t += f;
+      b.x += b.dir * b.spd * f;
       if (b.x < 40 || b.x > W - 40) b.dir *= -1;
       b.y = 46 + Math.sin(b.t * 0.02) * 8;
-      if (b.t % Math.max(34, Math.round(g.def.brate / 16.7 / 3)) === 0) {
-        // 扇形弹
-        var n = 3 + Math.floor(g.lv / 3);
+      b.shootMs = (b.shootMs || 0) + dt;
+      if (b.shootMs >= Math.max(900, Math.round(g.def.brate / 3))) {
+        b.shootMs = 0;
+        var n = 3 + Math.floor((g.lv - 1) / 3); // 弹幕密度渐进：L1-3:3 L4-6:4 L7-9:5 L10:6
         for (var k = 0; k < n; k++) {
           var ang = Math.PI / 2 + (k - (n - 1) / 2) * 0.28;
-          eshoot(b.x, b.y + 20, Math.cos(ang), Math.sin(ang) * 2.6, Math.sin(ang) * 0);
+          eshoot(b.x, b.y + 20, Math.cos(ang) * 2.2, Math.sin(ang) * 2.2);
         }
-        SFX.tick && SFX.tick();
         beep(300, 0.05, "square", 0.03);
       }
+      // Boss 体碰（贴脸也会受伤）
+      if (g.inv <= 0 && Math.abs(b.x - g.px) < 30 && Math.abs(b.y + 10 - g.py) < 22) hitPlayer();
     }
-    // 粒子/飘字
-    g.parts.forEach(function (p) { p.x += p.vx; p.y += p.vy; p.life--; });
+    // 粒子 / 冲击波
+    g.parts.forEach(function (p) { p.x += p.vx * f; p.y += p.vy * f; p.life -= f; });
     g.parts = g.parts.filter(function (p) { return p.life > 0; });
-    g.shocks.forEach(function (s) { s.r += 2.6; s.life--; });
+    g.shocks.forEach(function (s) { s.r += 2.6 * f; s.life -= f; });
     g.shocks = g.shocks.filter(function (s) { return s.life > 0; });
   }
 
@@ -420,7 +440,7 @@
     if (type === "dive") e.vy = 0.9 * d.esp;
     if (type === "hover") { e.stopY = 60 + Math.random() * 100; e.vy = 1.2 * d.esp; }
     // 部分敌机掉落 P
-    e.drop = Math.random() < 0.12;
+    e.drop = Math.random() < 0.14;
     g.enemies.push(e);
   }
   function killEnemy(e) {
@@ -436,13 +456,12 @@
     var g = R.g;
     var dx = g.px - x, dy = g.py - y;
     var len = Math.max(1, Math.sqrt(dx * dx + dy * dy));
-    return { vx: dx / len * 2.4, vy: dy / len * 2.4 };
+    return { vx: dx / len * 2.1, vy: dy / len * 2.1 };
   }
-  function eshoot(x, y, vx, vy) { R.g.eshots.push({ x: x, y: y, vx: vx, vy: vy }); }
 
   function startWarn() {
     var g = R.g;
-    g.phase = "warn"; g.warn = 130;
+    g.phase = "warn"; g.warn = WARN_MS;
     g.enemies.length = 0; g.eshots.length = 0;
     SFX.warn();
     BGM.start("boss"); // Boss 战配乐（更紧张的低音序列）
@@ -460,12 +479,13 @@
     R.scoreEl.textContent = "\u5206: " + g.score;
     var bx = g.boss.x, by = g.boss.y;
     g.shocks.push({ x: bx, y: by, r: 6, life: 26, c: "#f0b90b" });
+    g.eshots.length = 0; // 清场：Boss 死后残余弹幕不再误伤
     for (var i = 0; i < 5; i++) (function (k) {
-      setTimeout(function () { burst(bx + (Math.random() - 0.5) * 50, by + (Math.random() - 0.5) * 30, "#ffff55", 14); SFX.boomB(); shake(); }, k * 160);
+      setTimeout(function () { if (!R || R.g !== g) return; burst(bx + (Math.random() - 0.5) * 50, by + (Math.random() - 0.5) * 30, "#ffff55", 14); SFX.boomB(); shake(); }, k * 160);
     })(i);
     R.bossWrap.style.display = "none";
     g.boss = null;
-    setTimeout(function () { if (R && R.g) levelClear(); }, 900);
+    setTimeout(function () { if (R && R.g === g && !g.over) levelClear(); }, 900);
   }
   function hitPlayer() {
     var g = R.g;
@@ -476,7 +496,7 @@
     burst(g.px, g.py, "#5ea832", 14);
     SFX.hit(); shake();
     g.eshots.length = 0;
-    g.px = W / 2; g.py = H - 60; g.inv = 130;
+    g.px = W / 2; g.py = H - 60; g.inv = INV_MS;
     if (g.lives <= 0) gameOver();
   }
   function gameOver() {
@@ -493,7 +513,9 @@
     R.panel.appendChild(card);
   }
   function levelClear() {
-    var g = R.g; g.over = true; BGM.stop();
+    var g = R.g;
+    if (!g || g.over) return; // 兜底：坠机后不覆盖 GAME OVER
+    g.over = true; BGM.stop();
     var lv = g.lv, sc = g.score;
     var prev = Number(localStorage.getItem("rd_best_" + lv)) || 0;
     if (sc > prev) { try { localStorage.setItem("rd_best_" + lv, String(sc)); } catch (e) {} }
@@ -601,10 +623,9 @@
       ctx.fillStyle = tw ? "#ffffff" : s.c;
       ctx.fillRect(s.x, s.y, s.s, s.s + (s.layer === 2 ? 2 : 1));
     });
-    // 掉落 P（发光）
+    // 掉落 P（发光，移动已在 step）
     g.enemies.forEach(function (e) {
       if (e.type === "pw") {
-        e.y += e.vy;
         ctx.fillStyle = "rgba(79,216,255,0.35)";
         ctx.fillRect(e.x - 9, e.y - 9, 18, 18);
         ctx.fillStyle = "#4fd8ff";
@@ -613,7 +634,6 @@
         ctx.fillRect(e.x - 4, e.y - 3, 8, 6);
       }
     });
-    g.enemies = g.enemies.filter(function (e) { return !(e.type === "pw" && e.y > H + 10); });
     // 敌机（四种造型）
     g.enemies.forEach(function (e) {
       if (e.type === "pw") return;
@@ -643,7 +663,6 @@
         ctx.fillStyle = "#ffff55";
         ctx.fillRect(e.x - 2, e.y + 3, 4, 4);
       }
-      if (e.hp === 1 && e.t % 7 === 0) burst(e.x + (Math.random() - 0.5) * 10, e.y - 6, "#555b70", 1); // 受损冒烟
     });
     // Boss（多层舰体 + 核心脉冲 + 炮塔 + 受损反馈）
     if (g.boss) {
@@ -660,14 +679,14 @@
       ctx.fillStyle = "#ffff55";
       ctx.fillRect(b.x - 22, b.y + 6, 6, 5);
       ctx.fillRect(b.x + 16, b.y + 6, 6, 5);
-      if (b.hp < b.maxHp * 0.5 && g.t % 6 === 0) burst(b.x + (Math.random() - 0.5) * 50, b.y + 12, "#555b70", 2);
+      if (b.hp < b.maxHp * 0.5 && Math.random() < 0.02 * f) burst(b.x + (Math.random() - 0.5) * 50, b.y + 12, "#555b70", 2);
       if (b.hp < b.maxHp * 0.25 && Math.floor(g.t / 5) % 2 === 0) {
         ctx.fillStyle = "rgba(255,85,85,0.35)";
         ctx.fillRect(b.x - 32, b.y - 12, 64, 26);
       }
     }
     // 玩家
-    var blink = g.inv > 0 && Math.floor(g.t / 4) % 2 === 0;
+    var blink = g.inv > 0 && Math.floor(g.inv / 120) % 2 === 0;
     if (!blink) drawShip(ctx, g.px, g.py, "#5ea832", 1);
     // 玩家弹（光晕 + 白芯）
     g.shots.forEach(function (s) {
@@ -703,7 +722,7 @@
     });
     ctx.globalAlpha = 1;
     // WARNING（红色条纹带 + 大字 + 副标）
-    if (g.warn > 0 && Math.floor(g.warn / 8) % 2 === 0) {
+    if (g.warn > 0 && Math.floor(g.warn / 140) % 2 === 0) {
       ctx.fillStyle = "rgba(255,85,85,0.22)";
       ctx.fillRect(0, H / 2 - 58, W, 22);
       ctx.fillRect(0, H / 2 + 26, W, 22);
