@@ -181,7 +181,7 @@
   var audio = { ctx: null, master: null, on: null };
   function soundOn() {
     if (audio.on === null) {
-      try { audio.on = localStorage.getItem("mc_dig_sound") !== "0"; } catch (e) { audio.on = true; }
+      try { audio.on = localStorage.getItem("mc_dig_sound") !== "0" && localStorage.getItem("mc_sound") !== "0"; } catch (e) { audio.on = true; }
     }
     return audio.on;
   }
@@ -243,6 +243,7 @@
 
   // ---- 烟花爆炸（复用像素粒子）：任意位置、任意配色 —— 宝石/相机/过关全用 ----
   function fxFirework(cx, cy, colors, count, power) {
+    if (particleCount() > PARTICLE_CAP) return; // 粒子饱和保护
     var n = count || 14;
     var pw = power || 1;
     for (var i = 0; i < n; i++) {
@@ -260,9 +261,14 @@
   }
 
   // ---- 打击特效：粒子飞溅 / 掉落物飞入背包 / 涟漪 / 屏震（fixed 定位 + 自毁） ----
+  var PARTICLE_CAP = 160; // 粒子上限：快速连挖长会话防 DOM 膨胀（超限时降级为不产生新粒子）
+  function particleCount() {
+    return document.getElementsByClassName("mc-particle").length;
+  }
   function fxParticles(cellEl, color, n) {
     if (!cellEl) return;
     var rect = cellEl.getBoundingClientRect();
+    if (particleCount() > PARTICLE_CAP) return; // 已饱和：跳过本轮粒子（特效降级，玩法不受影响）
     for (var i = 0; i < (n || 6); i++) {
       var p = el("span", "mc-particle");
       p.style.left = rect.left + rect.width / 2 + "px";
@@ -478,7 +484,7 @@
     sndBtn.setAttribute("aria-label", "Sound on/off");
     sndBtn.addEventListener("click", function () {
       audio.on = !soundOn();
-      try { localStorage.setItem("mc_dig_sound", audio.on ? "1" : "0"); } catch (e) {}
+      try { localStorage.setItem("mc_dig_sound", audio.on ? "1" : "0"); localStorage.setItem("mc_sound", audio.on ? "1" : "0"); } catch (e) {}
       sndBtn.textContent = audio.on ? "\u{1F50A}" : "\u{1F507}";
       SFX.click();
     });
@@ -1314,7 +1320,7 @@
     btnRow2.appendChild(contact);
     var again = el("button", "mc-photo-later", "\u{1F501} \u518D\u6316\u4E00\u904D · Again");
     again.type = "button";
-    again.addEventListener("click", function () { if (G) showLevelCard(10); });
+    again.addEventListener("click", function () { if (G) showLevelCard(lv || 20); });
     btnRow2.appendChild(again);
     card.appendChild(btnRow2);
 

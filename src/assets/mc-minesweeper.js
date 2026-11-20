@@ -22,6 +22,7 @@
     return actx;
   }
   function beep(freq, dur, type, vol, when) {
+    try { if (localStorage.getItem("mc_sound") === "0") return; } catch (e) {}
     var c = ac(); if (!c) return;
     var o = c.createOscillator(), g = c.createGain();
     o.type = type || "square"; o.frequency.value = freq;
