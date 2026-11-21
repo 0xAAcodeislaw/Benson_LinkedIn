@@ -37,6 +37,9 @@
     hit:   function () { noise(0.25, 0.14, 600); beep(60, 0.3, "sawtooth", 0.07); },
     pick:  function () { beep(660, 0.07, "square", 0.05); beep(990, 0.1, "square", 0.05, 0.07); },
     warn:  function () { beep(440, 0.16, "square", 0.06); beep(330, 0.16, "square", 0.06, 0.18); beep(440, 0.16, "square", 0.06, 0.36); },
+    oneup: function () { [523, 659, 784].forEach(function (f, i) { beep(f, 0.08, "square", 0.05, i * 0.06); }); beep(1047, 0.12, "square", 0.05, 0.18); },
+    star:  function () { beep(1568, 0.05, "square", 0.03); },
+    bomb:  function () { noise(0.5, 0.2, 400); beep(70, 0.5, "sawtooth", 0.08); beep(55, 0.6, "sawtooth", 0.06, 0.15); },
     clear: function () { [523, 659, 784, 1047].forEach(function (f, i) { beep(f, 0.1, "square", 0.05, i * 0.08); }); },
     win:   function () { [392, 523, 659, 784, 1047, 1319].forEach(function (f, i) { beep(f, 0.15, "square", 0.06, i * 0.11); }); }
   };
@@ -141,8 +144,9 @@
     var hud = el("div", "mc-game-hud");
     var badge = el("span", "mc-lv-badge", "Lv --");
     var score = el("span", "mc-game-inv", "\u5206: 0");
-    var lives = el("span", "ms-timer", "\u2708\u2708\u2708");
-    hud.appendChild(badge); hud.appendChild(score); hud.appendChild(lives);
+    var lives = el("span", "ms-timer", "\u2708\uFE0F\u2708\uFE0F\u2708\uFE0F");
+    var bombs = el("span", "ms-timer", "\u{1F4A3} 2");
+    hud.appendChild(badge); hud.appendChild(score); hud.appendChild(bombs); hud.appendChild(lives);
     var bossBarWrap = el("div", "rd-bosswrap");
     bossBarWrap.style.display = "none";
     var bossFill = el("div", "rd-bossfill");
@@ -155,19 +159,25 @@
     side.appendChild(el("div", "mc-lc-sub", "\u706B\u529B Fire"));
     var fire = el("div", "rd-fire", "P1");
     side.appendChild(fire);
+    side.appendChild(el("div", "mc-lc-sub", "\u5927\u7206\u96F7 Bomb"));
+    var bombBtn = el("button", "rd-bombbtn", "\u{1F4A3} BOMB \u00D7 2");
+    bombBtn.type = "button";
+    bombBtn.title = "\u5927\u7206\u96F7\uFF1A\u6E05\u5168\u5C4F\u654C\u5F39+\u5168\u4F53\u4F24\u5BB3\uFF0C\u9677\u5165\u56F0\u5883\u65F6\u6551\u547D";
+    bombBtn.addEventListener("click", function () { useBomb(); });
+    side.appendChild(bombBtn);
     side.appendChild(el("div", "mc-lc-sub", "\u64CD\u4F5C"));
-    side.appendChild(el("div", "rd-ops", "\u9F20\u6807\u60AC\u505C \u5168\u5411\u8DDF\u968F\n\u2190\u2191\u2193\u2192/WASD \u540C\u6548\n\u81EA\u52A8\u5F00\u706B \u00B7 P \u6682\u505C\n\u89E6\u5C4F\u62D6\u52A8\u540C\u6837\u53EF\u73A9"));
+    side.appendChild(el("div", "rd-ops", "\u9F20\u6807\u60AC\u505C \u5168\u5411\u8DDF\u968F\n\u2190\u2191\u2193\u2192/WASD \u540C\u6548\n\u81EA\u52A8\u5F00\u706B \u00B7 B \u5927\u7206\u96F7\n\u89E6\u5C4F\u62D6\u52A8+\u70B8\u5F39\u6309\u94AE"));
     playRow.appendChild(canvas); playRow.appendChild(side);
     var panel = el("div", "mc-panel");
     var help = el("div", "mc-game-help");
-    help.appendChild(el("span", null, "\u9F20\u6807\u60AC\u505C=\u5168\u5411\u8DDF\u968F \u00B7 \u81EA\u52A8\u5F00\u706B \u00B7 \u5403 P \u5347\u706B\u529B \u00B7 \u51FB\u8D25 BOSS \u8FC7\u5173 \u00B7 ESC \u5173\u95ED"));
+    help.appendChild(el("span", null, "\u9F20\u6807\u60AC\u505C=\u5168\u5411\u8DDF\u968F \u00B7 \u81EA\u52A8\u5F00\u706B \u00B7 B \u5927\u7206\u96F7\u6E05\u5C4F\u6551\u547D \u00B7 ESC \u5173\u95ED"));
     frame.appendChild(title); frame.appendChild(hud); frame.appendChild(bossBarWrap);
     frame.appendChild(playRow); frame.appendChild(panel); frame.appendChild(help);
     ov.appendChild(frame); document.body.appendChild(ov); document.body.style.overflow = "hidden";
 
     R = {
       ov: ov, frame: frame, cv: canvas, ctx: canvas.getContext("2d"),
-      panel: panel, badge: badge, scoreEl: score, livesEl: lives,
+      panel: panel, badge: badge, scoreEl: score, livesEl: lives, bombsEl: bombs, bombBtn: bombBtn,
       bossWrap: bossBarWrap, bossFill: bossFill, fireEl: fire,
       lv: loadLv(), over: false, raf: null, key: null
     };
@@ -190,6 +200,7 @@
     R.key = function (e) {
       if (!R) return;
       if (e.key === "Escape") { R.close(); return; }
+      if ((e.key === "b" || e.key === "B") && !e.repeat) { if (R.g && !R.g.over) useBomb(); }
       if ((e.key === "p" || e.key === "P") && !e.repeat) { if (R.g && !R.g.over) { R.g.paused = !R.g.paused; if (R.g.paused) BGM.stop(); else BGM.start(R.g.phase === "boss" || R.g.phase === "warn" ? "boss" : "normal"); } }
       if (R.g && !R.g.over) {
         if (["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", "a", "d", "w", "s"].includes(e.key)) e.preventDefault();
@@ -215,7 +226,7 @@
     card.appendChild(el("div", "mc-lc-num", "LEVEL " + lv + " / 10"));
     card.appendChild(el("div", "mc-lc-name", "\u2708 " + d.name));
     card.appendChild(el("div", "mc-lc-tip",
-      "\u6D88\u706D\u654C\u673A\uFF0C\u4E00\u6BB5\u65F6\u95F4\u540E BOSS \u767B\u573A\uFF08WARNING\uFF01\uFF09\u3002\u51FB\u8D25 BOSS \u8FC7\u5173\u3002\u5403\u84DD\u8272 P \u5347\u706B\u529B\uFF1A\u5355\u53D1\u2192\u53CC\u53D1\u2192\u4E09\u5411\u2192\u4E94\u5411\u3002\u88AB\u51FB\u4E2D\u6389\u4E00\u7EA7\u706B\u529B\u3001\u6389\u4E00\u6761\u547D\uFF08\u5171 3 \u6761\uFF09\u3002\u638C\u63E1\uFF1A\u81EA\u52A8\u5F00\u706B\uFF0C\u4E13\u5FC3\u8D70\u4F4D\uFF01"));
+      "\u6D88\u706D\u654C\u673A\uFF0CBOSS \u767B\u573A\uFF08WARNING!\uFF09\u540E\u51FB\u8D25\u5B83\u8FC7\u5173\u3002\u5B9D\u7269\uFF1A\u84DD P \u5347\u706B\u529B\uFF08\u6700\u591A\u4E94\u5411\uFF09\u3001\u6A59 B \u52A0\u70B8\u5F39\u3001\u7EFF 1 \u52A0\u547D\u3001\u9EC4\u661F\u52A0\u5206\u3002\u9677\u5165\u5F39\u5E55\u56F4\u56F0\u65F6\u6309 B \uFF08\u6216\u70B9\u53F3\u4FA7 \u{1F4A3} \u6309\u94AE\uFF09\u91CA\u653E\u5927\u7206\u96F7\uFF1A\u6E05\u5168\u5C4F\u654C\u5F39+\u5168\u4F53\u4F24\u5BB3+\u77ED\u6682\u65E0\u654C \u2014\u2014 \u6BCF\u5173\u914D 2 \u679A\uFF0C\u4E0A\u9650 5 \u679A\uFF0C\u4E13\u6CBB\u5404\u79CD\u88AB\u56F4\u6B7B\u3002\u547D\u4E0E\u70B8\u5F39\u6BCF\u5173\u91CD\u7F6E\uFF08\u547D 3 \u6761\u3001\u70B8\u5F39 2 \u679A\uFF09\u3002"));
     var best = Number(localStorage.getItem("rd_best_" + lv)) || 0;
     if (best) card.appendChild(el("div", "mc-lc-stat", "\u{1F3C6} \u672C\u5173\u6700\u4F73 " + best + "\u5206"));
     card.appendChild(el("div", "mc-lc-stat", "\u2708\uFE0F\u2708\uFE0F\u2708\uFE0F \u6BCF\u5173\u914D 3 \u6761\u547D \u00B7 \u914D\u4E50 BGM \u5DF2\u5F00"));
@@ -240,7 +251,7 @@
     R.lv = lv;
     R.g = {
       lv: lv, def: d, paused: false, over: false, t: 0, score: 0,
-      keys: {}, px: W / 2, py: H - 60, power: 1, lives: 3, inv: INV_MS,
+      keys: {}, px: W / 2, py: H - 60, power: 1, lives: 3, bombs: 2, bombCd: 0, bombFlash: 0, inv: INV_MS,
       shots: [], eshots: [], enemies: [], parts: [], stars: [],
       spawnT: 0, phase: "waves", phaseT: 0, boss: null, warn: 0,
       bossT: 0, shake: 0, best: 0
@@ -264,6 +275,7 @@
     R.scoreEl.textContent = "\u5206: 0";
     R.livesEl.textContent = "\u2708\uFE0F\u2708\uFE0F\u2708\uFE0F";
     R.fireEl.textContent = "P1";
+    updateBombHud();
     R.bossWrap.style.display = "none";
     BGM.start("normal");
     // 触屏拖动
@@ -316,6 +328,8 @@
     g.px = Math.max(14, Math.min(W - 14, g.px));
     g.py = Math.max(24, Math.min(H - 18, g.py));
     if (g.inv > 0) g.inv -= dt;
+    if (g.bombCd > 0) g.bombCd -= dt;
+    if (g.bombFlash > 0) g.bombFlash -= dt;
     // 自动开火（100ms 一轮，帧率无关）
     g.fireMs = (g.fireMs || 0) + dt;
     if (g.fireMs >= 100) { g.fireMs = 0; fire(); }
@@ -384,15 +398,32 @@
       }
     });
     g.shots = g.shots.filter(function (s) { return !s.dead; });
-    // 玩家吃 P（火力升级）
+    // 玩家吃宝：P 火力 / B 炸弹 / 1UP 加命 / STAR 分数
     g.enemies.forEach(function (e) {
-      if (e.type === "pw" && Math.abs(e.x - g.px) < 16 && Math.abs(e.y - g.py) < 16) {
+      if (e.type === "pw" && Math.abs(e.x - g.px) < 18 && Math.abs(e.y - g.py) < 18) {
         e.hp = 0;
-        if (g.power < 4) { g.power++; R.fireEl.textContent = "P" + g.power; }
-        g.score += 50;
+        var kind = e.kind || "P";
+        if (kind === "P") {
+          if (g.power < 4) { g.power++; R.fireEl.textContent = "P" + g.power; }
+          g.score += 50;
+          SFX.pick();
+          burst(g.px, g.py, "#4fd8ff", 8);
+        } else if (kind === "B") {
+          if (g.bombs < 5) g.bombs++;
+          updateBombHud();
+          SFX.pick();
+          burst(g.px, g.py, "#ff7043", 10);
+        } else if (kind === "1UP") {
+          if (g.lives < 5) g.lives++;
+          R.livesEl.textContent = "\u2708\uFE0F".repeat(Math.min(g.lives, 5));
+          SFX.oneup();
+          burst(g.px, g.py, "#5ea832", 12);
+        } else {
+          g.score += 80;
+          SFX.star();
+          burst(g.px, g.py, "#ffff55", 5);
+        }
         R.scoreEl.textContent = "\u5206: " + g.score;
-        SFX.pick();
-        burst(g.px, g.py, "#4fd8ff", 8);
       }
     });
     // 敌弹 × 玩家
@@ -446,9 +477,17 @@
     var e = { type: type, x: x, y: y, hp: d.ehp, t: 0, vy: 1.1 * d.esp, cx: x };
     if (type === "dive") e.vy = 0.9 * d.esp;
     if (type === "hover") { e.stopY = 60 + Math.random() * 100; e.vy = 1.2 * d.esp; }
-    // 部分敌机掉落 P
-    e.drop = Math.random() < 0.14;
+    // 掉落 roll：P 火力 / B 炸弹 / 1UP 加命 / STAR 分数星
+    e.drop = rollDrop();
     g.enemies.push(e);
+  }
+  function rollDrop() {
+    var r = Math.random();
+    if (r < 0.05) return "B";
+    if (r < 0.065) return "1UP";
+    if (r < 0.205) return "P";
+    if (r < 0.48) return "STAR";
+    return null;
   }
   function killEnemy(e) {
     var g = R.g;
@@ -456,7 +495,7 @@
     R.scoreEl.textContent = "\u5206: " + g.score;
     burst(e.x, e.y, "#ff7043", e.type === "hover" ? 12 : 8);
     SFX.boomS();
-    if (e.drop) R.g.enemies.push({ type: "pw", x: e.x, y: e.y, hp: 999, t: 0, vy: 1.2, drop: false });
+    if (e.drop) R.g.enemies.push({ type: "pw", kind: e.drop, x: e.x, y: e.y, hp: 999, t: 0, vy: 1.2, drop: false });
   }
   function eshoot(x, y, vx, vy) { R.g.eshots.push({ x: x, y: y, vx: vx, vy: vy }); }
   function aim(x, y) {
@@ -493,6 +532,37 @@
     R.bossWrap.style.display = "none";
     g.boss = null;
     setTimeout(function () { if (R && R.g === g && !g.over) levelClear(); }, 900);
+  }
+  // 大爆雷：清全屏敌弹 + 全体伤害 + 短暂无敌 —— 陷入困境时救命
+  function useBomb() {
+    if (!R || !R.g || R.g.over || R.g.bombs <= 0 || R.g.bombCd > 0) return;
+    var g = R.g;
+    g.bombs--;
+    updateBombHud();
+    g.bombCd = 500; g.bombFlash = 420;
+    g.eshots.length = 0; // 清全屏敌弹
+    g.inv = Math.max(g.inv, 1400); // 1.4s 无敌
+    g.enemies.slice().forEach(function (e) {
+      if (e.type === "pw") return;
+      e.hp -= 3;
+      if (e.hp <= 0) killEnemy(e); else burst(e.x, e.y, "#ffff55", 4);
+    });
+    if (g.boss && g.boss.hp > 0) {
+      g.boss.hp -= 12;
+      R.bossFill.style.width = Math.max(0, g.boss.hp / g.boss.maxHp * 100) + "%";
+      if (g.boss.hp <= 0) bossDie();
+    }
+    g.shocks.push({ x: g.px, y: g.py, r: 8, life: 40, c: "#f0b90b" });
+    g.shocks.push({ x: g.px, y: g.py, r: 20, life: 34, c: "rgba(255,255,255,0.9)" });
+    g.shocks.push({ x: W / 2, y: H / 2, r: 30, life: 46, c: "#f0b90b" });
+    shake(); shake();
+    SFX.bomb();
+  }
+  function updateBombHud() {
+    if (R && R.g) {
+      R.bombsEl.textContent = "\u{1F4A3} " + R.g.bombs;
+      if (R.bombBtn) { R.bombBtn.textContent = "\u{1F4A3} BOMB \u00D7 " + R.g.bombs; R.bombBtn.disabled = R.g.bombs <= 0; }
+    }
   }
   function hitPlayer() {
     var g = R.g;
@@ -630,15 +700,25 @@
       ctx.fillStyle = tw ? "#ffffff" : s.c;
       ctx.fillRect(s.x, s.y, s.s, s.s + (s.layer === 2 ? 2 : 1));
     });
-    // 掉落 P（发光，移动已在 step）
+    // 掉落宝物（发光底 + 字母：P 火力 / B 炸弹 / 1 加命 / 星 分数）
+    var PW_STYLE = {
+      P:    { bg: "#4fd8ff", glow: "rgba(79,216,255,0.4)",  txt: "P",  tc: "#0b3a52" },
+      B:    { bg: "#ff7043", glow: "rgba(255,112,67,0.4)",  txt: "B",  tc: "#54220e" },
+      "1UP":{ bg: "#5ea832", glow: "rgba(94,168,50,0.4)",   txt: "1",  tc: "#12300a" },
+      STAR: { bg: "#ffff55", glow: "rgba(255,255,85,0.35)", txt: "\u2605", tc: "#6b5a00" }
+    };
     g.enemies.forEach(function (e) {
       if (e.type === "pw") {
-        ctx.fillStyle = "rgba(79,216,255,0.35)";
-        ctx.fillRect(e.x - 9, e.y - 9, 18, 18);
-        ctx.fillStyle = "#4fd8ff";
-        ctx.fillRect(e.x - 7, e.y - 7, 14, 14);
-        ctx.fillStyle = "#0b0d16";
-        ctx.fillRect(e.x - 4, e.y - 3, 8, 6);
+        var st = PW_STYLE[e.kind || "P"];
+        var bob = Math.sin(e.t * 0.15) * 2;
+        ctx.fillStyle = st.glow;
+        ctx.fillRect(e.x - 10, e.y - 10 + bob, 20, 20);
+        ctx.fillStyle = st.bg;
+        ctx.fillRect(e.x - 7, e.y - 7 + bob, 14, 14);
+        ctx.fillStyle = st.tc;
+        ctx.font = '9px "MinecraftPixel", monospace';
+        ctx.textAlign = "center";
+        ctx.fillText(st.txt, e.x, e.y + 3 + bob);
       }
     });
     // 敌机（四种造型）
@@ -728,6 +808,13 @@
       ctx.fillRect(p.x, p.y, 3, 3);
     });
     ctx.globalAlpha = 1;
+    // 大爆雷全屏白闪
+    if (g.bombFlash > 0) {
+      ctx.globalAlpha = Math.min(0.85, g.bombFlash / 420);
+      ctx.fillStyle = "#fff8e1";
+      ctx.fillRect(0, 0, W, H);
+      ctx.globalAlpha = 1;
+    }
     // WARNING（红色条纹带 + 大字 + 副标）
     if (g.warn > 0 && Math.floor(g.warn / 140) % 2 === 0) {
       ctx.fillStyle = "rgba(255,85,85,0.22)";
@@ -763,7 +850,8 @@
         if (R.g.boss) { R.g.boss.hp = 1; }
         return true;
       },
-      killBoss: function () { if (R && R.g && R.g.boss) { R.g.boss.hp = 0; bossDie(); } }
+      killBoss: function () { if (R && R.g && R.g.boss) { R.g.boss.hp = 0; bossDie(); } },
+      bomb: function () { useBomb(); }
     };
   }
 

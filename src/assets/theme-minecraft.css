@@ -1557,3 +1557,18 @@ body { padding-bottom: 76px !important; }
   overflow: auto;
   padding: 18px 22px !important;
 }
+
+/* ===== 雷电：大爆雷按钮 ===== */
+.rd-bombbtn {
+  font-family: "MinecraftPixel", monospace !important;
+  font-size: 10px !important;
+  background: #ff7043; color: #fff;
+  border: 2px solid #3d2c15;
+  box-shadow: 2px 2px 0 #2a1d0e;
+  padding: 8px 10px;
+  cursor: pointer;
+  width: fit-content;
+}
+.rd-bombbtn:hover { background: #ff8a65; }
+.rd-bombbtn:active { transform: translate(1px, 1px); box-shadow: 1px 1px 0 #2a1d0e; }
+.rd-bombbtn:disabled { opacity: .45; cursor: not-allowed; }
