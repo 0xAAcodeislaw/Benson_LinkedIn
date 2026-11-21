@@ -210,7 +210,7 @@
         konamiIdx = (kk === KONAMI[0]) ? 1 : 0;
       }
       if (kk === "c" && !e.repeat) { if (R.g && !R.g.over) cheatBomb(); }
-      if ((e.key === "p" || e.key === "P") && !e.repeat) { if (R.g && !R.g.over) { R.g.paused = !R.g.paused; if (R.g.paused) BGM.stop(); else BGM.start(R.g.phase === "boss" || R.g.phase === "warn" ? "boss" : "normal"); } }
+      if ((e.key === "p" || e.key === "P") && !e.repeat) { if (R.g && !R.g.over) { R.g.paused = !R.g.paused; R.g.keys = {}; if (R.g.paused) BGM.stop(); else BGM.start(R.g.phase === "boss" || R.g.phase === "warn" ? "boss" : "normal"); } }
       if (R.g && !R.g.over) {
         if (["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", "a", "d", "w", "s"].includes(e.key)) e.preventDefault();
         R.g.keys[e.key.toLowerCase()] = true;
@@ -290,7 +290,7 @@
     // 触屏拖动
     // 指针控制：鼠标/笔 = 悬停全向跟随（无需按键，可完美替代键盘）；触屏 = 拖动跟随（飞机在手指上方）
     R.cv.onpointerdown = R.cv.onpointermove = function (e) {
-      if (!R || !R.g || R.g.over) return;
+      if (!R || !R.g || R.g.over || R.g.paused) return;
       var rect = R.cv.getBoundingClientRect();
       var x = (e.clientX - rect.left) * (W / rect.width);
       var y = (e.clientY - rect.top) * (H / rect.height);
@@ -882,6 +882,20 @@
     ctx.fillRect(0, H - 8, W, 8);
     ctx.fillRect(0, 0, 8, H);
     ctx.fillRect(W - 8, 0, 8, H);
+    // 暂停遮罩 + PAUSED 闪烁
+    if (g.paused) {
+      ctx.fillStyle = "rgba(11,13,22,0.72)";
+      ctx.fillRect(0, 0, W, H);
+      if (Math.floor(Date.now() / 500) % 2 === 0) {
+        ctx.fillStyle = "#ffff55";
+        ctx.font = '20px "MinecraftPixel", monospace';
+        ctx.textAlign = "center";
+        ctx.fillText("P A U S E D", W / 2, H / 2 - 8);
+        ctx.font = '8px "MinecraftPixel", monospace';
+        ctx.fillStyle = "#c7d2ff";
+        ctx.fillText("PRESS P TO RESUME / \u6309 P \u7EE7\u7EED", W / 2, H / 2 + 16);
+      }
+    }
     ctx.restore();
   }
 
