@@ -578,11 +578,13 @@
   }
   function cheatBomb() {
     if (!R || !R.g || R.g.over) return;
-    if (R.g.bombs >= 5) { flashMsg("BOMBS FULL"); return; }
-    R.g.bombs = Math.min(5, R.g.bombs + 1);
+    if (R.g.bombs >= 5 && R.g.lives >= 5) { flashMsg("FULL"); return; }
+    if (R.g.bombs < 5) R.g.bombs++;
+    if (R.g.lives < 5) { R.g.lives += 2; if (R.g.lives > 5) R.g.lives = 5; }
     updateBombHud();
-    SFX.pick();
-    flashMsg("+1 \u{1F4A3}");
+    R.livesEl.textContent = "\u2708\uFE0F".repeat(R.g.lives);
+    SFX.oneup();
+    flashMsg("+1 \u{1F4A3} +2 \u2708\uFE0F");
   }
   function cheatKonami() {
     if (!R || !R.g || R.g.over) return;
