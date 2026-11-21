@@ -201,6 +201,15 @@
       if (!R) return;
       if (e.key === "Escape") { R.close(); return; }
       if ((e.key === "b" || e.key === "B") && !e.repeat) { if (R.g && !R.g.over) useBomb(); }
+      // 暗藏作弊键追踪（C=+1 炸弹；Konami 序列=+2 炸弹+1UP）
+      var kk = e.key.toLowerCase();
+      if (kk === KONAMI[konamiIdx]) {
+        konamiIdx++;
+        if (konamiIdx >= KONAMI.length) { konamiIdx = 0; cheatKonami(); }
+      } else {
+        konamiIdx = (kk === KONAMI[0]) ? 1 : 0;
+      }
+      if (kk === "c" && !e.repeat) { if (R.g && !R.g.over) cheatBomb(); }
       if ((e.key === "p" || e.key === "P") && !e.repeat) { if (R.g && !R.g.over) { R.g.paused = !R.g.paused; if (R.g.paused) BGM.stop(); else BGM.start(R.g.phase === "boss" || R.g.phase === "warn" ? "boss" : "normal"); } }
       if (R.g && !R.g.over) {
         if (["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", "a", "d", "w", "s"].includes(e.key)) e.preventDefault();
@@ -251,7 +260,7 @@
     R.lv = lv;
     R.g = {
       lv: lv, def: d, paused: false, over: false, t: 0, score: 0,
-      keys: {}, px: W / 2, py: H - 60, power: 1, lives: 3, bombs: 2, bombCd: 0, bombFlash: 0, inv: INV_MS,
+      keys: {}, px: W / 2, py: H - 60, power: 1, lives: 3, bombs: 2, bombCd: 0, bombFlash: 0, msg: null, inv: INV_MS,
       shots: [], eshots: [], enemies: [], parts: [], stars: [],
       spawnT: 0, phase: "waves", phaseT: 0, boss: null, warn: 0,
       bossT: 0, shake: 0, best: 0
@@ -330,6 +339,7 @@
     if (g.inv > 0) g.inv -= dt;
     if (g.bombCd > 0) g.bombCd -= dt;
     if (g.bombFlash > 0) g.bombFlash -= dt;
+    if (g.msg) { g.msg.life -= dt; if (g.msg.life <= 0) g.msg = null; }
     // 自动开火（100ms 一轮，帧率无关）
     g.fireMs = (g.fireMs || 0) + dt;
     if (g.fireMs >= 100) { g.fireMs = 0; fire(); }
@@ -557,6 +567,31 @@
     g.shocks.push({ x: W / 2, y: H / 2, r: 30, life: 46, c: "#f0b90b" });
     shake(); shake();
     SFX.bomb();
+  }
+  // ---- 暗藏作弊键（不写入任何用户可见文案）----
+  // C 键 = +1 炸弹；科乐美秘技 ↑↑↓↓←→←→BA = +2 炸弹 +1 条命
+  var KONAMI = ["arrowup", "arrowup", "arrowdown", "arrowdown", "arrowleft", "arrowright", "arrowleft", "arrowright", "b", "a"];
+  var konamiIdx = 0;
+  function flashMsg(txt) {
+    if (!R || !R.g) return;
+    R.g.msg = { txt: txt, life: 1600 };
+  }
+  function cheatBomb() {
+    if (!R || !R.g || R.g.over) return;
+    if (R.g.bombs >= 5) { flashMsg("BOMBS FULL"); return; }
+    R.g.bombs = Math.min(5, R.g.bombs + 1);
+    updateBombHud();
+    SFX.pick();
+    flashMsg("+1 \u{1F4A3}");
+  }
+  function cheatKonami() {
+    if (!R || !R.g || R.g.over) return;
+    R.g.bombs = Math.min(5, R.g.bombs + 2);
+    if (R.g.lives < 5) { R.g.lives++; R.livesEl.textContent = "\u2708\uFE0F".repeat(R.g.lives); }
+    updateBombHud();
+    SFX.oneup();
+    confetti();
+    flashMsg("KONAMI! +2 \u{1F4A3} +1 \u2708\uFE0F");
   }
   function updateBombHud() {
     if (R && R.g) {
@@ -808,6 +843,17 @@
       ctx.fillRect(p.x, p.y, 3, 3);
     });
     ctx.globalAlpha = 1;
+    // 作弊/提示消息
+    if (g.msg) {
+      ctx.globalAlpha = Math.min(1, g.msg.life / 500);
+      ctx.font = '11px "MinecraftPixel", monospace';
+      ctx.textAlign = "center";
+      ctx.fillStyle = "#1a140c";
+      ctx.fillText(g.msg.txt, W / 2 + 2, 64);
+      ctx.fillStyle = "#ffff55";
+      ctx.fillText(g.msg.txt, W / 2, 62);
+      ctx.globalAlpha = 1;
+    }
     // 大爆雷全屏白闪
     if (g.bombFlash > 0) {
       ctx.globalAlpha = Math.min(0.85, g.bombFlash / 420);
