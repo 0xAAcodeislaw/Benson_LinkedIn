@@ -156,11 +156,11 @@
     var fire = el("div", "rd-fire", "P1");
     side.appendChild(fire);
     side.appendChild(el("div", "mc-lc-sub", "\u64CD\u4F5C"));
-    side.appendChild(el("div", "rd-ops", "\u2190\u2191\u2193\u2192/WASD \u79FB\u52A8\n\u81EA\u52A8\u5F00\u706B\nP \u6682\u505C\n\u89E6\u5C4F\u62D6\u52A8\u540C\u6837\u53EF\u73A9"));
+    side.appendChild(el("div", "rd-ops", "\u9F20\u6807\u60AC\u505C \u5168\u5411\u8DDF\u968F\n\u2190\u2191\u2193\u2192/WASD \u540C\u6548\n\u81EA\u52A8\u5F00\u706B \u00B7 P \u6682\u505C\n\u89E6\u5C4F\u62D6\u52A8\u540C\u6837\u53EF\u73A9"));
     playRow.appendChild(canvas); playRow.appendChild(side);
     var panel = el("div", "mc-panel");
     var help = el("div", "mc-game-help");
-    help.appendChild(el("span", null, "\u81EA\u52A8\u5F00\u706B \u00B7 \u5403 P \u5347\u706B\u529B \u00B7 \u51FB\u8D25 BOSS \u8FC7\u5173 \u00B7 \u88AB\u51FB\u4E2D\u6389\u4E00\u7EA7\u706B\u529B \u00B7 ESC \u5173\u95ED"));
+    help.appendChild(el("span", null, "\u9F20\u6807\u60AC\u505C=\u5168\u5411\u8DDF\u968F \u00B7 \u81EA\u52A8\u5F00\u706B \u00B7 \u5403 P \u5347\u706B\u529B \u00B7 \u51FB\u8D25 BOSS \u8FC7\u5173 \u00B7 ESC \u5173\u95ED"));
     frame.appendChild(title); frame.appendChild(hud); frame.appendChild(bossBarWrap);
     frame.appendChild(playRow); frame.appendChild(panel); frame.appendChild(help);
     ov.appendChild(frame); document.body.appendChild(ov); document.body.style.overflow = "hidden";
@@ -267,14 +267,21 @@
     R.bossWrap.style.display = "none";
     BGM.start("normal");
     // 触屏拖动
+    // 指针控制：鼠标/笔 = 悬停全向跟随（无需按键，可完美替代键盘）；触屏 = 拖动跟随（飞机在手指上方）
     R.cv.onpointerdown = R.cv.onpointermove = function (e) {
       if (!R || !R.g || R.g.over) return;
       var rect = R.cv.getBoundingClientRect();
       var x = (e.clientX - rect.left) * (W / rect.width);
       var y = (e.clientY - rect.top) * (H / rect.height);
-      R.g.px = Math.max(14, Math.min(W - 14, x));
-      if (e.pointerType === "touch" || e.buttons) R.g.py = Math.max(20, Math.min(H - 20, y - 14));
-      R.g.touching = true;
+      var g = R.g;
+      if (e.pointerType === "touch") {
+        g.px = Math.max(14, Math.min(W - 14, x));
+        g.py = Math.max(20, Math.min(H - 20, y - 14));
+      } else {
+        g.px = Math.max(14, Math.min(W - 14, x));
+        g.py = Math.max(20, Math.min(H - 20, y));
+      }
+      g.touching = e.buttons > 0;
     };
     R.cv.onpointerup = function () { if (R && R.g) R.g.touching = false; };
     if (!R.raf) loop();
