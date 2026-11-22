@@ -683,6 +683,7 @@ body { padding-bottom: 76px !important; }
   background: #1a140c !important;
   image-rendering: pixelated;
   user-select: none;
+  -webkit-touch-callout: none;
   touch-action: manipulation;
 }
 .mc-cell {
@@ -708,7 +709,34 @@ body { padding-bottom: 76px !important; }
   50% { box-shadow: inset 0 0 16px rgba(255,255,255,.9); }
 }
 .mc-cell-air { background: #1a140c !important; }
-.mc-cell.is-cursor { outline: 2px solid #ffff55 !important; outline-offset: -2px; }
+/* 光标环：黄环+黑描边双色，任何底色都看得见；::after 层级高于遮罩(::before) */
+.mc-cell.is-cursor { z-index: 2; }
+.mc-cell.is-cursor::after {
+  content: "";
+  position: absolute;
+  inset: 1px;
+  border: 3px solid #ffff55;
+  box-shadow: inset 0 0 0 1px #1a1a1a;
+  animation: mc-cursor-ring .9s steps(2) infinite;
+  pointer-events: none;
+}
+@keyframes mc-cursor-ring {
+  50% { border-color: rgba(255,255,85,.25); }
+}
+/* 裂纹格中央显示剩余敲击数 */
+.mc-cell.is-cracking::before {
+  content: attr(data-hits);
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-family: "MinecraftPixel", monospace !important;
+  font-size: 13px !important;
+  color: #ffff55 !important;
+  text-shadow: 2px 2px 0 #1a1a1a !important;
+  z-index: 3;
+  pointer-events: none;
+}
 .mc-cell.is-cracking::after {
   content: "";
   position: absolute;
@@ -718,6 +746,8 @@ body { padding-bottom: 76px !important; }
     linear-gradient(45deg, transparent 40%, rgba(0,0,0,.55) 40% 45%, transparent 45%),
     linear-gradient(90deg, transparent 48%, rgba(0,0,0,.4) 48% 52%, transparent 52%) !important;
 }
+/* 鼠标悬停在可挖方块上：微微变亮提示「这一下会敲它」 */
+.mc-game-grid .mc-cell:not(.is-buried):hover { filter: brightness(1.25); }
 .mc-game-help {
   margin-top: 10px;
   font-family: "MinecraftPixel", monospace !important;
@@ -774,9 +804,841 @@ body { padding-bottom: 76px !important; }
 .mc-win-close:hover { background: #7cc94a !important; }
 
 /* 未暴露的方块：加暗遮罩，视觉提示「还没挖到这层」 */
-.mc-cell.is-buried::after {
+/* 遮罩用 ::before；::after 留给光标环（否则盖住光标） */
+.mc-cell.is-buried::before {
   content: "";
   position: absolute;
   inset: 0;
   background: rgba(0, 0, 0, 0.45) !important;
 }
+
+/* ===== 挖矿闯关：相机方块 / 教学 / 关卡卡 / 照片卡 ===== */
+.mc-cell-camera {
+  background: #d946ef !important;
+  background-image:
+    radial-gradient(circle at 25% 25%, #f5d0fe 0 2px, transparent 3px),
+    radial-gradient(circle at 75% 25%, #f5d0fe 0 2px, transparent 3px),
+    radial-gradient(circle at 25% 75%, #f5d0fe 0 2px, transparent 3px),
+    radial-gradient(circle at 75% 75%, #f5d0fe 0 2px, transparent 3px),
+    linear-gradient(180deg, #f0abfc 0 25%, #d946ef 25%) !important;
+  box-shadow: inset 0 0 10px rgba(255,255,255,.45) !important;
+  animation: mc-cam-glow 1.2s steps(2) infinite; /* 暴露后持续闪烁，一眼看到目标 */
+}
+@keyframes mc-cam-glow {
+  0%, 100% { box-shadow: inset 0 0 6px rgba(255,255,255,.5); }
+  50% { box-shadow: inset 0 0 14px rgba(255,255,255,.9); }
+}
+.mc-panel {
+  display: none; /* 显示靠 .is-show（inline style 会输给这条规则，已踩坑） */
+  padding: 14px 16px;
+  min-height: 200px;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  align-content: center;
+}
+.mc-game-frame { display: flex; flex-direction: column; }
+.mc-panel.is-show { display: flex; }
+
+/* 教学面板 */
+.mc-tut { text-align: center; max-width: 520px; }
+.mc-tut-head { font-size: 13px !important; color: #3d2c15 !important; margin-bottom: 12px; }
+.mc-tut-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 56px);
+  grid-auto-rows: 56px;
+  width: fit-content;
+  margin-left: auto;
+  margin-right: auto;
+  gap: 2px;
+  border: 3px solid #3d2c15 !important;
+  background: #1a140c !important;
+  margin: 0 auto 10px;
+  image-rendering: pixelated;
+}
+.mc-tut-cell { position: relative; }
+.mc-tut-cell.is-tut-cursor { outline: 3px solid #ffff55 !important; outline-offset: -3px; z-index: 2; animation: mc-cursor-blink .6s steps(2) infinite; }
+@keyframes mc-cursor-blink { 50% { outline-color: rgba(255,255,85,.35); } }
+.mc-tut-cell.is-tut-break { background: #1a140c !important; background-image: none !important; }
+.mc-tut-cell.is-tut-glow { animation: mc-phone-glow 1s steps(2) infinite; }
+.mc-tut-bubble {
+  min-height: 18px; font-size: 10px !important; color: #3d2c15 !important;
+  background: #fff8e1; border: 2px solid #3d2c15; padding: 5px 10px; margin: 0 auto 12px;
+  width: fit-content; max-width: 100%;
+}
+.mc-tut-steps { text-align: left; font-size: 9px !important; color: #4d3d28 !important; line-height: 1.7; margin: 0 0 14px; padding-left: 18px; }
+.mc-tut-go {
+  border: 3px solid #3d2c15 !important; background: #5ea832 !important; color: #fff !important;
+  font-family: "MinecraftPixel", monospace !important; font-size: 11px !important;
+  padding: 12px 18px !important; cursor: pointer; box-shadow: 3px 3px 0 #2a1d0e !important;
+}
+.mc-tut-go:hover { background: #7cc94a !important; }
+
+/* 关卡说明卡 */
+.mc-level-card { text-align: center; max-width: 560px; }
+.mc-lc-num { font-size: 10px !important; color: #8a6d3b !important; letter-spacing: 2px; }
+.mc-lc-name { font-size: 15px !important; color: #3d2c15 !important; margin: 6px 0 8px; }
+.mc-lc-tip { font-size: 9px !important; color: #4d3d28 !important; line-height: 1.7; margin-bottom: 12px; }
+.mc-lc-goal { display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 12px; }
+.mc-lc-goal-block { width: 44px; height: 44px; border: 3px solid #3d2c15; flex: none; }
+.mc-lc-goal-txt { font-size: 10px !important; color: #3d2c15 !important; line-height: 1.6; max-width: 300px; text-align: left; }
+.mc-lc-sub { font-size: 9px !important; color: #8a6d3b !important; margin: 10px 0 6px; }
+.mc-lc-hard { display: flex; flex-wrap: wrap; gap: 8px 14px; justify-content: center; margin-bottom: 12px; }
+.mc-lc-hard-item { display: inline-flex; align-items: center; gap: 5px; font-size: 9px !important; color: #4d3d28 !important; }
+.mc-lc-sw { display: inline-block; width: 16px; height: 16px; border: 2px solid #3d2c15; }
+.mc-lc-ops { white-space: pre-line; font-size: 8px !important; color: #6b583d !important; line-height: 1.8; margin-bottom: 14px; }
+.mc-lc-start {
+  border: 3px solid #3d2c15 !important; background: #5ea832 !important; color: #fff !important;
+  font-family: "MinecraftPixel", monospace !important; font-size: 11px !important;
+  padding: 12px 20px !important; cursor: pointer; box-shadow: 3px 3px 0 #2a1d0e !important;
+}
+.mc-lc-start:hover { background: #7cc94a !important; }
+.mc-lc-tut {
+  display: block; margin: 10px auto 0; background: none; border: none;
+  font-family: "MinecraftPixel", monospace !important; font-size: 8px !important;
+  color: #8a6d3b !important; cursor: pointer; text-decoration: underline;
+}
+
+/* 照片卡（拍立得） */
+.mc-photo-card { text-align: center; max-width: 420px; }
+.mc-polaroid {
+  background: #fff; border: 3px solid #3d2c15; padding: 10px 10px 4px;
+  box-shadow: 4px 4px 0 #2a1d0e; display: inline-block; margin: 10px 0 8px;
+  transform: rotate(-2deg);
+}
+.mc-photo-img { width: 168px; height: 168px; display: block; image-rendering: pixelated; }
+.mc-photo-fallback { width: 168px; height: 168px; display: flex; align-items: center; justify-content: center; font-size: 60px; }
+.mc-photo-cap { font-size: 9px !important; color: #4d3d28 !important; margin-bottom: 10px; }
+.mc-photo-btns { display: flex; gap: 10px; justify-content: center; margin-bottom: 10px; flex-wrap: wrap; }
+.mc-photo-later {
+  border: 3px solid #3d2c15 !important; background: #d9c9a3 !important; color: #3d2c15 !important;
+  font-family: "MinecraftPixel", monospace !important; font-size: 9px !important;
+  padding: 10px 14px !important; cursor: pointer; box-shadow: 3px 3px 0 #2a1d0e !important;
+}
+.mc-photo-later:hover { background: #e8dcc0 !important; }
+
+/* 进度点 */
+.mc-dots { display: inline-flex; gap: 3px; align-items: center; }
+.mc-dot { font-size: 9px; color: rgba(0,0,0,.18); }
+.mc-dot.is-on { color: #d946ef; }
+.mc-dot:last-child { font-size: 11px; color: rgba(0,0,0,.18); }
+.mc-dot:last-child.is-on { color: #f0b90b; }
+.mc-dots-big .mc-dot { font-size: 13px; }
+.mc-dots-big { margin-bottom: 10px; justify-content: center; }
+
+/* HUD 关卡徽章 */
+.mc-lv-badge {
+  font-size: 9px !important; color: #3d2c15 !important; background: #f0e0b8;
+  border: 2px solid #3d2c15; padding: 3px 7px;
+}
+.mc-reset-btn {
+  background: none; border: none; font-size: 15px; color: #3d2c15; cursor: pointer; padding: 0 4px;
+  margin-left: auto;
+}
+.mc-reset-btn:hover { color: #b3261e; }
+
+/* 电话卡的照片墙 */
+.mc-photo-wall { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-bottom: 12px; }
+.mc-photo-thumb {
+  background: #fff; border: 2px solid #3d2c15; padding: 3px; box-shadow: 2px 2px 0 #2a1d0e;
+}
+.mc-photo-thumb img { width: 44px; height: 44px; display: block; image-rendering: pixelated; }
+
+/* ===== 遍1：打击反馈（粒子/掉落/涟漪/震屏/弹跳） ===== */
+.mc-particle {
+  position: fixed;
+  width: 6px; height: 6px;
+  z-index: 9999;
+  pointer-events: none;
+  image-rendering: pixelated;
+  animation: mc-particle .62s steps(8) forwards;
+}
+@keyframes mc-particle {
+  0% { transform: translate(0, 0) scale(1); opacity: 1; }
+  100% { transform: translate(var(--dx), var(--dy)) scale(.4); opacity: 0; }
+}
+.mc-fly {
+  position: fixed;
+  width: 9px; height: 9px;
+  z-index: 9998;
+  pointer-events: none;
+  border: 1px solid rgba(0,0,0,.5);
+  animation: mc-fly .46s cubic-bezier(.4,0,.9,1) forwards;
+}
+@keyframes mc-fly {
+  0% { transform: translate(0, 0) scale(1.2); opacity: 1; }
+  85% { transform: translate(var(--tx), var(--ty)) scale(.8); opacity: 1; }
+  100% { transform: translate(var(--tx), var(--ty)) scale(0); opacity: 0; }
+}
+.mc-ripple {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2;
+  animation: mc-ripple .3s steps(4) forwards;
+}
+@keyframes mc-ripple {
+  0% { box-shadow: inset 0 0 0 0 rgba(255,255,255,.7); }
+  100% { box-shadow: inset 0 0 0 9px rgba(255,255,255,0); }
+}
+.mc-game-frame.is-shake { animation: mc-shake .16s steps(3); }
+@keyframes mc-shake {
+  25% { transform: translate(2px, -1px); }
+  50% { transform: translate(-2px, 1px); }
+  75% { transform: translate(1px, 1px); }
+}
+.mc-game-inv.is-pop { animation: mc-inv-pop .28s steps(4); }
+@keyframes mc-inv-pop {
+  40% { transform: scale(1.12); background: rgba(240,185,11,.28); }
+}
+.mc-snd-btn {
+  background: none; border: none; font-size: 14px; cursor: pointer;
+  padding: 0 5px; margin-left: auto; line-height: 1;
+}
+.mc-reset-btn { margin-left: 0; }
+.mc-snd-btn + .mc-reset-btn { margin-left: auto; }
+.mc-reset-btn.is-armed { color: #b3261e; animation: mc-inv-pop .3s steps(3); }
+
+/* ===== 遍2：视觉精美（立体纹理/洞穴背景/石砖边框/热感/入场） ===== */
+/* 方块立体化：顶部高光 + 底部阴影 + 细节纹理层 */
+.mc-cell-grass {
+  background: #5ea832 !important;
+  background-image:
+    linear-gradient(180deg, #8fd25a 0 30%, #5ea832 30%),
+    repeating-linear-gradient(90deg, rgba(255,255,255,.07) 0 3px, transparent 3px 7px) !important;
+  box-shadow: inset 0 2px 0 rgba(255,255,255,.28), inset 0 -3px 0 rgba(0,0,0,.24) !important;
+}
+.mc-cell-dirt {
+  background: #8f6b42 !important;
+  background-image:
+    repeating-linear-gradient(0deg, transparent 0 6px, rgba(0,0,0,.12) 6px 8px),
+    radial-gradient(circle at 28% 38%, rgba(0,0,0,.16) 0 2px, transparent 3px),
+    radial-gradient(circle at 72% 66%, rgba(255,255,255,.08) 0 2px, transparent 3px) !important;
+  box-shadow: inset 0 2px 0 rgba(255,255,255,.14), inset 0 -3px 0 rgba(0,0,0,.26) !important;
+}
+.mc-cell-stone {
+  background: #8a8a8a !important;
+  background-image:
+    repeating-linear-gradient(45deg, transparent 0 6px, rgba(0,0,0,.09) 6px 8px),
+    radial-gradient(circle at 64% 30%, rgba(255,255,255,.12) 0 2px, transparent 3px) !important;
+  box-shadow: inset 0 2px 0 rgba(255,255,255,.2), inset 0 -3px 0 rgba(0,0,0,.28) !important;
+}
+.mc-cell-coal {
+  background: #4a4a4a !important;
+  background-image:
+    radial-gradient(circle at 30% 40%, #171717 0 3px, transparent 4px),
+    radial-gradient(circle at 68% 62%, #171717 0 3px, transparent 4px),
+    radial-gradient(circle at 52% 22%, #5f5f5f 0 2px, transparent 3px) !important;
+  box-shadow: inset 0 2px 0 rgba(255,255,255,.1), inset 0 -3px 0 rgba(0,0,0,.32) !important;
+}
+.mc-cell-deepslate {
+  background: #484850 !important;
+  background-image:
+    repeating-linear-gradient(0deg, transparent 0 5px, rgba(0,0,0,.18) 5px 7px),
+    repeating-linear-gradient(90deg, rgba(255,255,255,.04) 0 4px, transparent 4px 9px) !important;
+  box-shadow: inset 0 2px 0 rgba(255,255,255,.08), inset 0 -3px 0 rgba(0,0,0,.36) !important;
+}
+/* 洞穴背景：挖空后不是死黑，是深色洞穴 + 稀疏矿石微光 */
+.mc-cell-air {
+  background: #17110b !important;
+  background-image:
+    radial-gradient(circle at 24% 30%, rgba(110,90,60,.28) 0 2px, transparent 3px),
+    radial-gradient(circle at 74% 68%, rgba(110,90,60,.2) 0 1px, transparent 2px),
+    radial-gradient(circle at 55% 82%, rgba(90,70,45,.22) 0 2px, transparent 3px) !important;
+  box-shadow: inset 0 0 10px rgba(0,0,0,.5) !important;
+}
+/* 棋盘石砖外框 + 外发光 */
+.mc-game-grid {
+  border: 4px solid #2a1d0e !important;
+  outline: 3px solid #5a4526;
+  outline-offset: -7px;
+  box-shadow: 0 0 0 3px #3d2c15, 0 10px 0 rgba(0,0,0,.35), 0 14px 34px rgba(0,0,0,.5) !important;
+}
+/* 热感：光标逼近目标 3 格内，目标闪烁加速加亮 */
+.mc-cell-camera.is-hot, .mc-cell-phone.is-hot {
+  animation-duration: .45s !important;
+  box-shadow: inset 0 0 18px rgba(255,255,255,.85), 0 0 12px rgba(255,255,255,.45) !important;
+}
+/* 开局逐格落下入场（对角线波浪） */
+.mc-cell.is-drop { animation: mc-cell-drop .3s steps(4) backwards; }
+@keyframes mc-cell-drop {
+  0% { transform: translateY(-14px); opacity: 0; }
+  60% { transform: translateY(2px); opacity: 1; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+/* 教学 DEMO 水印 */
+.mc-tut-grid { position: relative; }
+.mc-tut-grid::after {
+  content: "DEMO";
+  position: absolute;
+  top: -7px; right: -7px;
+  font-family: "MinecraftPixel", monospace !important;
+  font-size: 8px !important;
+  color: #fff8e1 !important;
+  background: #3d2c15;
+  border: 2px solid #1a140c;
+  padding: 2px 4px;
+  transform: rotate(6deg);
+  z-index: 3;
+}
+/* 图鉴 hover 放大 + 抬升 */
+.mc-photo-thumb { transition: transform .12s steps(3); cursor: pointer; }
+.mc-photo-thumb:hover { transform: scale(1.18) rotate(-3deg); z-index: 2; }
+/* 照片卡 / 胜利卡阴影体系统一 */
+.mc-polaroid, .mc-win-phone, .mc-photo-thumb { box-shadow: 3px 3px 0 #2a1d0e, 6px 6px 0 rgba(0,0,0,.28) !important; }
+
+/* ===== 遍3：演出层 ===== */
+.mc-countdown {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: "MinecraftPixel", monospace !important;
+  font-size: 72px !important;
+  color: #ffff55 !important;
+  text-shadow: 4px 4px 0 #1a1a1a !important;
+  z-index: 5;
+  pointer-events: none;
+  animation: mc-cd .34s steps(3) infinite;
+}
+@keyframes mc-cd { 0% { transform: scale(1.25); } 100% { transform: scale(1); } }
+.mc-flash {
+  position: fixed; inset: 0;
+  background: #fff;
+  z-index: 9990;
+  pointer-events: none;
+  animation: mc-flashout .24s ease-out forwards;
+}
+@keyframes mc-flashout { 0% { opacity: .85; } 100% { opacity: 0; } }
+.mc-gold-ripple {
+  position: fixed;
+  width: 12px; height: 12px;
+  margin: -6px 0 0 -6px;
+  border: 3px solid #f0b90b;
+  border-radius: 50%;
+  z-index: 9991;
+  pointer-events: none;
+  animation: mc-gold-ring .85s ease-out forwards;
+}
+@keyframes mc-gold-ring {
+  0% { transform: scale(1); opacity: 1; }
+  100% { transform: scale(9); opacity: 0; }
+}
+.mc-confetti {
+  position: fixed;
+  top: -10px;
+  width: 7px; height: 7px;
+  z-index: 9992;
+  pointer-events: none;
+  animation: mc-confetti 1.4s linear forwards;
+}
+@keyframes mc-confetti {
+  0% { transform: translateY(0) rotate(0deg); }
+  100% { transform: translateY(105vh) rotate(540deg); }
+}
+.mc-photo-card .mc-polaroid { animation: mc-pola-drop .5s steps(6) backwards; }
+@keyframes mc-pola-drop {
+  0% { transform: translateY(-40px) rotate(-10deg); opacity: 0; }
+  70% { transform: translateY(4px) rotate(-1deg); opacity: 1; }
+  100% { transform: translateY(0) rotate(-2deg); opacity: 1; }
+}
+.mc-new-tag {
+  position: absolute;
+  top: -10px; right: -14px;
+  font-family: "MinecraftPixel", monospace !important;
+  font-size: 9px !important;
+  color: #1a140c !important;
+  background: #ffff55;
+  border: 2px solid #1a140c;
+  padding: 3px 6px;
+  transform: rotate(12deg);
+  animation: mc-inv-pop .5s steps(4) .3s backwards;
+  z-index: 2;
+}
+.mc-polaroid { position: relative; }
+.mc-lc-stat {
+  font-size: 9px !important;
+  color: #8a6d3b !important;
+  background: rgba(240,224,184,.5);
+  border: 2px solid #3d2c15;
+  padding: 5px 9px;
+  margin-bottom: 10px;
+}
+.mc-totalbar {
+  height: 7px;
+  background: rgba(0,0,0,.4);
+  border: 2px solid #3d2c15;
+  margin: 0 0 8px;
+  overflow: hidden;
+}
+.mc-totalbar-fill {
+  height: 100%;
+  background: repeating-linear-gradient(90deg, #5ea832 0 6px, #7cc94a 6px 12px);
+  width: 0;
+  transition: width .4s steps(8);
+}
+
+/* ===== 遍4：成就 toast + 钻石方块 ===== */
+.mc-toast {
+  position: fixed;
+  top: 18px; right: -340px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #2a1d0e;
+  border: 3px solid #f0e0b8;
+  box-shadow: 4px 4px 0 rgba(0,0,0,.5);
+  padding: 10px 16px;
+  z-index: 10000;
+  transition: right .35s steps(8);
+  max-width: 300px;
+}
+.mc-toast.is-out { right: -340px; }
+@keyframes mc-toast-in { to { right: 18px; } }
+.mc-toast { animation: mc-toast-in .35s steps(8) forwards; }
+.mc-toast-icon { font-size: 24px; flex: none; }
+.mc-toast-title { font-family: "MinecraftPixel", monospace !important; font-size: 10px !important; color: #ffff55 !important; }
+.mc-toast-desc { font-family: "MinecraftPixel", monospace !important; font-size: 8px !important; color: #f0e0b8 !important; margin-top: 3px; }
+/* 钻石方块：蓝底菱形钻 */
+.mc-cell-gem {
+  background: #bfe9ff !important;
+  background-image:
+    linear-gradient(135deg, rgba(255,255,255,.9) 0 18%, transparent 18% 82%, rgba(30,120,190,.55) 82%),
+    linear-gradient(45deg, transparent 0 30%, rgba(79,216,255,.75) 30% 70%, transparent 70%),
+    linear-gradient(-45deg, transparent 0 30%, rgba(79,216,255,.75) 30% 70%, transparent 70%),
+    linear-gradient(180deg, #d8f2ff 0 30%, #4fd8ff 30%) !important;
+  box-shadow: inset 0 2px 0 rgba(255,255,255,.5), inset 0 -3px 0 rgba(20,90,150,.5), 0 0 8px rgba(79,216,255,.5) !important;
+}
+
+/* ===== 遍5：关卡内容 ===== */
+.mc-lc-log {
+  font-size: 8px !important;
+  color: #a8946c !important;
+  font-style: italic;
+  margin-bottom: 10px;
+}
+.mc-lc-select { display: flex; gap: 4px; justify-content: center; margin-bottom: 12px; flex-wrap: wrap; }
+.mc-lv-pick {
+  width: 28px; height: 28px;
+  font-family: "MinecraftPixel", monospace !important;
+  font-size: 10px !important;
+  border: 2px solid #3d2c15 !important;
+  background: #6b583d !important;
+  color: #c4b28c !important;
+  cursor: pointer;
+}
+.mc-lv-pick.is-open { background: #5ea832 !important; color: #fff !important; }
+.mc-lv-pick.is-open:hover { background: #7cc94a !important; }
+.mc-lv-pick.is-cur { outline: 2px solid #ffff55 !important; outline-offset: 1px; }
+.mc-lv-pick:disabled { cursor: not-allowed; opacity: .55; }
+.mc-tut-skiprow { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+
+/* ===== 遍6：移动端 + 可达性 ===== */
+@media (max-width: 640px) {
+  .mc-game-frame { max-width: 94vw; padding: 10px !important; }
+  .mc-game-grid { grid-auto-rows: minmax(20px, 5.6vw) !important; }
+  .mc-game-title { font-size: 10px !important; }
+  .mc-game-hud { font-size: 8px !important; gap: 4px 8px; }
+  .mc-lv-badge { font-size: 7px !important; padding: 2px 5px; }
+  .mc-game-inv, .mc-game-goal { font-size: 8px !important; }
+  .mc-tut-grid { grid-template-columns: repeat(4, 44px); grid-auto-rows: 44px; }
+  .mc-tut-steps { font-size: 8px !important; }
+  .mc-polaroid { padding: 7px 7px 3px; }
+  .mc-photo-img { width: 120px; height: 120px; }
+  .mc-photo-fallback { width: 120px; height: 120px; }
+  .mc-lc-start, .mc-tut-go { padding: 13px 16px !important; font-size: 10px !important; }
+  .mc-photo-btns .mc-win-close, .mc-photo-later, .mc-win-close { min-height: 40px; padding: 9px 12px !important; }
+  .mc-countdown { font-size: 54px !important; }
+  .mc-toast { max-width: 74vw; }
+  .mc-lv-pick { width: 30px; height: 30px; }
+}
+/* 系统级减动效：尊重用户偏好 */
+@media (prefers-reduced-motion: reduce) {
+  .mc-particle, .mc-fly, .mc-confetti, .mc-ripple, .mc-gold-ripple { display: none !important; }
+  .mc-game-frame.is-shake { animation: none !important; }
+  .mc-cell.is-cursor::after { animation: none !important; }
+  .mc-cell-camera, .mc-cell-phone { animation: none !important; }
+  .mc-cell.is-drop { animation-duration: 0.01s !important; }
+}
+/* 键盘操作可见焦点 */
+.mc-lc-start:focus-visible, .mc-tut-go:focus-visible, .mc-win-close:focus-visible,
+.mc-photo-later:focus-visible, .mc-reset-btn:focus-visible, .mc-snd-btn:focus-visible,
+.mc-lv-pick:focus-visible {
+  outline: 3px solid #ffff55 !important;
+  outline-offset: 2px;
+}
+
+/* ===== 遍9：精修打磨 ===== */
+/* 1. 棋盘 1px 砖缝（MC 方块贴图感） */
+.mc-game-grid { gap: 1px !important; background: #221a10 !important; }
+/* 2. HUD 面板化：分组有底 */
+.mc-game-hud {
+  background: rgba(240,224,184,.55);
+  border: 2px solid #3d2c15;
+  padding: 6px 10px;
+  margin-bottom: 6px;
+}
+/* 3. 标题行下像素分隔线 */
+.mc-game-title { border-bottom: 2px dashed #8a6d3b; padding-bottom: 6px; }
+/* 4. 照片卡标题金色渐变字 */
+.mc-ach-title {
+  background: linear-gradient(180deg, #fff3c4, #f0b90b);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(2px 2px 0 rgba(0,0,0,.35));
+}
+/* 5. MC 经典按钮手感：hover 抬起、active 按下 */
+.mc-lc-start, .mc-tut-go, .mc-win-close, .mc-photo-later { transition: none; }
+.mc-lc-start:hover, .mc-tut-go:hover, .mc-win-close:hover { transform: translate(-1px, -1px); box-shadow: 4px 4px 0 #2a1d0e !important; }
+.mc-lc-start:active, .mc-tut-go:active, .mc-win-close:active, .mc-photo-later:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 #2a1d0e !important; }
+/* 6. 电话号码鎏金渐变字 */
+.mc-win-num {
+  background: linear-gradient(180deg, #fff3c4 0 45%, #f0b90b 45%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(2px 2px 0 rgba(0,0,0,.4));
+}
+/* 7. 硬度表 swatch 统一像素方块（无圆角）+ 缩放一致 */
+.mc-lc-sw { width: 14px; height: 14px; border-radius: 0; image-rendering: pixelated; }
+/* 8. toast 图标底框 */
+.mc-toast-icon {
+  background: rgba(255,255,85,.12);
+  border: 2px solid #f0e0b8;
+  width: 40px; height: 40px;
+  display: flex; align-items: center; justify-content: center;
+}
+/* 9. 底部帮助行半透明底 + 居中 */
+.mc-game-help {
+  background: rgba(240,224,184,.4);
+  border-top: 2px solid #3d2c15;
+  text-align: center;
+  padding: 6px 8px;
+}
+/* 10. 关卡卡目标块复用呼吸动画 */
+.mc-lc-goal-block.mc-cell-camera, .mc-lc-goal-block.mc-cell-phone { animation: mc-cam-glow 1.4s steps(2) infinite; }
+
+/* ===== 终极大祝贺：礼花秀 ===== */
+.mc-finale {
+  position: fixed;
+  inset: 0;
+  z-index: 9995;
+  pointer-events: none;
+  overflow: hidden;
+  background: radial-gradient(ellipse at 50% 30%, rgba(60,40,10,.55), rgba(0,0,0,.75));
+  animation: mc-finale-bg .38s steps(4) backwards;
+}
+@keyframes mc-finale-bg { 0% { opacity: 0; } 100% { opacity: 1; } }
+.mc-finale-banner {
+  position: absolute;
+  left: 50%;
+  top: 30vh;
+  transform: translateX(-50%);
+  text-align: center;
+  animation: mc-banner .55s steps(6) backwards;
+  width: max-content;
+  max-width: 94vw;
+}
+@keyframes mc-banner {
+  0% { transform: translateX(-50%) scale(0); }
+  70% { transform: translateX(-50%) scale(1.12); }
+  100% { transform: translateX(-50%) scale(1); }
+}
+.mc-finale-title {
+  font-family: "MinecraftPixel", monospace !important;
+  font-size: 30px !important;
+  background: linear-gradient(180deg, #fff3c4 0 45%, #f0b90b 45%, #c99a08 80%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(3px 3px 0 #1a140c) drop-shadow(6px 6px 0 rgba(0,0,0,.5));
+  animation: mc-banner-bounce .8s steps(4) .55s infinite alternate;
+}
+@keyframes mc-banner-bounce {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-7px); }
+}
+.mc-finale-sub {
+  font-family: "MinecraftPixel", monospace !important;
+  font-size: 14px !important;
+  color: #fff8e1 !important;
+  text-shadow: 3px 3px 0 #1a140c !important;
+  margin-top: 14px;
+}
+.mc-finale-sub2 { font-size: 10px !important; color: #ffff55 !important; margin-top: 8px; }
+.mc-fw {
+  position: absolute;
+  width: 5px; height: 5px;
+  image-rendering: pixelated;
+  animation: mc-fw 1.15s cubic-bezier(.15,.6,.6,1) forwards;
+}
+@keyframes mc-fw {
+  0% { transform: translate(0, 0) scale(1.4); opacity: 1; }
+  55% { opacity: 1; }
+  100% { transform: translate(var(--dx), var(--dy)) scale(.3); opacity: 0; }
+}
+
+/* ===== 情绪价值：发光礼花粒子 ===== */
+.mc-particle.is-glow {
+  box-shadow: 0 0 6px 1px rgba(255, 255, 200, .8);
+  animation: mc-particle-glow .7s cubic-bezier(.2,.7,.4,1) forwards;
+}
+@keyframes mc-particle-glow {
+  0% { transform: translate(0, 0) scale(1.4); opacity: 1; }
+  55% { opacity: 1; }
+  100% { transform: translate(var(--dx), var(--dy)) scale(.3); opacity: 0; }
+}
+
+/* ===== 第二篇章：黑曜石方块（hp4，敲 4 下） ===== */
+.mc-cell-obsidian {
+  background: #1b1023 !important;
+  background-image:
+    linear-gradient(135deg, rgba(180,130,255,.28) 0 14%, transparent 14% 46%, rgba(90,50,150,.32) 46% 58%, transparent 58%),
+    repeating-linear-gradient(90deg, transparent 0 5px, rgba(140,90,220,.14) 5px 7px),
+    repeating-linear-gradient(0deg, transparent 0 6px, rgba(0,0,0,.28) 6px 9px) !important;
+  box-shadow: inset 0 2px 0 rgba(190,140,255,.22), inset 0 -3px 0 rgba(0,0,0,.55), 0 0 6px rgba(120,70,200,.18) !important;
+}
+
+/* ===== 彩蛋游戏②：扫雷 10 关 ===== */
+.ms-btn {
+  background: none; border: none; font-size: 16px; cursor: pointer;
+  padding: 0 4px; line-height: 1;
+}
+.ms-reset { background: none; border: none; font-size: 14px; color: #3d2c15; cursor: pointer; }
+.ms-frame { max-width: 760px; width: 94vw; }
+.ms-board {
+  display: grid;
+  gap: 2px;
+  background: #2a1d0e;
+  border: 4px solid #3d2c15;
+  padding: 3px;
+  margin: 8px auto;
+  width: fit-content;
+  image-rendering: pixelated;
+}
+.ms-cell {
+  width: 34px; height: 34px;
+  background: #6b8c3a;
+  border: 2px solid;
+  border-color: #9fd45e #2e4a18 #2e4a18 #9fd45e;
+  font-family: "MinecraftPixel", monospace !important;
+  font-size: 12px !important;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  color: #fff;
+}
+.ms-cell:hover { filter: brightness(1.18); }
+.ms-cell.is-open {
+  background: #c9b78c;
+  border: 1px solid #8a7959;
+  cursor: default;
+}
+.ms-cell.is-flag { color: #ff5555; }
+.ms-cell.is-boom { background: #b3261e !important; }
+.ms-cell.n1 { color: #1e4fd8 !important; }
+.ms-cell.n2 { color: #2e7d32 !important; }
+.ms-cell.n3 { color: #c62828 !important; }
+.ms-cell.n4 { color: #6a1b9a !important; }
+.ms-cell.n5 { color: #8d4a00 !important; }
+.ms-cell.n6 { color: #00796b !important; }
+.ms-timer { font-size: 10px !important; color: #8a6d3b !important; }
+.ms-confetti {
+  position: fixed; top: -10px; width: 7px; height: 7px;
+  z-index: 9992; pointer-events: none;
+  animation: mc-confetti 1.6s linear forwards;
+}
+@media (max-width: 640px) { .ms-cell { width: 26px; height: 26px; font-size: 9px !important; } }
+
+/* ===== 彩蛋③：俄罗斯方块 10 关 ===== */
+.tt-btn { background: none; border: none; font-size: 16px; cursor: pointer; padding: 0 4px; }
+.tt-frame { width: 94vw; max-width: 660px; }
+.tt-playrow { display: flex; gap: 12px; justify-content: center; align-items: flex-start; }
+.tt-board {
+  display: grid; grid-template-columns: repeat(10, 1fr); gap: 1px;
+  background: #1a140c; border: 4px solid #3d2c15; padding: 2px;
+}
+.tt-cell { width: 20px; height: 20px; background: #221a10; box-shadow: inset 0 0 0 1px rgba(255,255,255,.04); }
+.tt-cell.on { box-shadow: inset 2px 2px 0 rgba(255,255,255,.4), inset -2px -2px 0 rgba(0,0,0,.4); }
+.tt-cell.cur { filter: brightness(1.25); }
+.tt-cell.is-clear { background: #ffff55 !important; animation: mc-inv-pop .12s steps(2) infinite; }
+.tt-side { display: flex; flex-direction: column; gap: 8px; }
+.tt-next { display: grid; grid-template-columns: repeat(4, 16px); grid-auto-rows: 16px; gap: 1px; background: #1a140c; border: 3px solid #3d2c15; padding: 4px; width: fit-content; }
+.tt-pad { display: grid; grid-template-columns: repeat(3, 34px); gap: 4px; }
+.tt-padbtn {
+  font-family: "MinecraftPixel", monospace !important; font-size: 12px !important;
+  background: #5a4526; color: #fff8e1; border: 2px solid #3d2c15; cursor: pointer;
+  min-height: 32px;
+}
+.tt-padbtn:active { background: #7cc94a; }
+@media (max-width: 640px) { .tt-cell { width: 15px; height: 15px; } .tt-padbtn { min-height: 40px; } }
+
+/* ===== 彩蛋④：纸牌接龙 10 关 ===== */
+.sl-btn { background: none; border: none; font-size: 16px; cursor: pointer; padding: 0 4px; }
+.sl-frame { width: 94vw; max-width: 780px; }
+.sl-top { display: flex; gap: 12px; align-items: flex-start; margin-bottom: 12px; flex-wrap: wrap; }
+.sl-stock, .sl-waste { min-width: 64px; min-height: 90px; }
+.sl-foundations, .sl-tableau { display: flex; gap: 8px; flex-wrap: wrap; }
+.sl-tableau { justify-content: center; }
+.sl-col { width: 72px; min-height: 120px; position: relative; }
+.sl-card {
+  width: 64px; height: 90px;
+  background: #fff8e1; border: 2px solid #3d2c15;
+  box-shadow: 2px 2px 0 rgba(0,0,0,.4);
+  font-family: "MinecraftPixel", monospace !important; font-size: 12px !important;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; position: relative; user-select: none;
+}
+.sl-card.sl-back { background: #3d2c15; color: #f0b90b; }
+.sl-card.sl-empty { background: rgba(255,255,255,.12); border-style: dashed; color: rgba(255,255,255,.3); }
+.sl-card.is-sel { outline: 3px solid #ffff55; outline-offset: 1px; }
+@media (max-width: 640px) { .sl-card { width: 44px; height: 64px; font-size: 9px !important; } .sl-col { width: 50px; } }
+
+/* ===== 彩蛋⑤：雷电 10 关 ===== */
+.rd-btn { background: none; border: none; font-size: 16px; cursor: pointer; padding: 0 4px; }
+.rd-frame { width: 94vw; max-width: 620px; }
+.rd-playrow { display: flex; gap: 12px; justify-content: center; align-items: flex-start; }
+.rd-canvas {
+  width: 300px; height: 420px;
+  image-rendering: pixelated;
+  border: 4px solid #3d2c15;
+  background: #0b0d16;
+  touch-action: none;
+  cursor: crosshair;
+}
+.rd-side { display: flex; flex-direction: column; gap: 6px; min-width: 110px; }
+.rd-fire {
+  font-family: "MinecraftPixel", monospace !important;
+  font-size: 14px !important; color: #4fd8ff !important;
+  background: rgba(79,216,255,.12); border: 2px solid #3d2c15;
+  padding: 6px 10px; width: fit-content;
+}
+.rd-ops { white-space: pre-line; font-size: 8px !important; color: #6b583d !important; line-height: 1.9; }
+.rd-bosswrap { height: 9px; background: rgba(0,0,0,.45); border: 2px solid #b3261e; margin: 0 0 6px; overflow: hidden; }
+.rd-bossfill {
+  height: 100%; width: 100%;
+  background: repeating-linear-gradient(90deg, #c62828 0 6px, #ff7043 6px 12px);
+  transition: width .18s steps(4);
+}
+@media (max-width: 640px) {
+  .rd-canvas { width: 76vw; height: 106vw; max-height: 62vh; }
+  .rd-side { flex-direction: row; flex-wrap: wrap; align-items: center; }
+}
+
+/* ===== 雷电：全屏（is-fs class 由 fullscreenchange/伪全屏驱动） ===== */
+.rd-fsbtn { background: none; border: none; font-size: 14px; color: #3d2c15; cursor: pointer; padding: 0 5px; }
+.rd-fsbtn:hover { color: #f0b90b; }
+.rd-frame.is-fs {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  width: 100vw !important;
+  max-width: none !important;
+  height: 100vh;
+  background: #12100b;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.rd-frame.is-fs .rd-playrow { flex: 1; min-height: 0; align-items: center; justify-content: center; position: relative; background: #0b0d16; }
+.rd-frame.is-fs .rd-canvas { height: 100%; width: auto; max-width: 94vw; border-color: #1a140c; }
+.rd-frame.is-fs .rd-side { display: none; }
+.rd-frame.is-fs .rd-bosswrap { width: min(72vw, 560px); margin: 0 auto 5px; }
+.rd-frame.is-fs .mc-panel {
+  position: absolute;
+  left: 50%; top: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 10;
+  background: #f4ecd4;
+  border: 4px solid #3d2c15;
+  box-shadow: 8px 8px 0 rgba(0,0,0,.55);
+  max-height: 86vh;
+  overflow: auto;
+  padding: 18px 22px !important;
+}
+
+/* ===== 雷电：大爆雷按钮 ===== */
+.rd-bombbtn {
+  font-family: "MinecraftPixel", monospace !important;
+  font-size: 10px !important;
+  background: #ff7043; color: #fff;
+  border: 2px solid #3d2c15;
+  box-shadow: 2px 2px 0 #2a1d0e;
+  padding: 8px 10px;
+  cursor: pointer;
+  width: fit-content;
+}
+.rd-bombbtn:hover { background: #ff8a65; }
+.rd-bombbtn:active { transform: translate(1px, 1px); box-shadow: 1px 1px 0 #2a1d0e; }
+.rd-bombbtn:disabled { opacity: .45; cursor: not-allowed; }
+
+/* ===== 游戏中心 ===== */
+.mc-hub-btn {
+  background: none; border: none; font-size: 17px; cursor: pointer;
+  padding: 0 5px; line-height: 1;
+}
+.mc-hub-btn:hover { filter: brightness(1.3); }
+.mc-hub-hidden { display: none !important; } /* 五游戏原入口按钮由中心统一代理 */
+.mc-hub-frame { width: 94vw; max-width: 640px; }
+.mc-hub-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.mc-hub-card {
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  background: #f4ecd4; border: 3px solid #3d2c15;
+  box-shadow: 3px 3px 0 #2a1d0e;
+  padding: 14px 10px;
+  cursor: pointer;
+  font-family: inherit;
+}
+.mc-hub-card:hover { transform: translate(-1px,-1px); box-shadow: 4px 4px 0 #2a1d0e; background: #fff8e1; }
+.mc-hub-card:active { transform: translate(1px,1px); box-shadow: 1px 1px 0 #2a1d0e; }
+.mc-hub-icon { font-size: 26px; }
+.mc-hub-name { font-family: "MinecraftPixel", monospace !important; font-size: 11px !important; color: #3d2c15 !important; }
+.mc-hub-sub { font-family: "MinecraftPixel", monospace !important; font-size: 8px !important; color: #8a6d3b !important; }
+.mc-hub-prog {
+  font-family: "MinecraftPixel", monospace !important; font-size: 8px !important;
+  color: #fff !important; background: #5ea832; border: 2px solid #3d2c15;
+  padding: 2px 6px; margin-top: 4px;
+}
+.mc-hub-prog.is-clear { background: #f0b90b; }
+@media (max-width: 640px) { .mc-hub-grid { grid-template-columns: 1fr 1fr; } .mc-hub-card { padding: 10px 6px; } }
+
+/* ===== 彩蛋⑥：中国象棋 10 关 ===== */
+.cc-btn { background: none; border: none; font-size: 16px; cursor: pointer; padding: 0 4px; }
+.cc-frame { width: 94vw; max-width: 560px; }
+.cc-board {
+  display: grid;
+  grid-template-columns: repeat(9, 1fr);
+  gap: 1px;
+  background: #3d2c15;
+  border: 4px solid #3d2c15;
+  padding: 3px;
+  margin: 8px auto;
+  width: fit-content;
+}
+.cc-cell {
+  width: 44px; height: 48px;
+  background: #e8d9b0;
+  display: flex; align-items: center; justify-content: center;
+  font-family: "MinecraftPixel", monospace !important;
+  font-size: 22px !important;
+  cursor: pointer;
+  position: relative;
+}
+.cc-cell.alt { background: #e2d1a3; }
+.cc-cell.has { font-weight: bold; }
+.cc-cell.red { color: #c62828; }
+.cc-cell.blk { color: #1a1a1a; }
+.cc-cell.is-sel { background: #ffd54f !important; box-shadow: inset 0 0 0 3px #c62828; }
+.cc-cell.can::after {
+  content: "";
+  position: absolute; inset: 6px;
+  border: 2px dashed rgba(94,168,50,.8);
+  pointer-events: none;
+}
+@media (max-width: 640px) { .cc-cell { width: 9vw; height: 9.8vw; font-size: 4.6vw !important; } }

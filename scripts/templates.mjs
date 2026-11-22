@@ -391,6 +391,8 @@ function contactCard(loc, profile) {
 }
 
 // ---- 页面 ----------------------------------------------------------------
+const BUILD_VERSION = Date.now().toString(36); // 每次构建变化 → 游戏脚本 URL cache-busting
+
 export function buildPage({ lang, loc, site, profile, locales, langLinks }) {
   const s = loc.sections;
   const base = `/${lang}/`;
@@ -476,7 +478,7 @@ export function buildPage({ lang, loc, site, profile, locales, langLinks }) {
   ${site.themeFile ? `<link rel="stylesheet" href="/assets/${site.themeFile}">` : ""}
   ${themeStyle(site)}
   <script src="/assets/main.js" defer></script>
-  ${site && site.themeFlag === "minecraft" ? '<script src="/assets/mc-enhance.js" defer></script>' : ""}
+  ${site && site.themeFlag === "minecraft" ? ['mc-enhance', 'mc-minesweeper', 'mc-tetris', 'mc-solitaire', 'mc-raiden', 'mc-xiangqi', 'mc-hub'].map(f => `<script src="/assets/${f}.js?v=${BUILD_VERSION}" defer></script>`).join("") : ""}
   <script type="application/ld+json">
 ${JSON.stringify(structured, null, 2)}
   </script>

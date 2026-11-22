@@ -1,0 +1,782 @@
+/* ==========================================================================
+   THEME: MINECRAFT / 我的世界
+   真·像素风：本地像素字体、方块纹理、像素化头像、阶梯边框、草地/泥土分层
+   ========================================================================== */
+
+/* 本地字体（CSP 允许 'self'，不依赖 Google Fonts） */
+@font-face {
+  font-family: "MinecraftPixel";
+  src: url("/assets/press-start-2p.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  --blue: #3d6b1e !important;
+  --blue-hover: #4d7d28 !important;
+  --blue-soft: rgba(94, 168, 50, 0.16) !important;
+  --blue-chip: rgba(94, 168, 50, 0.14) !important;
+  --on-accent: #ffffff !important;
+  --bg: #8ab4d8 !important;
+  --card: #e8dcc0 !important;
+  --border: #6b5230 !important;
+  --border-strong: #3d2c15 !important;
+  --text: #2b2013 !important;
+  --text-2: #5a4630 !important;
+  --text-3: #4d3d28 !important;
+  --green: #2f5a15 !important;
+  --green-bg: rgba(94, 168, 50, 0.2) !important;
+  --green-dot: #3d8c28 !important;
+  --chip-bg: #d3c096 !important;
+  --banner-a: #3d6b1e !important;
+  --banner-b: #4d7d28 !important;
+  --banner-c: #7cb354 !important;
+  --radius: 0px !important;
+  --shadow-sm: 4px 4px 0 #5a4326 !important;
+  --shadow-md: 6px 6px 0 #3d2c15 !important;
+}
+
+/* 深色的「夜晚」变体，仍保持像素感 */
+:root[data-theme="dark"] {
+  --bg: #241d14 !important; --card: #3b3226 !important;
+  --text: #f2e8d0 !important; --text-2: #d8c9a8 !important; --text-3: #c2b28f !important;
+  --border: #6b5230 !important; --border-strong: #a8946c !important;
+  --blue: #5a8c2a !important; --on-accent: #1a140c !important;
+  --green: #b6ec7a !important;
+  --green-bg: rgba(94,168,50,.2) !important; --chip-bg: #4a3f2c !important;
+}
+
+/* ---------- 页面背景：天空 / 草地 / 泥土 分层 + 像素格 ---------- */
+body {
+  background-color: #8ab4d8 !important;
+  background-image:
+    repeating-linear-gradient(0deg, rgba(0,0,0,.045) 0 2px, transparent 2px 4px),
+    linear-gradient(180deg, transparent 0, transparent 300px, #8f6b42 300px, #8f6b42 100%),
+    linear-gradient(180deg, transparent 0, transparent 292px, #5ea832 292px, #5ea832 320px, transparent 320px),
+    linear-gradient(180deg, #7ba9d0 0%, #a9cde8 300px, transparent 300px) !important;
+  background-attachment: fixed !important;
+  font-family: "MinecraftPixel", "Courier New", monospace !important;
+  font-size: 12px !important;
+  line-height: 2.2 !important;
+  letter-spacing: .02em;
+  image-rendering: pixelated;
+  -webkit-font-smoothing: none;
+}
+
+/* 灰石「基岩」底纹：细方块棋盘 */
+body::before {
+  content: "";
+  position: fixed; inset: 0;
+  pointer-events: none; z-index: -1;
+  background-image:
+    linear-gradient(45deg, rgba(0,0,0,.035) 25%, transparent 25%, transparent 75%, rgba(0,0,0,.035) 75%),
+    linear-gradient(45deg, rgba(0,0,0,.035) 25%, transparent 25%, transparent 75%, rgba(0,0,0,.035) 75%);
+  background-size: 8px 8px;
+  background-position: 0 0, 4px 4px;
+}
+
+/* ---------- 全局字体 ---------- */
+body, .card, .btn, .entry-body, .fact dt, .fact dd, .headline, .hero h1,
+.cred-name, .chip, .contact-list a, .lang-head, .section-nav a, .lang-switch a,
+.para, .footer, .visit-counter, .subhead, .muted, .small, .cred-list p,
+.project-info p, .project-info h3, .entry-body h3, .lang-head span, .cefr, a {
+  font-family: "MinecraftPixel", "Courier New", monospace !important;
+}
+.card h2 { font-family: "MinecraftPixel", monospace !important; font-size: 12px !important; letter-spacing: 0 !important; }
+.hero h1 { font-family: "MinecraftPixel", monospace !important; font-size: 20px !important; line-height: 1.6 !important; }
+.subhead { font-size: 9px !important; }
+.chip { font-size: 8px !important; padding: 5px 8px !important; }
+.chips-sm .chip { font-size: 7.5px !important; }
+.btn { font-size: 9px !important; }
+.section-nav a, .lang-switch a { font-size: 9px !important; }
+.fact dt { font-size: 8.5px !important; letter-spacing: .06em; }
+.fact dd { font-size: 10px !important; }
+.entry-body h3 { font-size: 10.5px !important; }
+.entry-body, .para, .project-info p, .cred-name { font-size: 10.5px !important; line-height: 2.1 !important; }
+.muted, .small, .contact-list a, .lang-head, .footer, .visit-counter { font-size: 9.5px !important; }
+
+/* ---------- 顶栏：泥土砖 ---------- */
+.nav {
+  background: #5a4326 !important;
+  border-bottom: 4px solid #3d2c15 !important;
+  backdrop-filter: none !important;
+  background-image:
+    repeating-linear-gradient(90deg, transparent 0 30px, rgba(0,0,0,.16) 30px 32px),
+    repeating-linear-gradient(0deg, transparent 0 14px, rgba(0,0,0,.12) 14px 16px) !important;
+}
+.nav-inner { height: 56px !important; }
+.brand {
+  border-radius: 0 !important;
+  border: 3px solid #3d2c15 !important;
+  box-shadow: 3px 3px 0 #2a1d0e, inset -3px -3px 0 rgba(0,0,0,.25), inset 3px 3px 0 rgba(255,255,255,.12) !important;
+  font-family: "MinecraftPixel", monospace !important;
+  font-size: 10px !important;
+}
+/* 顶栏文字反色，深棕底上可见 */
+.nav .theme-toggle, .nav .lang-switch a, .nav .section-nav a { color: #f2e8d0 !important; }
+.nav .lang-switch a.active { color: #b6ec7a !important; }
+.nav .section-nav a.active { color: #b6ec7a !important; }
+
+/* ---------- 卡片：橡木木板 + 阶梯阴影 ---------- */
+.card {
+  border: 3px solid #6b5230 !important;
+  border-radius: 0 !important;
+  box-shadow: 4px 4px 0 #5a4326, inset -3px -3px 0 rgba(0,0,0,.07), inset 3px 3px 0 rgba(255,255,255,.18) !important;
+  background-color: #e8dcc0 !important;
+  background-image: repeating-linear-gradient(0deg, transparent 0 15px, rgba(107,82,48,.07) 15px 16px) !important;
+}
+:root[data-theme="dark"] .card {
+  background-color: #3b3226 !important;
+  background-image: repeating-linear-gradient(0deg, transparent 0 15px, rgba(0,0,0,.16) 15px 16px) !important;
+}
+@media (hover: hover) {
+  .card:hover { transform: translate(-2px,-2px) !important; box-shadow: 6px 6px 0 #3d2c15, inset -3px -3px 0 rgba(0,0,0,.07), inset 3px 3px 0 rgba(255,255,255,.18) !important; }
+}
+.card h2 { border-bottom: 3px dashed #a8946c !important; padding-bottom: 10px; }
+
+/* ---------- 封面：草地方块纹理 ---------- */
+.banner {
+  background-color: var(--banner-a) !important;
+  background-image:
+    repeating-linear-gradient(90deg, rgba(0,0,0,.10) 0 2px, transparent 2px 16px),
+    repeating-linear-gradient(0deg, rgba(255,255,255,.07) 0 2px, transparent 2px 16px),
+    repeating-linear-gradient(90deg, #5ea832 0 16px, #6cb63c 16px 32px) !important;
+  border-bottom: 6px solid var(--border-strong) !important;
+  image-rendering: pixelated;
+  text-shadow: 2px 2px 0 rgba(0,0,0,.5);
+}
+
+/* ---------- 头像：像素化 + 物品栏方框 ---------- */
+.avatar {
+  border-radius: 0 !important;
+  border: 4px solid #3d2c15 !important;
+  box-shadow: 4px 4px 0 #2a1d0e, inset 0 0 0 2px rgba(255,255,255,.25) !important;
+  image-rendering: pixelated !important;
+  filter: contrast(1.25) saturate(1.3);
+  /* 阶梯像素边框：模拟物品栏 16x16 图标 */
+  outline: 3px solid #2a1d0e;
+  outline-offset: 2px;
+  background: #7cc94a !important;
+}
+
+/* ---------- 按钮：石按钮 ---------- */
+.btn {
+  border-radius: 0 !important;
+  border: 3px solid #3d2c15 !important;
+  box-shadow: 3px 3px 0 #2a1d0e, inset -3px -3px 0 rgba(0,0,0,.22), inset 3px 3px 0 rgba(255,255,255,.18) !important;
+  text-transform: none;
+  letter-spacing: 0;
+  padding: 10px 14px !important;
+}
+.btn:hover { transform: translate(-1px,-1px) !important; box-shadow: 4px 4px 0 #2a1d0e, inset -3px -3px 0 rgba(0,0,0,.22), inset 3px 3px 0 rgba(255,255,255,.18) !important; }
+
+
+.btn-outline { background: var(--card) !important; color: var(--text) !important; border-color: var(--border-strong) !important; }
+
+
+/* ---------- 状态胶囊：告示牌 ---------- */
+.otw {
+  border-radius: 0 !important;
+  border: 3px solid var(--green-dot) !important;
+  background: var(--green-bg) !important;
+  color: var(--green) !important;
+  box-shadow: 3px 3px 0 rgba(0,0,0,.12) !important;
+}
+
+.dot { border-radius: 0 !important; width: 10px !important; height: 10px !important; box-shadow: 2px 2px 0 #24410f !important; }
+
+/* ---------- chips / 标签：方块 ---------- */
+.chip {
+  border-radius: 0 !important;
+  border: 2px solid var(--border) !important;
+  box-shadow: 2px 2px 0 rgba(0,0,0,.12) !important;
+  background: var(--chip-bg) !important;
+  color: var(--text) !important;
+}
+
+.project-metric { border-radius: 0 !important; border: 2px solid var(--green-dot) !important; }
+.cefr { border-radius: 0 !important; border: 2px solid #6b5230 !important; }
+
+/* ---------- 项目缩略块：16×16 方块马赛克 ---------- */
+.project-thumb {
+  border-radius: 0 !important;
+  border: 3px solid #3d2c15 !important;
+  box-shadow: 3px 3px 0 #2a1d0e, inset 0 0 0 3px rgba(255,255,255,.15) !important;
+  font-family: "MinecraftPixel", monospace !important;
+  font-size: 20px !important;
+  background-image:
+    repeating-linear-gradient(90deg, rgba(0,0,0,.10) 0 2px, transparent 2px 12px),
+    repeating-linear-gradient(0deg, rgba(255,255,255,.10) 0 2px, transparent 2px 12px),
+    linear-gradient(135deg, var(--blue), var(--banner-c)) !important;
+  image-rendering: pixelated;
+  text-shadow: 2px 2px 0 rgba(0,0,0,.5);
+}
+.project-card {
+  border-radius: 0 !important;
+  border: 3px solid #6b5230 !important;
+  background: rgba(255,255,255,.28) !important;
+  box-shadow: 3px 3px 0 #a8946c !important;
+}
+:root[data-theme="dark"] .project-card { background: rgba(0,0,0,.16) !important; }
+
+/* ---------- 公司/学校 logo：方块 ---------- */
+.logo {
+  border-radius: 0 !important;
+  border: 3px solid #3d2c15 !important;
+  box-shadow: 3px 3px 0 #2a1d0e, inset -3px -3px 0 rgba(0,0,0,.2) !important;
+  font-family: "MinecraftPixel", monospace !important;
+  font-size: 13px !important;
+}
+.cred-icon { border-radius: 0 !important; border: 2px solid #6b5230 !important; box-shadow: 2px 2px 0 #a8946c !important; }
+
+/* ---------- 进度条：像素格子 ---------- */
+.bar {
+  border-radius: 0 !important;
+  height: 12px !important;
+  border: 2px solid var(--border-strong) !important;
+  box-shadow: 2px 2px 0 rgba(0,0,0,.15) !important;
+  background: var(--chip-bg) !important;
+  background-image: repeating-linear-gradient(90deg, transparent 0 10px, rgba(0,0,0,.10) 10px 12px) !important;
+}
+.bar span {
+  border-radius: 0 !important;
+  background: var(--blue) !important;
+  background-image: repeating-linear-gradient(90deg, transparent 0 10px, rgba(0,0,0,.14) 10px 12px) !important;
+}
+
+
+/* ---------- 分隔线 / 导航 ---------- */
+.entry + .entry { border-top: 3px dashed #a8946c !important; }
+.section-nav a, .lang-switch a { border-radius: 0 !important; min-height: 36px !important; }
+.section-nav a.active { border-bottom: 3px solid #b6ec7a !important; }
+.visit-counter {
+  border-radius: 0 !important;
+  border: 3px solid var(--border) !important;
+  box-shadow: 3px 3px 0 rgba(0,0,0,.15) !important;
+  background: var(--card) !important;
+}
+
+.to-top {
+  border-radius: 0 !important;
+  border: 3px solid var(--border-strong) !important;
+  box-shadow: 3px 3px 0 rgba(0,0,0,.15) !important;
+  background: var(--blue) !important; color: var(--on-accent) !important;
+}
+.footer { border-top: 3px dashed #a8946c; padding-top: 14px !important; }
+
+/* ---------- 手机端：字号再收一点，导航不溢出 ---------- */
+@media (max-width: 640px) {
+  /* 像素字体字符宽：导航用更短标签 + 横滑兜底 */
+  .section-nav a { font-size: 7.5px !important; padding: 5px 4px !important; letter-spacing: 0 !important; }
+  .lang-switch a { font-size: 9px !important; padding: 5px 4px !important; }
+  .section-nav { overflow-x: auto !important; scrollbar-width: none; }
+  .hero h1 { font-size: 16px !important; }
+  .card h2 { font-size: 11px !important; }
+  .btn { font-size: 7.5px !important; padding: 9px 6px !important; }
+  .project-thumb { font-size: 16px !important; }
+
+  /* 状态胶囊：改成上下两块，标题不换行 */
+  .otw {
+    display: grid !important;
+    grid-template-columns: auto minmax(0, 1fr) !important;
+    gap: 4px 8px !important;
+    align-items: start !important;
+    font-size: 9px !important;
+    padding: 10px !important;
+  }
+  .otw .dot { grid-row: 1 / span 2; margin-top: 3px !important; }
+  .otw strong { grid-column: 2; white-space: nowrap !important; font-size: 9.5px !important; }
+  .otw .otw-sep { display: none !important; }
+  .otw > span:last-child { grid-column: 2; font-size: 8.5px !important; line-height: 1.9 !important; }
+
+  /* 求职状态行：允许换行但收紧 */
+  .availability { font-size: 8.5px !important; gap: 4px 8px !important; }
+  .availability li { gap: 4px !important; }
+  .availability svg { width: 12px !important; height: 12px !important; }
+  .headline { font-size: 11px !important; line-height: 2 !important; }
+  .hero-body { padding: 0 12px 16px !important; }
+  .card { padding: 14px !important; }
+}
+
+/* 浅底上的绿字加深到可读（2.17 → 4.5+） */
+:root .project-metric { color: #2f6b1e !important; }
+:root .contact-list a { color: #2f6b1e !important; }
+:root .copy-btn { color: #2f6b1e !important; border-color: #2f6b1e !important; }
+:root .copy-btn:hover { background: rgba(47,107,30,.1) !important; }
+
+/* 浅底上的绿字/按钮加深到可读 */
+:root .project-metric { color: var(--green) !important; }
+:root .contact-list a { color: var(--green) !important; }
+:root .copy-btn { color: var(--green) !important; border-color: var(--green) !important; }
+
+/* ---------- 夜晚模式：天空/草地/泥土全变暗 ---------- */
+:root[data-theme="dark"] body {
+  background-color: #0d0a06 !important;
+  background-image:
+    repeating-linear-gradient(0deg, rgba(0,0,0,.06) 0 2px, transparent 2px 4px),
+    linear-gradient(180deg, transparent 0, transparent 300px, #1a140c 300px, #1a140c 100%),
+    linear-gradient(180deg, transparent 0, transparent 292px, #2d4a1e 292px, #2d4a1e 320px, transparent 320px),
+    linear-gradient(180deg, #0d0a14 0%, #0d0a14 300px, transparent 300px) !important;
+}
+:root[data-theme="dark"] .nav {
+  background: #2a1d0e !important;
+  background-image: repeating-linear-gradient(90deg, transparent 0 30px, rgba(0,0,0,.2) 30px 32px) !important;
+}
+:root[data-theme="dark"] .nav .theme-toggle,
+:root[data-theme="dark"] .nav .lang-switch a,
+:root[data-theme="dark"] .nav .section-nav a { color: #c2b28f !important; }
+:root[data-theme="dark"] .nav .lang-switch a.active,
+:root[data-theme="dark"] .nav .section-nav a.active { color: #b6ec7a !important; }
+
+/* MC: 品牌字白字在深绿底（对比 5+） */
+.brand { color: #ffffff !important; }
+/* MC: 语言切换 active 亮绿字在深色顶栏底（对比 4.5+） */
+.nav .lang-switch a.active { color: #b6ec7a !important; }
+.nav .section-nav a.active { color: #b6ec7a !important; }
+/* MC: footer 亮字在暗色背景（对比 5+） */
+.footer { color: #a8946c !important; }
+:root[data-theme="dark"] .footer { color: #a8946c !important; }
+/* MC: copy-btn 深字在亮底（对比 4.26 → 够了但提升到 5） */
+.copy-btn { color: #2d5a15 !important; border-color: #2d5a15 !important; }
+
+/* ---- Minecraft 深度打磨 ---- */
+/* 项目缩略块改用纯 CSS 像素方块纹理（草方块） */
+.project-thumb {
+  background-image:
+    repeating-linear-gradient(90deg, transparent 0 8px, rgba(0,0,0,.12) 8px 10px),
+    repeating-linear-gradient(0deg, transparent 0 8px, rgba(255,255,255,.08) 8px 10px),
+    repeating-linear-gradient(0deg, #5ea832 0 6px, #4a7d28 6px 12px) !important;
+  image-rendering: pixelated;
+}
+/* 进度条加方块纹理 */
+.bar span {
+  background-image: repeating-linear-gradient(90deg, transparent 0 8px, rgba(0,0,0,.14) 8px 10px) !important;
+}
+/* 打印 */
+@media print {
+  body { background-image: none !important; background: #fff !important; }
+  .card, .banner, .nav { background: #fff !important; color: #000 !important; box-shadow: none !important; border-color: #ccc !important; }
+  .card h2, .hero h1, .entry-body h3 { color: #000 !important; font-family: "Courier New", monospace !important; font-size: 12pt !important; }
+  .chip, .project-metric { border: 1px solid #999 !important; color: #333 !important; background: #fff !important; }
+  .banner, .project-thumb { display: none !important; }
+}
+
+/* ==========================================================================
+   Minecraft 强化第三波：天空装饰 / 成就弹窗 / 物品提示 / Splash
+   ========================================================================== */
+
+/* banner 变成「天空画布」：太阳（白天）/ 月亮星星（夜晚）/ 像素云 / Splash */
+.banner { position: relative !important; overflow: hidden !important; }
+
+.mc-sun {
+  position: absolute;
+  top: 10px;
+  left: 18px;
+  width: 26px;
+  height: 26px;
+  background: #fdf4a3 !important;
+  box-shadow: 0 0 0 3px rgba(253, 244, 163, 0.35), inset -4px -4px 0 rgba(0,0,0,.08) !important;
+}
+.mc-moon {
+  display: none;
+  position: absolute;
+  top: 10px;
+  left: 18px;
+  width: 22px;
+  height: 22px;
+  background: #e8e8e8 !important;
+  box-shadow: inset -4px -4px 0 rgba(0,0,0,.12), 0 0 14px rgba(232,232,232,.35) !important;
+}
+:root[data-theme="dark"] .mc-sun { display: none !important; }
+:root[data-theme="dark"] .mc-moon { display: block !important; }
+
+/* 夜晚星星：2×2 白点用 box-shadow 铺开 */
+.mc-stars {
+  display: none;
+  position: absolute;
+  top: 4px;
+  left: 0;
+  width: 2px;
+  height: 2px;
+  background: #ffffff;
+  box-shadow:
+    30px 6px #fff, 70px 14px #fff, 120px 4px #fff, 180px 18px #fff,
+    240px 8px #fff, 300px 16px #fff, 360px 10px #fff, 420px 20px #fff,
+    470px 6px #fff, 520px 14px #fff, 585px 8px #fff, 640px 18px #fff,
+    700px 4px #fff, 760px 12px #fff, 830px 8px #fff, 900px 16px #fff,
+    960px 6px #fff, 1030px 14px #fff, 1100px 10px #fff, 1160px 6px #fff;
+}
+:root[data-theme="dark"] .mc-stars { display: block !important; }
+
+/* 像素云：白天飘动，夜晚隐藏 */
+.mc-cloud {
+  position: absolute;
+  top: 22px;
+  left: -120px;
+  width: 72px;
+  height: 16px;
+  background: rgba(255, 255, 255, 0.92) !important;
+  box-shadow: 10px -10px 0 rgba(255,255,255,.9), 20px 0 0 rgba(255,255,255,.75) !important;
+  animation: mc-drift 80s linear infinite;
+}
+.mc-cloud.c2 {
+  top: 52px;
+  width: 96px;
+  height: 12px;
+  animation-duration: 110s;
+  animation-delay: -35s;
+  opacity: 0.75;
+}
+@keyframes mc-drift {
+  from { left: -140px; }
+  to { left: 100%; }
+}
+:root[data-theme="dark"] .mc-cloud { display: none !important; }
+
+/* Splash：标题画面黄字脉冲 */
+.mc-splash {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 150px;
+  text-align: center;
+  color: #ffff55 !important;
+  text-shadow: 2px 2px 0 #3f3f00 !important;
+  transform: rotate(-10deg);
+  font-family: "MinecraftPixel", "Courier New", monospace !important;
+  font-size: 9px !important;
+  line-height: 1.8 !important;
+  pointer-events: none;
+  animation: mc-splash-pulse 1.6s ease-in-out infinite;
+}
+@keyframes mc-splash-pulse {
+  0%, 100% { transform: rotate(-10deg) scale(1); }
+  50% { transform: rotate(-10deg) scale(1.1); }
+}
+:root[data-theme="dark"] .mc-splash { text-shadow: 2px 2px 0 #3f3f3f !important; }
+
+/* 物品栏 tooltip：黑底紫边物品提示 */
+.mc-slot { position: relative !important; }
+.mc-slot .mc-tip {
+  display: none;
+  position: absolute;
+  bottom: calc(100% + 12px);
+  left: 50%;
+  transform: translateX(-50%);
+  width: max-content;
+  max-width: 190px;
+  padding: 9px 11px;
+  background: rgba(16, 0, 16, 0.95) !important;
+  border: 2px solid #25015b !important;
+  box-shadow: 0 0 0 2px rgba(16, 0, 16, 0.9), 0 8px 20px rgba(0, 0, 0, 0.5) !important;
+  color: #ffffff !important;
+  font-family: "MinecraftPixel", "Courier New", monospace !important;
+  font-size: 8px !important;
+  line-height: 1.9 !important;
+  z-index: 60;
+  pointer-events: none;
+}
+.mc-slot .mc-tip b { color: #ffff55 !important; font-weight: normal !important; }
+.mc-slot:hover .mc-tip,
+.mc-slot:focus .mc-tip { display: block !important; }
+
+/* 成就弹窗（Advancement toast） */
+.mc-achievement {
+  position: fixed;
+  top: 14px;
+  right: 14px;
+  z-index: 80;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  width: 320px;
+  max-width: calc(100vw - 28px);
+  padding: 13px 15px;
+  background: #212121 !important;
+  border: 2px solid #1e1e1e !important;
+  box-shadow: inset 2px 2px 0 rgba(255,255,255,.14), inset -2px -2px 0 rgba(0,0,0,.4), 6px 6px 0 rgba(0,0,0,.35) !important;
+  color: #ffffff !important;
+  font-family: "MinecraftPixel", "Courier New", monospace !important;
+  font-size: 9px !important;
+  line-height: 1.9 !important;
+  pointer-events: none;
+  animation: mc-ach-in 0.45s steps(6) both;
+}
+.mc-achievement.is-out { animation: mc-ach-out 0.4s steps(5) both; }
+@keyframes mc-ach-in {
+  from { transform: translateX(130%); opacity: 0; }
+  to { transform: none; opacity: 1; }
+}
+@keyframes mc-ach-out {
+  from { transform: none; opacity: 1; }
+  to { transform: translateX(130%); opacity: 0; }
+}
+.mc-ach-icon {
+  flex: none;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #2f2f2f !important;
+  border: 2px solid #555 !important;
+  box-shadow: inset 2px 2px 0 rgba(255,255,255,.1) !important;
+  font-size: 20px !important;
+  color: #ffff55 !important;
+}
+.mc-ach-body { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.mc-ach-title { color: #ffff55 !important; font-size: 10px !important; }
+.mc-ach-desc { color: #ffffff !important; }
+
+@media (prefers-reduced-motion: reduce) {
+  .mc-cloud, .mc-splash, .mc-achievement { animation: none !important; }
+}
+
+
+/* ---------- 底部物品栏（9 格 hotbar）---------- */
+.mc-hotbar {
+  position: fixed;
+  left: 50%;
+  bottom: 14px;
+  transform: translateX(-50%);
+  z-index: 40;
+  display: flex;
+  gap: 3px;
+  padding: 5px;
+  background: #8b8b8b !important;
+  border: 3px solid #373737 !important;
+  box-shadow:
+    4px 4px 0 #1e1e1e,
+    inset 2px 2px 0 #c6c6c6,
+    inset -2px -2px 0 #4a4a4a !important;
+  image-rendering: pixelated;
+}
+.mc-slot {
+  position: relative;
+  width: 42px;
+  height: 42px;
+  flex: none;
+  padding: 0;
+  border: 2px solid #373737 !important;
+  border-radius: 0 !important;
+  background: #8b8b8b !important;
+  box-shadow: inset 2px 2px 0 #c6c6c6, inset -2px -2px 0 #4a4a4a !important;
+  color: #f2e8d0 !important;
+  cursor: pointer;
+  font-family: "MinecraftPixel", monospace !important;
+  transition: none !important;
+}
+.mc-slot:hover { background: #a3a3a3 !important; }
+.mc-slot.is-selected {
+  outline: 3px solid #ffffff !important;
+  outline-offset: -1px;
+  background: #6f9e3f !important;
+  box-shadow: inset 2px 2px 0 #b6d98a, inset -2px -2px 0 #3d5a1e, 0 0 0 2px #1e1e1e !important;
+}
+.mc-slot-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  font-size: 20px !important;
+  line-height: 1;
+  text-shadow: 2px 2px 0 #1e1e1e;
+}
+.mc-slot-num {
+  position: absolute;
+  right: 2px;
+  bottom: 0;
+  font-size: 7px !important;
+  color: #e8e8e8 !important;
+  text-shadow: 1px 1px 0 #1e1e1e;
+}
+/* 页面底部给物品栏留出空间 */
+body { padding-bottom: 76px !important; }
+.footer { margin-bottom: 8px !important; }
+@media (max-width: 640px) {
+  .mc-hotbar { bottom: 8px; gap: 2px; padding: 4px; }
+  .mc-slot { width: 32px; height: 32px; }
+  .mc-slot-icon { font-size: 15px !important; }
+  .mc-slot-num { font-size: 6px !important; }
+  body { padding-bottom: 64px !important; }
+}
+
+
+/* ==========================================================================
+   Minecraft 彩蛋：挖矿小游戏
+   ========================================================================== */
+.mc-easter-btn {
+  border-radius: 0 !important;
+  border: 2px solid #3d2c15 !important;
+  background: #5ea832 !important;
+  color: #fff !important;
+  font-family: "MinecraftPixel", monospace !important;
+  font-size: 14px !important;
+  padding: 4px 8px !important;
+  box-shadow: 2px 2px 0 #2a1d0e !important;
+  cursor: pointer;
+}
+.mc-easter-btn:hover { background: #7cc94a !important; }
+
+.mc-game-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 14px;
+  background: rgba(10, 6, 2, 0.82) !important;
+  backdrop-filter: blur(3px);
+}
+.mc-game-frame {
+  width: min(760px, 96vw);
+  max-height: 94vh;
+  overflow: auto;
+  padding: 16px 18px 18px;
+  background: #e8dcc0 !important;
+  border: 4px solid #3d2c15 !important;
+  border-radius: 0 !important;
+  box-shadow: 6px 6px 0 #2a1d0e, inset -3px -3px 0 rgba(0,0,0,.07), inset 3px 3px 0 rgba(255,255,255,.18) !important;
+  position: relative;
+}
+.mc-game-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: "MinecraftPixel", monospace !important;
+  font-size: 11px !important;
+  color: #2b2013 !important;
+  margin-bottom: 12px;
+}
+.mc-game-close {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 30px;
+  height: 30px;
+  border: 2px solid #3d2c15 !important;
+  background: #8f6b42 !important;
+  color: #f2e8d0 !important;
+  font-size: 14px !important;
+  cursor: pointer;
+  font-family: "MinecraftPixel", monospace !important;
+}
+.mc-game-close:hover { background: #a5824f !important; }
+.mc-game-hud {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+  font-family: "MinecraftPixel", monospace !important;
+  font-size: 9px !important;
+  color: #5a4630 !important;
+}
+.mc-game-grid {
+  display: grid;
+  grid-template-columns: repeat(14, 1fr);
+  grid-auto-rows: 44px;
+  gap: 0;
+  border: 3px solid #3d2c15 !important;
+  background: #1a140c !important;
+  image-rendering: pixelated;
+  user-select: none;
+  touch-action: manipulation;
+}
+.mc-cell {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  cursor: pointer;
+  min-width: 0;
+}
+.mc-cell-grass { background: #5ea832 !important; background-image: linear-gradient(180deg, #8fd25a 0 30%, #5ea832 30%) !important; }
+.mc-cell-dirt  { background: #8f6b42 !important; background-image: repeating-linear-gradient(0deg, transparent 0 8px, rgba(0,0,0,.1) 8px 10px) !important; }
+.mc-cell-stone { background: #8a8a8a !important; background-image: repeating-linear-gradient(45deg, transparent 0 6px, rgba(0,0,0,.08) 6px 8px) !important; }
+.mc-cell-coal  { background: #4a4a4a !important; background-image: radial-gradient(circle at 30% 40%, #222 0 3px, transparent 4px), radial-gradient(circle at 68% 62%, #222 0 3px, transparent 4px) !important; }
+.mc-cell-deepslate { background: #484850 !important; background-image: repeating-linear-gradient(0deg, transparent 0 6px, rgba(0,0,0,.15) 6px 8px) !important; }
+.mc-cell-phone {
+  background: #f0b90b !important;
+  background-image: linear-gradient(180deg, #fff3c4 0 30%, #f0b90b 30%) !important;
+  box-shadow: inset 0 0 12px rgba(255,255,255,.5) !important;
+  animation: mc-phone-glow 1.2s steps(2) infinite;
+}
+@keyframes mc-phone-glow {
+  0%, 100% { box-shadow: inset 0 0 8px rgba(255,255,255,.6); }
+  50% { box-shadow: inset 0 0 16px rgba(255,255,255,.9); }
+}
+.mc-cell-air { background: #1a140c !important; }
+.mc-cell.is-cursor { outline: 2px solid #ffff55 !important; outline-offset: -2px; }
+.mc-cell.is-cracking::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(135deg, transparent 40%, rgba(0,0,0,.55) 40% 45%, transparent 45%),
+    linear-gradient(45deg, transparent 40%, rgba(0,0,0,.55) 40% 45%, transparent 45%),
+    linear-gradient(90deg, transparent 48%, rgba(0,0,0,.4) 48% 52%, transparent 52%) !important;
+}
+.mc-game-help {
+  margin-top: 10px;
+  font-family: "MinecraftPixel", monospace !important;
+  font-size: 8px !important;
+  color: #6d583d !important;
+}
+
+/* 胜利面板 */
+.mc-win-overlay { background: rgba(10, 6, 2, 0.9) !important; }
+.mc-win-frame { text-align: left; width: min(560px, 94vw); }
+.mc-win-icon { margin-bottom: 12px; }
+.mc-ach-title { font-size: 13px !important; margin-bottom: 8px; }
+.mc-ach-desc { font-size: 10px !important; line-height: 2 !important; margin-bottom: 6px; }
+.mc-win-phone {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 16px;
+  background: #2b2013 !important;
+  border: 3px solid #f0b90b !important;
+  border-radius: 0 !important;
+  box-shadow: 4px 4px 0 #1a140c !important;
+  margin: 12px 0;
+  flex-wrap: wrap;
+}
+.mc-win-num {
+  font-family: "MinecraftPixel", monospace !important;
+  font-size: 16px !important;
+  color: #f0b90b !important;
+  flex: 1;
+  overflow-wrap: anywhere;
+}
+.mc-win-copy {
+  border: 2px solid #f0b90b !important;
+  background: transparent !important;
+  color: #f0b90b !important;
+  font-family: "MinecraftPixel", monospace !important;
+  font-size: 9px !important;
+  padding: 6px 10px !important;
+  cursor: pointer;
+}
+.mc-win-copy:hover { background: rgba(240,185,11,.15) !important; }
+.mc-win-hint { font-size: 9px !important; color: #a8946c !important; }
+.mc-win-close {
+  border: 3px solid #3d2c15 !important;
+  background: #5ea832 !important;
+  color: #fff !important;
+  font-family: "MinecraftPixel", monospace !important;
+  font-size: 10px !important;
+  padding: 10px 16px !important;
+  cursor: pointer;
+  box-shadow: 3px 3px 0 #2a1d0e !important;
+}
+.mc-win-close:hover { background: #7cc94a !important; }
+
+/* 未暴露的方块：加暗遮罩，视觉提示「还没挖到这层」 */
+.mc-cell.is-buried::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45) !important;
+}
