@@ -1252,6 +1252,14 @@ body { padding-bottom: 76px !important; }
   .mc-countdown { font-size: 54px !important; }
   .mc-toast { max-width: 74vw; }
   .mc-lv-pick { width: 30px; height: 30px; }
+  /* 触摸目标：关闭按钮 30px 太小易误触，放大到 44px；选关格子放大到 38px */
+  .mc-game-close { width: 44px; height: 44px; font-size: 18px !important; top: 6px; right: 6px; }
+  .mc-lv-pick { width: 38px; height: 38px; font-size: 11px !important; }
+}
+/* 手机横屏（矮视口）：雷电画布收进视口高，面板放大可用区 */
+@media (max-height: 500px) {
+  .rd-canvas { height: 72vh; width: auto; max-width: 76vw; }
+  .mc-game-frame { max-height: 96vh; }
 }
 /* 系统级减动效：尊重用户偏好 */
 @media (prefers-reduced-motion: reduce) {
