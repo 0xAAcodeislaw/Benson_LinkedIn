@@ -1735,3 +1735,51 @@ body { padding-bottom: 76px !important; }
   /* 显式格尺寸：92vw 减边框/内距/gap 后 8 等分（auto+aspect-ratio 与 grid stretch 交互产生溢出值） */
   .ch-cell { width: calc((92vw - 21px) / 8) !important; height: calc((92vw - 21px) / 8) !important; font-size: 6vw !important; }
 }
+
+/* ===== 彩蛋⑧：两人军棋 10 关（红=你执下，黑=本地 AI 执上） ===== */
+.jq-btn { background: none; border: none; font-size: 16px; cursor: pointer; padding: 0 4px; }
+.jq-frame { width: 94vw; max-width: 480px; }
+.jq-board {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 2px;
+  background: #2a1d0e;
+  border: 4px solid #3d2c15;
+  padding: 3px;
+  margin: 8px auto;
+  width: fit-content;
+}
+.jq-cell {
+  width: 72px; height: 46px;
+  background: #e8d9b0;
+  display: flex; align-items: center; justify-content: center;
+  font-family: "MinecraftPixel", monospace !important;
+  font-size: 15px !important;
+  cursor: pointer;
+  position: relative;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+.jq-cell.rail { background: #d9c69a; box-shadow: inset 0 0 0 1px rgba(120,90,40,.5); }
+.jq-cell.camp { background: #e2caa0 !important; box-shadow: inset 0 0 0 2px #a5824f; }
+.jq-cell.hq { background: #d4b98a !important; box-shadow: inset 0 0 0 2px #6b583d; }
+.jq-cell.red { color: #c62828; }
+.jq-cell.blk { color: #1a1a1a; }
+.jq-cell.is-sel { background: #ffd54f !important; box-shadow: inset 0 0 0 3px #c62828; }
+.jq-cell.can::after {
+  content: "";
+  position: absolute; inset: 4px;
+  border: 2px dashed rgba(94,168,50,.85);
+  pointer-events: none;
+}
+@media (hover: hover) {
+  .jq-cell:hover { filter: brightness(1.08); }
+}
+@media (max-width: 640px) {
+  .jq-frame { max-width: 98vw !important; }
+  .jq-board { width: 94vw !important; margin: 4px auto; }
+  /* 显式格尺寸：94vw 减边框/内距/gap 后 5 等分，12 行总高约 12×12vw+间隙=面板内滚动 */
+  .jq-cell { width: calc((94vw - 23px) / 5) !important; height: 12.6vw !important; font-size: 5.4vw !important; }
+}
