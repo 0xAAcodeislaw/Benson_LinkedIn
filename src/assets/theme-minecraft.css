@@ -1688,3 +1688,50 @@ body { padding-bottom: 76px !important; }
   /* 格子填满 1fr 轨道（避免 vw 定宽与轨道错位），按棋子 44:48 比例保方形观感 */
   .cc-cell { width: auto !important; height: auto !important; aspect-ratio: 11 / 12; font-size: 4.8vw !important; }
 }
+
+/* ===== 彩蛋⑦：国际象棋 10 关（红=你/白方，黑=AI） ===== */
+.ch-btn { background: none; border: none; font-size: 16px; cursor: pointer; padding: 0 4px; }
+.ch-frame { width: 94vw; max-width: 540px; }
+.ch-board {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 1px;
+  background: #3d2c15;
+  border: 4px solid #3d2c15;
+  padding: 3px;
+  margin: 8px auto;
+  width: fit-content;
+}
+.ch-cell {
+  width: 52px; height: 52px;
+  background: #f0dfc0;
+  display: flex; align-items: center; justify-content: center;
+  font-family: "MinecraftPixel", monospace !important;
+  font-size: 26px !important;
+  cursor: pointer;
+  position: relative;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+.ch-cell.dark { background: #cfa968; }
+.ch-cell.red { color: #c62828; }
+.ch-cell.blk { color: #1a1a1a; }
+.ch-cell.has { font-weight: bold; }
+.ch-cell.is-sel { background: #ffd54f !important; box-shadow: inset 0 0 0 3px #c62828; }
+.ch-cell.can::after {
+  content: "";
+  position: absolute; inset: 8px;
+  border: 2px dashed rgba(94,168,50,.8);
+  pointer-events: none;
+}
+@media (hover: hover) {
+  .ch-cell.has:hover { filter: brightness(1.1); }
+}
+@media (max-width: 640px) {
+  .ch-frame { max-width: 98vw !important; }
+  .ch-board { width: 92vw !important; margin: 4px auto; }
+  /* 显式格尺寸：92vw 减边框/内距/gap 后 8 等分（auto+aspect-ratio 与 grid stretch 交互产生溢出值） */
+  .ch-cell { width: calc((92vw - 21px) / 8) !important; height: calc((92vw - 21px) / 8) !important; font-size: 6vw !important; }
+}
