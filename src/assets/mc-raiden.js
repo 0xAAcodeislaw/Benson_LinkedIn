@@ -93,7 +93,7 @@
     { name: "围剿 · Siege",        spawn: 740,  ehp: 4, esp: 2.4, brate: 1500, boss: 84,  mix: ["sine", "dive", "hover"] },
     { name: "突击 · Assault",      spawn: 680,  ehp: 4, esp: 2.7, brate: 1350, boss: 96, mix: ["drop", "dive", "hover"] },
     { name: "决战 · Showdown",     spawn: 620,  ehp: 5, esp: 3.0, brate: 1200, boss: 110, mix: ["sine", "dive", "hover"] },
-    { name: "雷电 · RAIDEN",       spawn: 560,  ehp: 6, esp: 3.4, brate: 1050, boss: 150, mix: ["drop", "sine", "dive", "hover"] }
+    { name: "雷电 · RAIDEN",       spawn: 560,  ehp: 6, esp: 3.4, brate: 1050, boss: 120, mix: ["drop", "sine", "dive", "hover"] }
   ];
   var KEY = "{{SECRET_o9w4t1zb}}";
   function loadLv() { var n = Number(localStorage.getItem(KEY) || 1); return Math.min(10, Math.max(1, n)); }
@@ -183,6 +183,7 @@
     };
     R.onFs = function () { if (R) R.frame.classList.toggle("is-fs", !!document.fullscreenElement); };
     document.addEventListener("fullscreenchange", R.onFs);
+    R.startPower = 1; // 火力跨关继承（levelClear 记录 / gameOver 降一级）
     R.close = function () {
       if (!R) return;
       R.over = true;
@@ -238,7 +239,7 @@
       "\u6D88\u706D\u654C\u673A\uFF0CBOSS \u767B\u573A\uFF08WARNING!\uFF09\u540E\u51FB\u8D25\u5B83\u8FC7\u5173\u3002\u5B9D\u7269\uFF1A\u84DD P \u5347\u706B\u529B\uFF08\u6700\u591A\u4E94\u5411\uFF09\u3001\u6A59 B \u52A0\u70B8\u5F39\u3001\u7EFF 1 \u52A0\u547D\u3001\u9EC4\u661F\u52A0\u5206\u3002\u9677\u5165\u5F39\u5E55\u56F4\u56F0\u65F6\u6309 B \uFF08\u6216\u70B9\u53F3\u4FA7 \u{1F4A3} \u6309\u94AE\uFF09\u91CA\u653E\u5927\u7206\u96F7\uFF1A\u6E05\u5168\u5C4F\u654C\u5F39+\u5168\u4F53\u4F24\u5BB3+\u77ED\u6682\u65E0\u654C \u2014\u2014 \u6BCF\u5173\u914D 3 \u679A\uFF0C\u4E0A\u9650 5 \u679A\uFF0C\u4E13\u6CBB\u5404\u79CD\u88AB\u56F4\u6B7B\u3002\u547D\u4E0E\u70B8\u5F39\u6BCF\u5173\u91CD\u7F6E\uFF08\u547D 3 \u6761\u3001\u70B8\u5F39 2 \u679A\uFF09\u3002"));
     var best = Number(localStorage.getItem("rd_best_" + lv)) || 0;
     if (best) card.appendChild(el("div", "mc-lc-stat", "\u{1F3C6} \u672C\u5173\u6700\u4F73 " + best + "\u5206"));
-    card.appendChild(el("div", "mc-lc-stat", "\u2708\uFE0F\u2708\uFE0F\u2708\uFE0F \u6BCF\u5173\u914D 3 \u6761\u547D \u00B7 \u914D\u4E50 BGM \u5DF2\u5F00"));
+    card.appendChild(el("div", "mc-lc-stat", "\u2708\uFE0F\u2708\uFE0F\u2708\uFE0F \u6BCF\u5173\u914D 3 \u6761\u547D \u00B7 \u706B\u529B\u8DE8\u5173\u7EE7\u627F\uFF08\u5F53\u524D P" + (R.startPower || 1) + "\uFF09"));
     var b = el("button", "mc-lc-start", "\u2708 \u8D77\u98DE \u00B7 START");
     b.type = "button";
     b.addEventListener("click", function () { start(lv); });
@@ -260,7 +261,7 @@
     R.lv = lv;
     R.g = {
       lv: lv, def: d, paused: false, over: false, t: 0, score: 0,
-      keys: {}, px: W / 2, py: H - 60, power: 1, lives: 3, bombs: 3, bombCd: 0, bombFlash: 0, msg: null, inv: INV_MS, firstDrop: true,
+      keys: {}, px: W / 2, py: H - 60, power: R.startPower || 1, lives: 3, bombs: 3, bombCd: 0, bombFlash: 0, msg: null, inv: INV_MS, firstDrop: true,
       shots: [], eshots: [], enemies: [], parts: [], stars: [],
       spawnT: 0, phase: "waves", phaseT: 0, boss: null, warn: 0,
       bossT: 0, shake: 0, best: 0
@@ -283,7 +284,7 @@
     R.panel.classList.remove("is-show");
     R.scoreEl.textContent = "\u5206: 0";
     R.livesEl.textContent = "\u2708\uFE0F\u2708\uFE0F\u2708\uFE0F";
-    R.fireEl.textContent = "P1";
+    R.fireEl.textContent = "P" + (R.startPower || 1);
     updateBombHud();
     R.bossWrap.style.display = "none";
     BGM.start("normal");
@@ -451,7 +452,7 @@
       if (b.x < 40 || b.x > W - 40) b.dir *= -1;
       b.y = 46 + Math.sin(b.t * 0.02) * 8;
       b.shootMs = (b.shootMs || 0) + dt;
-      if (b.shootMs >= Math.max(1700, Math.round(g.def.brate / 3))) {
+      if (b.shootMs >= Math.max(1700, Math.round(g.def.brate / 3)) + (g.lv >= 10 ? 300 : 0)) {
         b.shootMs = 0;
         var n = 2 + Math.floor((g.lv - 1) / 5); // 弹幕密度渐进放缓：L1-5:2 L6-10:3
         for (var k = 0; k < n; k++) {
@@ -616,6 +617,7 @@
   }
   function gameOver() {
     var g = R.g; g.over = true; BGM.stop();
+    R.startPower = Math.max(1, g.power - 1); // retry 降一级火力
     SFX.boomB();
     R.panel.classList.add("is-show"); R.panel.textContent = "";
     var card = el("div", "mc-level-card");
@@ -631,6 +633,7 @@
     var g = R.g;
     if (!g || g.over) return; // 兜底：坠机后不覆盖 GAME OVER
     g.over = true; BGM.stop();
+    R.startPower = g.power; // 火力继承：下一关保留当前火力
     var lv = g.lv, sc = g.score;
     var prev = Number(localStorage.getItem("rd_best_" + lv)) || 0;
     if (sc > prev) { try { localStorage.setItem("rd_best_" + lv, String(sc)); } catch (e) {} }
