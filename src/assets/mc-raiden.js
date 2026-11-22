@@ -63,17 +63,16 @@
     },
     start: function (mode) {
       this.stop();
-      if (muted()) return;
       var c = ac(); if (!c) return;
       var s = this.seq[mode]; if (!s) return;
       this.mode = mode; this.step = 0;
       var self = this;
       var iv = Math.round(60 / s.bpm * 1000 / 4); // 16 分音符
-      this.t = setInterval(function () { self.tick(); }, iv);
+      this.t = setInterval(function () { self.tick(); }, iv); // 静音/后台由 tick 自守卫，开声/回前台即恢复
     },
     stop: function () { if (this.t) { clearInterval(this.t); this.t = null; } },
     tick: function () {
-      if (muted()) return;
+      if (muted() || document.hidden) return;
       var s = this.seq[this.mode]; if (!s) return;
       var i = this.step % 16;
       if (s.bass[i]) beep(s.bass[i], 0.12, "sawtooth", 0.026);
@@ -132,11 +131,11 @@
     fsBtn.addEventListener("click", function () {
       if (!R) return;
       if (document.fullscreenElement) { document.exitFullscreen(); return; }
-      var want = !R.frame.classList.contains("is-fs") && !document.fullscreenElement; // 显式目标态
       if (document.fullscreenElement) { document.exitFullscreen(); return; }
-      var p = R.frame.requestFullscreen && want && R.frame.requestFullscreen();
-      if (p && p.catch) p.catch(function () { if (R) R.frame.classList.toggle("is-fs", want); }); // 非手势环境：伪全屏兜底
-      setTimeout(function () { if (R && !document.fullscreenElement) R.frame.classList.toggle("is-fs", want); }, 140);
+      var my = ++R.fsToken; // 代际 token：连点/极速退出时旧兜底失效
+      var p = R.frame.requestFullscreen && R.frame.requestFullscreen();
+      if (p && p.catch) p.catch(function () { if (R && R.fsToken === my) R.frame.classList.add("is-fs"); }); // 非手势环境：伪全屏兜底
+      setTimeout(function () { if (R && R.fsToken === my && !document.fullscreenElement) R.frame.classList.add("is-fs"); }, 140);
     });
     title.appendChild(fsBtn);
     var x = el("button", "mc-game-close", "\u00D7"); x.type = "button"; x.setAttribute("aria-label", "Close");
@@ -160,7 +159,7 @@
     var fire = el("div", "rd-fire", "P1");
     side.appendChild(fire);
     side.appendChild(el("div", "mc-lc-sub", "\u5927\u7206\u96F7 Bomb"));
-    var bombBtn = el("button", "rd-bombbtn", "\u{1F4A3} BOMB \u00D7 2");
+    var bombBtn = el("button", "rd-bombbtn", "\u{1F4A3} BOMB \u00D7 3");
     bombBtn.type = "button";
     bombBtn.title = "\u5927\u7206\u96F7\uFF1A\u6E05\u5168\u5C4F\u654C\u5F39+\u5168\u4F53\u4F24\u5BB3\uFF0C\u9677\u5165\u56F0\u5883\u65F6\u6551\u547D";
     bombBtn.addEventListener("click", function () { useBomb(); });
@@ -181,9 +180,10 @@
       bossWrap: bossBarWrap, bossFill: bossFill, fireEl: fire,
       lv: loadLv(), over: false, raf: null, key: null
     };
-    R.onFs = function () { if (R) R.frame.classList.toggle("is-fs", !!document.fullscreenElement); };
+    R.onFs = function () { if (R) { R.fsToken++; R.frame.classList.toggle("is-fs", !!document.fullscreenElement); } };
     document.addEventListener("fullscreenchange", R.onFs);
     R.startPower = 1; // 火力跨关继承（levelClear 记录 / gameOver 降一级）
+    konamiIdx = 0;
     R.close = function () {
       if (!R) return;
       R.over = true;
@@ -202,14 +202,18 @@
       if (!R) return;
       if (e.key === "Escape") { R.close(); return; }
       if ((e.key === "b" || e.key === "B") && !e.repeat) { if (R.g && !R.g.over) useBomb(); }
-      // 暗藏作弊键追踪（C=+1 炸弹；Konami 序列=+2 炸弹+1UP）
+      // 暗藏作弊键追踪（C=+1 炸弹+2 命；Konami 序列=+2 炸弹+1UP）
       var kk = e.key.toLowerCase();
-      if (kk === KONAMI[konamiIdx]) {
+      if (Date.now() - konamiLast > 2000) konamiIdx = 0; // 超时衰减：正常移动不会误攒序列
+      konamiLast = Date.now();
+      if (!e.repeat && kk === KONAMI[konamiIdx]) {
         konamiIdx++;
         if (konamiIdx >= KONAMI.length) { konamiIdx = 0; cheatKonami(); }
-      } else {
+      } else if (!e.repeat) {
         konamiIdx = (kk === KONAMI[0]) ? 1 : 0;
       }
+      // b 是 Konami 尾键：序列进行到尾段时跳过放雷（否则完整输入秘技必先消耗炸弹）
+      if (kk === "b" && !e.repeat && konamiIdx < 9) { if (R.g && !R.g.over) useBomb(); }
       if (kk === "c" && !e.repeat) { if (R.g && !R.g.over) cheatBomb(); }
       if ((e.key === "p" || e.key === "P") && !e.repeat) { if (R.g && !R.g.over) { R.g.paused = !R.g.paused; R.g.keys = {}; if (R.g.paused) BGM.stop(); else BGM.start(R.g.phase === "boss" || R.g.phase === "warn" ? "boss" : "normal"); } }
       if (R.g && !R.g.over) {
@@ -248,7 +252,7 @@
     R.badge.textContent = "Lv " + lv + "/10 \u00B7 " + d.name;
     R.scoreEl.textContent = "\u5206: 0";
     R.livesEl.textContent = "\u2708\uFE0F\u2708\uFE0F\u2708\uFE0F";
-    R.fireEl.textContent = "P1";
+    R.fireEl.textContent = "P" + (R.startPower || 1); // 与火力继承一致
     R.bossWrap.style.display = "none";
     BGM.stop();
     drawIdle();
@@ -287,6 +291,7 @@
     R.fireEl.textContent = "P" + (R.startPower || 1);
     updateBombHud();
     R.bossWrap.style.display = "none";
+    lastTs = performance.now(); // 防僵尸局：close 冻结的 lastTs 会让重开首帧 dt=NaN 毒化全部累加器
     BGM.start("normal");
     // 触屏拖动
     // 指针控制：鼠标/笔 = 悬停全向跟随（无需按键，可完美替代键盘）；触屏 = 拖动跟随（飞机在手指上方）
@@ -315,6 +320,7 @@
   function loop(ts) {
     R.raf = requestAnimationFrame(loop);
     if (!R || !R.g) { lastTs = 0; return; }
+    if (ts == null) ts = performance.now(); // start() 手动调用 loop() 无参兜底
     var g = R.g;
     var dt = lastTs ? Math.min(50, ts - lastTs) : 16.7; // 毫秒，切页跳帧钳制
     lastTs = ts;
@@ -328,6 +334,10 @@
     // 幽灵自愈：坐标一旦 NaN/Infinity（全屏布局切换瞬间指针换算 0*Inf 所致）重置出生点
     if (!isFinite(g.px) || !isFinite(g.py)) {
       g.px = W / 2; g.py = H - 60; g.inv = INV_MS;
+    }
+    // 僵尸局自愈：dt=NaN 会毒化全部累加器（不开火/不出敌/星空隐形）
+    if (!isFinite(g.t) || !isFinite(g.fireMs) || !isFinite(g.spawnT) || !isFinite(g.phaseT)) {
+      g.t = 0; g.fireMs = 0; g.spawnT = 0; g.phaseT = 0;
     }
     var f = dt / 16.7; // 60fps 基准因子：所有速度量乘 f，计时量用毫秒 —— 帧率无关
     g.t += f;
@@ -457,6 +467,8 @@
       b.x += b.dir * b.spd * f;
       if (b.x < 40 || b.x > W - 40) b.dir *= -1;
       b.y = 46 + Math.sin(b.t * 0.02) * 8;
+      if (b.hp < b.maxHp * 0.5 && Math.random() < 0.02 * f) burst(b.x + (Math.random() - 0.5) * 50, b.y + 12, "#555b70", 2); // 受损冒烟
+      if (b.hp < b.maxHp * 0.5 && !b.droppedP) { b.droppedP = true; g.enemies.push({ type: "pw", kind: "P", x: b.x, y: b.y + 30, hp: 999, t: 0, vy: 1.6, drop: false }); } // 半血空投 P
       b.shootMs = (b.shootMs || 0) + dt;
       if (b.shootMs >= Math.max(1700, Math.round(g.def.brate / 3)) + (g.lv >= 10 ? 300 : 0)) {
         b.shootMs = 0;
@@ -494,9 +506,8 @@
     var e = { type: type, x: x, y: y, hp: d.ehp, t: 0, vy: 1.1 * d.esp, cx: x };
     if (type === "dive") e.vy = 0.9 * d.esp;
     if (type === "hover") { e.stopY = 60 + Math.random() * 100; e.vy = 1.2 * d.esp; }
-    // 掉落 roll：本关首杀必掉 P（经典开局送火力），其余按概率
-    if (g.firstDrop) { e.drop = "P"; g.firstDrop = false; }
-    else e.drop = rollDrop();
+    // 掉落 roll：P 火力 / B 炸弹 / 1UP 加命 / STAR 分数星（首杀保底在 killEnemy 消费）
+    e.drop = rollDrop();
     g.enemies.push(e);
   }
   function rollDrop() {
@@ -513,6 +524,7 @@
     R.scoreEl.textContent = "\u5206: " + g.score;
     burst(e.x, e.y, "#ff7043", e.type === "hover" ? 12 : 8);
     SFX.boomS();
+    if (g.firstDrop) { g.firstDrop = false; e.drop = "P"; } // 首杀保底：第一台放走了也在首杀补发
     if (e.drop) R.g.enemies.push({ type: "pw", kind: e.drop, x: e.x, y: e.y, hp: 999, t: 0, vy: 1.2, drop: false });
   }
   function eshoot(x, y, vx, vy) { R.g.eshots.push({ x: x, y: y, vx: vx, vy: vy }); }
@@ -553,7 +565,7 @@
   }
   // 大爆雷：清全屏敌弹 + 全体伤害 + 短暂无敌 —— 陷入困境时救命
   function useBomb() {
-    if (!R || !R.g || R.g.over || R.g.bombs <= 0 || R.g.bombCd > 0) return;
+    if (!R || !R.g || R.g.over || R.g.paused || R.g.bombs <= 0 || R.g.bombCd > 0) return;
     var g = R.g;
     g.bombs--;
     updateBombHud();
@@ -577,15 +589,15 @@
     SFX.bomb();
   }
   // ---- 暗藏作弊键（不写入任何用户可见文案）----
-  // C 键 = +1 炸弹；科乐美秘技 ↑↑↓↓←→←→BA = +2 炸弹 +1 条命
+  // C 键 = +1 炸弹 +2 条命；科乐美秘技 ↑↑↓↓←→←→BA = +2 炸弹 +1 条命
   var KONAMI = ["arrowup", "arrowup", "arrowdown", "arrowdown", "arrowleft", "arrowright", "arrowleft", "arrowright", "b", "a"];
-  var konamiIdx = 0;
+  var konamiIdx = 0, konamiLast = 0;
   function flashMsg(txt) {
     if (!R || !R.g) return;
     R.g.msg = { txt: txt, life: 1600 };
   }
   function cheatBomb() {
-    if (!R || !R.g || R.g.over) return;
+    if (!R || !R.g || R.g.over || R.g.paused) return;
     if (R.g.bombs >= 5 && R.g.lives >= 5) { flashMsg("FULL"); return; }
     if (R.g.bombs < 5) R.g.bombs++;
     if (R.g.lives < 5) { R.g.lives += 2; if (R.g.lives > 5) R.g.lives = 5; }
@@ -595,7 +607,7 @@
     flashMsg("+1 \u{1F4A3} +2 \u2708\uFE0F");
   }
   function cheatKonami() {
-    if (!R || !R.g || R.g.over) return;
+    if (!R || !R.g || R.g.over || R.g.paused) return;
     R.g.bombs = Math.min(5, R.g.bombs + 2);
     if (R.g.lives < 5) { R.g.lives++; R.livesEl.textContent = "\u2708\uFE0F".repeat(R.g.lives); }
     updateBombHud();
@@ -623,7 +635,7 @@
   }
   function gameOver() {
     var g = R.g; g.over = true; BGM.stop();
-    R.startPower = Math.max(1, g.power - 1); // retry 降一级火力
+    R.startPower = g.power; // 继承死时已降级火力（hitPlayer 已扣一级，不再叠加）
     SFX.boomB();
     R.panel.classList.add("is-show"); R.panel.textContent = "";
     var card = el("div", "mc-level-card");
@@ -813,8 +825,6 @@
       ctx.fillStyle = "#ffff55";
       ctx.fillRect(b.x - 22, b.y + 6, 6, 5);
       ctx.fillRect(b.x + 16, b.y + 6, 6, 5);
-      if (b.hp < b.maxHp * 0.5 && Math.random() < 0.02 * f) burst(b.x + (Math.random() - 0.5) * 50, b.y + 12, "#555b70", 2);
-      if (b.hp < b.maxHp * 0.5 && !b.droppedP) { b.droppedP = true; g.enemies.push({ type: "pw", kind: "P", x: b.x, y: b.y + 30, hp: 999, t: 0, vy: 1.6, drop: false }); }
       if (b.hp < b.maxHp * 0.25 && Math.floor(g.t / 5) % 2 === 0) {
         ctx.fillStyle = "rgba(255,85,85,0.35)";
         ctx.fillRect(b.x - 32, b.y - 12, 64, 26);

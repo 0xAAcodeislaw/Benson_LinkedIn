@@ -98,6 +98,7 @@
     S.deck = deck; S.stockPile = []; S.wastePile = []; S.foundPile = [[],[],[],[]]; S.cols = [];
     S.lv = lv;   // 必须更新：否则关卡时限/存档/横幅都用旧关卡号
     S.moves = 0; S.sec = 0; S.over = false; S.sel = null;
+    S.statEl.textContent = "Moves: 0"; S.clockEl.textContent = "\u23F1 0s"; // RETRY 后 HUD 不残留旧值
     for (var c = 0; c < 7; c++) {
       var col = [];
       for (var r = 0; r <= c; r++) { var card = deck.pop(); card.up = (r === c); col.push(card); }
@@ -265,7 +266,7 @@
       S.tableau.appendChild(colEl);
     })(c);
   }
-  if (location.search.indexOf("test=1") >= 0) {
+  if (/(?:^|[?&])test=1(?:&|$)/.test(location.search)) {
     window.__slTest = {
       state: function () { return S; },
       draw: function () { draw(); },

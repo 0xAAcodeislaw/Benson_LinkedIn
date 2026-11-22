@@ -163,6 +163,8 @@
   }
   // 字体始终没就绪的兜底：3.5s 后再试一次（防止游戏入口永远不出现）
   setTimeout(function () { init(); }, 3500);
+  // 失焦停连挖（模块级绑一次，函数体判空，无泄漏）
+  window.addEventListener("blur", function () { if (G && G.stopHold) G.stopHold(); });
   // 音频解锁：页面上任何第一次按下即解锁 AudioContext（所有关卡都有声音的保证）
   document.addEventListener("pointerdown", function () { ac(); }, { once: true, capture: true });
 
@@ -344,7 +346,7 @@
   };
 
   var LEVELS = [
-    { name: "草地试挖 · Grass Trial",      icon: "\u{1F331}", stars: 1, tip: "最简单的一关：全是软方块，点一下就碎。相机方块就埋在浅处。",   log: "矿工日志：今天是第一天，锄头还很新。",                              cols: 10, rows: 6,  goalMin: 2, goalMax: 3, rock: "soft" },
+    { name: "草地试挖 · Grass Trial",      icon: "\u{1F331}", stars: 1, tip: "表层草泥一点就碎，深处石头要敲两下。相机方块就埋在浅处。",   log: "矿工日志：今天是第一天，锄头还很新。",                              cols: 10, rows: 6,  goalMin: 2, goalMax: 3, rock: "soft" },
     { name: "泥土花园 · Dirt Garden",      icon: "\u{1F33E}", stars: 1, tip: "还是软土，但相机埋深了一层。垂直往下挖一条井最快。",           log: "矿工日志：泥土的味道，让人想起家乡的农场。",                        cols: 11, rows: 7,  goalMin: 3, goalMax: 4, rock: "soft" },
     { name: "初见岩石 · First Stone",      icon: "\u{1FAA8}", stars: 2, tip: "石头出现了！要敲 2 下才碎。先挖穿土层，再往石头层找。",         log: "矿工日志：镐子撞上石头的声音，意外地好听。",                        cols: 12, rows: 7,  goalMin: 3, goalMax: 5, rock: "mix"  },
     { name: "煤层 · Coal Seam",            icon: "\u26CF",    stars: 2, tip: "黑点的是煤矿，和石头一样敲 2 下。相机藏在中层。",             log: "矿工日志：煤灰糊了一脸，但收获满满。",                              cols: 12, rows: 8,  goalMin: 4, goalMax: 6, rock: "mix"  },
@@ -384,7 +386,8 @@
     { name: "Lava / 熔岩",         size: 24, filter: "sepia(1) hue-rotate(-30deg) saturate(3)" },
     { name: "Toxic / 毒液",        size: 16, filter: "hue-rotate(60deg) saturate(2) brightness(1.08)" },
     { name: "Candy / 糖果",        size: 32, filter: "hue-rotate(330deg) saturate(1.8) brightness(1.15)" },
-    { name: "Ultimate / 终极",     size: 64, filter: "contrast(1.35) saturate(1.5)" }
+    { name: "Ultimate / 终极",     size: 64, filter: "contrast(1.35) saturate(1.5)" },
+    { name: "Golden King / 鎏金王", size: 64, filter: "sepia(1) saturate(4) hue-rotate(-15deg) contrast(1.25)" }
   ];
 
   function loadProgress() {
@@ -392,7 +395,10 @@
     return Math.min(20, Math.max(1, n));
   }
   function saveProgress(lv) {
-    try { localStorage.setItem(PROGRESS_KEY, String(Math.min(20, lv))); } catch (e) {}
+    try {
+      var cur = loadProgress();
+      if (lv > cur) localStorage.setItem(PROGRESS_KEY, String(Math.min(20, lv))); // 只增不减：重玩低关不回退解锁进度
+    } catch (e) {}
   }
 
   function readPhone() {
@@ -486,7 +492,6 @@
       audio.on = !soundOn();
       try { localStorage.setItem("mc_dig_sound", audio.on ? "1" : "0"); localStorage.setItem("mc_sound", audio.on ? "1" : "0"); } catch (e) {}
       sndBtn.textContent = audio.on ? "\u{1F50A}" : "\u{1F507}";
-      SFX.click();
     });
     titleRow.appendChild(sndBtn);
 
@@ -499,7 +504,6 @@
         resetArmed = true;
         resetBtn.textContent = "\u2713?";
         resetBtn.classList.add("is-armed");
-        SFX.click();
         resetTimer = setTimeout(function () {
           resetArmed = false;
           resetBtn.textContent = "\u21BB";
@@ -579,8 +583,7 @@
       G = null;
     }
     G.closeGame = closeGame;
-    // 切后台 / 失焦时停掉连挖与倒计时
-    window.addEventListener("blur", function () { if (G && G.stopHold) G.stopHold(); });
+
     overlay.addEventListener("click", function (e) { if (e.target === overlay) closeGame(); });
     // 所有游戏内按钮统一「咔哒」反馈音（一次委托全覆盖）
     frame.addEventListener("click", function (e) {
@@ -608,9 +611,9 @@
       d.textContent = i < 20 ? "\u25A0" : "\u260E";
       G.dots.appendChild(d);
     }
-    var goalTxt = G.level < 20
-      ? "Goal / 目标: dig the pink camera block \u{1F4F7} / 挖出品红相机方块"
-      : "Goal / 目标: dig the golden phone \u260E / 挖出金色电话方块";
+    var goalTxt = (G.level === 10 || G.level === 20)
+      ? "Goal / 目标: dig the golden phone \u260E / 挖出金色电话方块"
+      : "Goal / 目标: dig the pink camera block \u{1F4F7} / 挖出品红相机方块";
     G.goal.textContent = goalTxt;
     if (G.totalfill) G.totalfill.style.width = (G.level / 20 * 100) + "%";
   }
@@ -770,7 +773,7 @@
         b.textContent = num === 20 ? "\u260E" : String(num);
         if (num <= unlocked) {
           b.title = "Level " + num;
-          b.addEventListener("click", function () { SFX.click(); showLevelCard(num); });
+          b.addEventListener("click", function () { showLevelCard(num); });
         } else {
           b.disabled = true;
           b.title = "\u901A\u5173\u524D\u9762\u7684\u5173\u5361\u89E3\u9501";
@@ -921,7 +924,7 @@
         var cracked = type !== "air" && G.hpMap[r][c] < BLOCKS[type].hp;
         var isGoal = type === "camera" || type === "phone";
         // 热感：光标逼近目标 3 格内，目标闪烁加速（找方块更爽）
-        var hot = isGoal && Math.max(Math.abs(gp.r - r), Math.abs(gp.c - c)) <= 3;
+        var hot = isGoal && Math.max(Math.abs(gp.r - G.cursor.r), Math.abs(gp.c - G.cursor.c)) <= 3; // 光标逼近判定（原误用目标自身距离恒 0）
         var d = document.createElement("div");
         d.className = "mc-cell mc-cell-" + type +
           (cracked ? " is-cracking" : "") +
@@ -996,7 +999,7 @@
       }
     });
     ["pointerup", "pointercancel", "pointerleave"].forEach(function (ev) {
-      G.grid.addEventListener(ev, function (e) { stopHold(); if (ev !== "pointerleave") { px = null; py = null; } });
+      G.grid.addEventListener(ev, function (e) { stopHold(); px = null; py = null; }); // leave 也清：拖出棋盘外松开后悬停不再误移光标
     });
     G.grid.addEventListener("contextmenu", function (e) { e.preventDefault(); }); // 长按别弹菜单
   }

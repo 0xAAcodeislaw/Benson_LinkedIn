@@ -138,6 +138,7 @@
   function start(lv) {
     if (!A) return;
     A.lv = lv; A.lines = 0; A.score = 0; A.over = false;
+    A.locking = false; // 防御：清行回调 bailout 路径可能遗留 locking=true 卡死新局
     A.g = []; for (var r = 0; r < 20; r++) A.g.push(new Array(10).fill(0));
     A.panel.classList.remove("is-show");
     A.linesEl.textContent = "Lines / \u884C: 0/" + LV[lv - 1].lines;
@@ -264,7 +265,7 @@
       A.nextBox.appendChild(pd);
     }
   }
-  if (location.search.indexOf("test=1") >= 0) {
+  if (/(?:^|[?&])test=1(?:&|$)/.test(location.search)) {
     window.__ttTest = {
       state: function () { return A; },
       hard: function () { hard(); },

@@ -159,6 +159,7 @@
 
   function startLevel(lv) {
     if (!M) return;
+    if (M.tick) { clearInterval(M.tick); M.tick = null; } // 防御：换关不清旧计时器会双倍速/跨局泄漏
     var def = LEVELS[lv - 1];
     M.lv = lv; M.started = false; M.over = false; M.flags = 0; M.revealed = 0; M.sec = 0;
     M.grid = [];
@@ -364,7 +365,7 @@
   }
 
   // 自动化钩子：仅 ?test=1 时暴露内部状态（正常访问完全不可见）
-  if (location.search.indexOf("test=1") >= 0) {
+  if (/(?:^|[?&])test=1(?:&|$)/.test(location.search)) {
     window.__msTest = {
       state: function () { return M; },
       open: function (r, c) { reveal(r, c); },
