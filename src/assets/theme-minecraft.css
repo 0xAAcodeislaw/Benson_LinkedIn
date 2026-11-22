@@ -1607,3 +1607,38 @@ body { padding-bottom: 76px !important; }
 }
 .mc-hub-prog.is-clear { background: #f0b90b; }
 @media (max-width: 640px) { .mc-hub-grid { grid-template-columns: 1fr 1fr; } .mc-hub-card { padding: 10px 6px; } }
+
+/* ===== 彩蛋⑥：中国象棋 10 关 ===== */
+.cc-btn { background: none; border: none; font-size: 16px; cursor: pointer; padding: 0 4px; }
+.cc-frame { width: 94vw; max-width: 560px; }
+.cc-board {
+  display: grid;
+  grid-template-columns: repeat(9, 1fr);
+  gap: 1px;
+  background: #3d2c15;
+  border: 4px solid #3d2c15;
+  padding: 3px;
+  margin: 8px auto;
+  width: fit-content;
+}
+.cc-cell {
+  width: 44px; height: 48px;
+  background: #e8d9b0;
+  display: flex; align-items: center; justify-content: center;
+  font-family: "MinecraftPixel", monospace !important;
+  font-size: 22px !important;
+  cursor: pointer;
+  position: relative;
+}
+.cc-cell.alt { background: #e2d1a3; }
+.cc-cell.has { font-weight: bold; }
+.cc-cell.red { color: #c62828; }
+.cc-cell.blk { color: #1a1a1a; }
+.cc-cell.is-sel { background: #ffd54f !important; box-shadow: inset 0 0 0 3px #c62828; }
+.cc-cell.can::after {
+  content: "";
+  position: absolute; inset: 6px;
+  border: 2px dashed rgba(94,168,50,.8);
+  pointer-events: none;
+}
+@media (max-width: 640px) { .cc-cell { width: 9vw; height: 9.8vw; font-size: 4.6vw !important; } }

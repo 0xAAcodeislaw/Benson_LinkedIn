@@ -11,7 +11,8 @@
     { id: "ms",       btn: ".ms-btn",        icon: "\u{1F4A3}",  name: "\u626B\u96F7",               sub: "10 \u5173 \u00B7 \u5956\u52B1\uFF1A\u90AE\u7BB1",   key: "{{SECRET_12gud4k4}}",  max: 10 },
     { id: "tetris",   btn: ".tt-btn",        icon: "\u25A6",     name: "\u4FC4\u7F57\u65AF\u65B9\u5757", sub: "10 \u5173 \u00B7 \u5956\u52B1\uFF1A\u90AE\u7BB1", key: "{{SECRET_741qvxs8}}", max: 10 },
     { id: "solitaire",btn: ".sl-btn",        icon: "\u{1F0CF}",  name: "\u7EB8\u724C\u63A5\u9F99",   sub: "10 \u5173 \u00B7 \u5956\u52B1\uFF1A\u90AE\u7BB1",   key: "{{SECRET_k8vnc2mq}}",  max: 10 },
-    { id: "raiden",   btn: ".rd-btn",        icon: "\u2708\uFE0F", name: "\u96F7\u7535 RAIDEN",     sub: "10 \u5173 \u00B7 \u5956\u52B1\uFF1ALinkedIn", key: "{{SECRET_o9w4t1zb}}",  max: 10 }
+    { id: "raiden",   btn: ".rd-btn",        icon: "\u2708\uFE0F", name: "\u96F7\u7535 RAIDEN",     sub: "10 \u5173 \u00B7 \u5956\u52B1\uFF1ALinkedIn", key: "{{SECRET_o9w4t1zb}}",  max: 10 },
+    { id: "xiangqi",  btn: ".cc-btn",        icon: "\u{1F0B4}",   name: "\u4E2D\u56FD\u8C61\u68CB",       sub: "10 \u5173 \u00B7 \u767E\u5206\u767E\u672C\u5730\u5BF9\u5F08", key: "{{SECRET_p3x7n5kd}}",  max: 10 }
   ];
 
   function lvOf(key, max) {
