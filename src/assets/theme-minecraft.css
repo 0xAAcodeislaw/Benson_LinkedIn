@@ -633,6 +633,7 @@ body { padding-bottom: 76px !important; }
 .mc-game-frame {
   width: min(760px, 96vw);
   max-height: 94vh;
+  max-height: 94dvh; /* iOS Safari 地址栏展开时 94vh 超出可视区，dvh 动态修正（老浏览器回退上一行） */
   overflow: auto;
   padding: 16px 18px 18px;
   background: #e8dcc0 !important;
@@ -747,7 +748,10 @@ body { padding-bottom: 76px !important; }
     linear-gradient(90deg, transparent 48%, rgba(0,0,0,.4) 48% 52%, transparent 52%) !important;
 }
 /* 鼠标悬停在可挖方块上：微微变亮提示「这一下会敲它」 */
-.mc-game-grid .mc-cell:not(.is-buried):hover { filter: brightness(1.25); }
+/* 触摸设备无 hover：挖矿格子亮度效果包进 hover 设备（防 tap 后粘住） */
+@media (hover: hover) {
+  .mc-game-grid .mc-cell:not(.is-buried):hover { filter: brightness(1.25); }
+}
 .mc-game-help {
   margin-top: 10px;
   font-family: "MinecraftPixel", monospace !important;
@@ -1439,6 +1443,7 @@ body { padding-bottom: 76px !important; }
   user-select: none;
   -webkit-user-select: none;
   -webkit-touch-callout: none; /* iOS 长按插旗：禁放大镜/文本选择 */
+  touch-action: manipulation; /* 真机：防双击缩放打断长按插旗 */
 }
 .ms-cell:hover { filter: brightness(1.18); }
 .ms-cell.is-open {
@@ -1486,6 +1491,7 @@ body { padding-bottom: 76px !important; }
   font-family: "MinecraftPixel", monospace !important; font-size: 12px !important;
   background: #5a4526; color: #fff8e1; border: 2px solid #3d2c15; cursor: pointer;
   min-height: 32px;
+  touch-action: manipulation;
 }
 .tt-padbtn:active { background: #7cc94a; }
 @media (max-width: 640px) {
@@ -1512,6 +1518,7 @@ body { padding-bottom: 76px !important; }
   font-family: "MinecraftPixel", monospace !important; font-size: 12px !important;
   display: flex; align-items: center; justify-content: center;
   cursor: pointer; position: relative; user-select: none;
+  touch-action: manipulation;
 }
 .sl-card.sl-back { background: #3d2c15; color: #f0b90b; }
 .sl-card.sl-empty { background: rgba(255,255,255,.12); border-style: dashed; color: rgba(255,255,255,.3); }
@@ -1626,6 +1633,7 @@ body { padding-bottom: 76px !important; }
   padding: 14px 10px;
   cursor: pointer;
   font-family: inherit;
+  touch-action: manipulation;
 }
 .mc-hub-card:hover { transform: translate(-1px,-1px); box-shadow: 4px 4px 0 #2a1d0e; background: #fff8e1; }
 .mc-hub-card:active { transform: translate(1px,1px); box-shadow: 1px 1px 0 #2a1d0e; }
@@ -1661,6 +1669,7 @@ body { padding-bottom: 76px !important; }
   font-size: 22px !important;
   cursor: pointer;
   position: relative;
+  touch-action: manipulation; /* 真机：防双击缩放/长按手势打断走子 */
 }
 .cc-cell.alt { background: #e2d1a3; }
 .cc-cell.has { font-weight: bold; }
