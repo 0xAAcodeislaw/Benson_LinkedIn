@@ -1572,3 +1572,38 @@ body { padding-bottom: 76px !important; }
 .rd-bombbtn:hover { background: #ff8a65; }
 .rd-bombbtn:active { transform: translate(1px, 1px); box-shadow: 1px 1px 0 #2a1d0e; }
 .rd-bombbtn:disabled { opacity: .45; cursor: not-allowed; }
+
+/* ===== 游戏中心 ===== */
+.mc-hub-btn {
+  background: none; border: none; font-size: 17px; cursor: pointer;
+  padding: 0 5px; line-height: 1;
+}
+.mc-hub-btn:hover { filter: brightness(1.3); }
+.mc-hub-hidden { display: none !important; } /* 五游戏原入口按钮由中心统一代理 */
+.mc-hub-frame { width: 94vw; max-width: 640px; }
+.mc-hub-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.mc-hub-card {
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  background: #f4ecd4; border: 3px solid #3d2c15;
+  box-shadow: 3px 3px 0 #2a1d0e;
+  padding: 14px 10px;
+  cursor: pointer;
+  font-family: inherit;
+}
+.mc-hub-card:hover { transform: translate(-1px,-1px); box-shadow: 4px 4px 0 #2a1d0e; background: #fff8e1; }
+.mc-hub-card:active { transform: translate(1px,1px); box-shadow: 1px 1px 0 #2a1d0e; }
+.mc-hub-icon { font-size: 26px; }
+.mc-hub-name { font-family: "MinecraftPixel", monospace !important; font-size: 11px !important; color: #3d2c15 !important; }
+.mc-hub-sub { font-family: "MinecraftPixel", monospace !important; font-size: 8px !important; color: #8a6d3b !important; }
+.mc-hub-prog {
+  font-family: "MinecraftPixel", monospace !important; font-size: 8px !important;
+  color: #fff !important; background: #5ea832; border: 2px solid #3d2c15;
+  padding: 2px 6px; margin-top: 4px;
+}
+.mc-hub-prog.is-clear { background: #f0b90b; }
+@media (max-width: 640px) { .mc-hub-grid { grid-template-columns: 1fr 1fr; } .mc-hub-card { padding: 10px 6px; } }
