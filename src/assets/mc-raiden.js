@@ -293,8 +293,10 @@
     R.cv.onpointerdown = R.cv.onpointermove = function (e) {
       if (!R || !R.g || R.g.over || R.g.paused) return;
       var rect = R.cv.getBoundingClientRect();
+      if (rect.width <= 0 || rect.height <= 0) return; // 布局未就绪/切换瞬间：丢弃本事件
       var x = (e.clientX - rect.left) * (W / rect.width);
       var y = (e.clientY - rect.top) * (H / rect.height);
+      if (!isFinite(x) || !isFinite(y)) return; // 0*Infinity=NaN 防线（幽灵 bug 根源）
       var g = R.g;
       if (e.pointerType === "touch") {
         g.px = Math.max(14, Math.min(W - 14, x));
@@ -323,6 +325,10 @@
   var WAVE_MS = 22000, INV_MS = 2400, WARN_MS = 2100;
   function step(dt) {
     var g = R.g, d = g.def;
+    // 幽灵自愈：坐标一旦 NaN/Infinity（全屏布局切换瞬间指针换算 0*Inf 所致）重置出生点
+    if (!isFinite(g.px) || !isFinite(g.py)) {
+      g.px = W / 2; g.py = H - 60; g.inv = INV_MS;
+    }
     var f = dt / 16.7; // 60fps 基准因子：所有速度量乘 f，计时量用毫秒 —— 帧率无关
     g.t += f;
     if (g.shake > 0) g.shake = Math.max(0, g.shake - f);
