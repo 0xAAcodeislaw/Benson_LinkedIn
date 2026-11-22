@@ -1449,7 +1449,12 @@ body { padding-bottom: 76px !important; }
   z-index: 9992; pointer-events: none;
   animation: mc-confetti 1.6s linear forwards;
 }
-@media (max-width: 640px) { .ms-cell { width: 26px; height: 26px; font-size: 9px !important; } }
+@media (max-width: 640px) {
+  .ms-frame { max-width: 98vw !important; }
+  /* 列数每关不同（6→13），不强制列数 —— JS 内联 repeat(N,1fr) 自适应，这里只压总宽让格子按轨道缩放 */
+  .ms-board { width: 92vw !important; margin: 4px auto; }
+  .ms-cell { width: auto !important; height: auto !important; aspect-ratio: 1; font-size: 3vw !important; }
+}
 
 /* ===== 彩蛋③：俄罗斯方块 10 关 ===== */
 .tt-btn { background: none; border: none; font-size: 16px; cursor: pointer; padding: 0 4px; }
@@ -1472,7 +1477,14 @@ body { padding-bottom: 76px !important; }
   min-height: 32px;
 }
 .tt-padbtn:active { background: #7cc94a; }
-@media (max-width: 640px) { .tt-cell { width: 15px; height: 15px; } .tt-padbtn { min-height: 40px; } }
+@media (max-width: 640px) {
+  .tt-frame { max-width: 98vw !important; }
+  .tt-playrow { gap: 6px; }
+  .tt-board { width: 64vw !important; } /* 390px 屏：棋盘 250px + 侧栏 110px = 366px，仍留边距 */
+  .tt-cell { width: auto; height: auto; aspect-ratio: 1; }
+  .tt-next { grid-template-columns: repeat(4, 12px); grid-auto-rows: 12px; }
+  .tt-padbtn { min-height: 40px; }
+}
 
 /* ===== 彩蛋④：纸牌接龙 10 关 ===== */
 .sl-btn { background: none; border: none; font-size: 16px; cursor: pointer; padding: 0 4px; }
@@ -1493,7 +1505,14 @@ body { padding-bottom: 76px !important; }
 .sl-card.sl-back { background: #3d2c15; color: #f0b90b; }
 .sl-card.sl-empty { background: rgba(255,255,255,.12); border-style: dashed; color: rgba(255,255,255,.3); }
 .sl-card.is-sel { outline: 3px solid #ffff55; outline-offset: 1px; }
-@media (max-width: 640px) { .sl-card { width: 44px; height: 64px; font-size: 9px !important; } .sl-col { width: 50px; } }
+/* 7 列牌桌：7×42px + 6×4px 间距 = 318px，390px 屏不换行 */
+@media (max-width: 640px) {
+  .sl-card { width: 42px !important; height: 60px; font-size: 8px !important; }
+  .sl-col { width: 42px; min-height: 100px; }
+  .sl-tableau { gap: 4px; }
+  .sl-stock, .sl-waste { min-width: 44px; min-height: 62px; }
+  .sl-top { gap: 6px; }
+}
 
 /* ===== 彩蛋⑤：雷电 10 关 ===== */
 .rd-btn { background: none; border: none; font-size: 16px; cursor: pointer; padding: 0 4px; }
@@ -1522,8 +1541,10 @@ body { padding-bottom: 76px !important; }
   transition: width .18s steps(4);
 }
 @media (max-width: 640px) {
+  /* 画布 76vw + 侧栏 110px 横排放不下（>340px），窄屏改纵排：画布居上，侧栏横排在下 */
+  .rd-playrow { flex-direction: column; align-items: center; }
   .rd-canvas { width: 76vw; height: 106vw; max-height: 62vh; }
-  .rd-side { flex-direction: row; flex-wrap: wrap; align-items: center; }
+  .rd-side { flex-direction: row; flex-wrap: wrap; justify-content: center; align-items: center; min-width: 0; width: 100%; }
 }
 
 /* ===== 雷电：全屏（is-fs class 由 fullscreenchange/伪全屏驱动） ===== */
@@ -1641,4 +1662,9 @@ body { padding-bottom: 76px !important; }
   border: 2px dashed rgba(94,168,50,.8);
   pointer-events: none;
 }
-@media (max-width: 640px) { .cc-cell { width: 9vw; height: 9.8vw; font-size: 4.6vw !important; } }
+@media (max-width: 640px) {
+  .cc-frame { max-width: 98vw !important; }
+  .cc-board { width: 96vw !important; margin: 4px auto; }
+  /* 格子填满 1fr 轨道（避免 vw 定宽与轨道错位），按棋子 44:48 比例保方形观感 */
+  .cc-cell { width: auto !important; height: auto !important; aspect-ratio: 11 / 12; font-size: 4.8vw !important; }
+}
