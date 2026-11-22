@@ -1783,3 +1783,53 @@ body { padding-bottom: 76px !important; }
   /* 显式格尺寸：94vw 减边框/内距/gap 后 5 等分，12 行总高约 12×12vw+间隙=面板内滚动 */
   .jq-cell { width: calc((94vw - 23px) / 5) !important; height: 12.6vw !important; font-size: 5.4vw !important; }
 }
+
+/* ===== 彩蛋⑨：两人跳棋 10 关（红=你执下，黑=本地 AI 执上） ===== */
+.ck-btn { background: none; border: none; font-size: 16px; cursor: pointer; padding: 0 4px; }
+.ck-frame { width: 94vw; max-width: 480px; }
+.ck-board {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 0;
+  background: #3d2c15;
+  border: 4px solid #3d2c15;
+  padding: 2px;
+  margin: 8px auto;
+  width: fit-content;
+}
+.ck-cell {
+  width: 44px; height: 44px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  position: relative;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+.ck-cell.lt { background: #e8d9b0; }
+.ck-cell.dk { background: #cfa968; }
+.ck-pc {
+  width: 34px; height: 34px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px !important; line-height: 1;
+  border: 2px solid #2a1d0e;
+}
+.ck-pc.red { background: #d9534f; color: #fff8e1; }
+.ck-pc.blk { background: #3a3a3a; color: #f0b90b; }
+.ck-cell.is-sel { box-shadow: inset 0 0 0 3px #ffd54f; }
+.ck-cell.can::after {
+  content: "";
+  position: absolute; inset: 4px;
+  border: 2px dashed rgba(94,168,50,.9);
+  pointer-events: none;
+}
+@media (hover: hover) {
+  .ck-cell:hover { filter: brightness(1.08); }
+}
+@media (max-width: 640px) {
+  .ck-frame { max-width: 98vw !important; }
+  .ck-board { width: 94vw !important; margin: 4px auto; }
+  .ck-cell { width: calc((94vw - 12px) / 8) !important; height: calc((94vw - 12px) / 8) !important; }
+  .ck-pc { width: 78%; height: 78%; font-size: 4.6vw !important; }
+}
