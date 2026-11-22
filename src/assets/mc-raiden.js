@@ -90,9 +90,9 @@
     { name: "空战 · Dogfight",     spawn: 1000, ehp: 2, esp: 1.8, brate: 2000, boss: 52,  mix: ["drop", "sine", "dive"] },
     { name: "雷区 · Echelon",      spawn: 900,  ehp: 3, esp: 2.0, brate: 1800, boss: 64,  mix: ["sine", "dive", "hover"] },
     { name: "风暴 · Storm",        spawn: 820,  ehp: 3, esp: 2.2, brate: 1650, boss: 78,  mix: ["drop", "dive", "hover"] },
-    { name: "围剿 · Siege",        spawn: 740,  ehp: 4, esp: 2.4, brate: 1500, boss: 92,  mix: ["sine", "dive", "hover"] },
-    { name: "突击 · Assault",      spawn: 680,  ehp: 4, esp: 2.7, brate: 1350, boss: 108, mix: ["drop", "dive", "hover"] },
-    { name: "决战 · Showdown",     spawn: 620,  ehp: 5, esp: 3.0, brate: 1200, boss: 126, mix: ["sine", "dive", "hover"] },
+    { name: "围剿 · Siege",        spawn: 740,  ehp: 4, esp: 2.4, brate: 1500, boss: 84,  mix: ["sine", "dive", "hover"] },
+    { name: "突击 · Assault",      spawn: 680,  ehp: 4, esp: 2.7, brate: 1350, boss: 96, mix: ["drop", "dive", "hover"] },
+    { name: "决战 · Showdown",     spawn: 620,  ehp: 5, esp: 3.0, brate: 1200, boss: 110, mix: ["sine", "dive", "hover"] },
     { name: "雷电 · RAIDEN",       spawn: 560,  ehp: 6, esp: 3.4, brate: 1050, boss: 150, mix: ["drop", "sine", "dive", "hover"] }
   ];
   var KEY = "{{SECRET_o9w4t1zb}}";
@@ -235,7 +235,7 @@
     card.appendChild(el("div", "mc-lc-num", "LEVEL " + lv + " / 10"));
     card.appendChild(el("div", "mc-lc-name", "\u2708 " + d.name));
     card.appendChild(el("div", "mc-lc-tip",
-      "\u6D88\u706D\u654C\u673A\uFF0CBOSS \u767B\u573A\uFF08WARNING!\uFF09\u540E\u51FB\u8D25\u5B83\u8FC7\u5173\u3002\u5B9D\u7269\uFF1A\u84DD P \u5347\u706B\u529B\uFF08\u6700\u591A\u4E94\u5411\uFF09\u3001\u6A59 B \u52A0\u70B8\u5F39\u3001\u7EFF 1 \u52A0\u547D\u3001\u9EC4\u661F\u52A0\u5206\u3002\u9677\u5165\u5F39\u5E55\u56F4\u56F0\u65F6\u6309 B \uFF08\u6216\u70B9\u53F3\u4FA7 \u{1F4A3} \u6309\u94AE\uFF09\u91CA\u653E\u5927\u7206\u96F7\uFF1A\u6E05\u5168\u5C4F\u654C\u5F39+\u5168\u4F53\u4F24\u5BB3+\u77ED\u6682\u65E0\u654C \u2014\u2014 \u6BCF\u5173\u914D 2 \u679A\uFF0C\u4E0A\u9650 5 \u679A\uFF0C\u4E13\u6CBB\u5404\u79CD\u88AB\u56F4\u6B7B\u3002\u547D\u4E0E\u70B8\u5F39\u6BCF\u5173\u91CD\u7F6E\uFF08\u547D 3 \u6761\u3001\u70B8\u5F39 2 \u679A\uFF09\u3002"));
+      "\u6D88\u706D\u654C\u673A\uFF0CBOSS \u767B\u573A\uFF08WARNING!\uFF09\u540E\u51FB\u8D25\u5B83\u8FC7\u5173\u3002\u5B9D\u7269\uFF1A\u84DD P \u5347\u706B\u529B\uFF08\u6700\u591A\u4E94\u5411\uFF09\u3001\u6A59 B \u52A0\u70B8\u5F39\u3001\u7EFF 1 \u52A0\u547D\u3001\u9EC4\u661F\u52A0\u5206\u3002\u9677\u5165\u5F39\u5E55\u56F4\u56F0\u65F6\u6309 B \uFF08\u6216\u70B9\u53F3\u4FA7 \u{1F4A3} \u6309\u94AE\uFF09\u91CA\u653E\u5927\u7206\u96F7\uFF1A\u6E05\u5168\u5C4F\u654C\u5F39+\u5168\u4F53\u4F24\u5BB3+\u77ED\u6682\u65E0\u654C \u2014\u2014 \u6BCF\u5173\u914D 3 \u679A\uFF0C\u4E0A\u9650 5 \u679A\uFF0C\u4E13\u6CBB\u5404\u79CD\u88AB\u56F4\u6B7B\u3002\u547D\u4E0E\u70B8\u5F39\u6BCF\u5173\u91CD\u7F6E\uFF08\u547D 3 \u6761\u3001\u70B8\u5F39 2 \u679A\uFF09\u3002"));
     var best = Number(localStorage.getItem("rd_best_" + lv)) || 0;
     if (best) card.appendChild(el("div", "mc-lc-stat", "\u{1F3C6} \u672C\u5173\u6700\u4F73 " + best + "\u5206"));
     card.appendChild(el("div", "mc-lc-stat", "\u2708\uFE0F\u2708\uFE0F\u2708\uFE0F \u6BCF\u5173\u914D 3 \u6761\u547D \u00B7 \u914D\u4E50 BGM \u5DF2\u5F00"));
@@ -260,7 +260,7 @@
     R.lv = lv;
     R.g = {
       lv: lv, def: d, paused: false, over: false, t: 0, score: 0,
-      keys: {}, px: W / 2, py: H - 60, power: 1, lives: 3, bombs: 2, bombCd: 0, bombFlash: 0, msg: null, inv: INV_MS,
+      keys: {}, px: W / 2, py: H - 60, power: 1, lives: 3, bombs: 3, bombCd: 0, bombFlash: 0, msg: null, inv: INV_MS, firstDrop: true,
       shots: [], eshots: [], enemies: [], parts: [], stars: [],
       spawnT: 0, phase: "waves", phaseT: 0, boss: null, warn: 0,
       bossT: 0, shake: 0, best: 0
@@ -380,7 +380,7 @@
       if (e.hp === 1 && Math.random() < 0.02 * f) burst(e.x + (Math.random() - 0.5) * 10, e.y - 6, "#555b70", 1); // 受损冒烟
       if (e.hp <= 0) return;
       // 敌机撞玩家（pw 是补给，不撞）
-      if (e.type !== "pw" && g.inv <= 0 && Math.abs(e.x - g.px) < 18 && Math.abs(e.y - g.py) < 18) hitPlayer();
+      if (e.type !== "pw" && g.inv <= 0 && Math.abs(e.x - g.px) < 14 && Math.abs(e.y - g.py) < 14) hitPlayer();
     });
     g.enemies = g.enemies.filter(function (e) { return e.y < H + 30 && e.hp > 0; });
     // 敌弹
@@ -440,7 +440,7 @@
     if (g.inv <= 0) {
       for (var i = 0; i < g.eshots.length; i++) {
         var s = g.eshots[i];
-        if (Math.abs(s.x - g.px) < 12 && Math.abs(s.y - g.py) < 14) { g.eshots.splice(i, 1); hitPlayer(); break; }
+        if (Math.abs(s.x - g.px) < 9 && Math.abs(s.y - g.py) < 11) { g.eshots.splice(i, 1); hitPlayer(); break; }
       }
     }
     // Boss 移动/弹幕
@@ -451,17 +451,17 @@
       if (b.x < 40 || b.x > W - 40) b.dir *= -1;
       b.y = 46 + Math.sin(b.t * 0.02) * 8;
       b.shootMs = (b.shootMs || 0) + dt;
-      if (b.shootMs >= Math.max(900, Math.round(g.def.brate / 3))) {
+      if (b.shootMs >= Math.max(1700, Math.round(g.def.brate / 3))) {
         b.shootMs = 0;
-        var n = 3 + Math.floor((g.lv - 1) / 3); // 弹幕密度渐进：L1-3:3 L4-6:4 L7-9:5 L10:6
+        var n = 2 + Math.floor((g.lv - 1) / 5); // 弹幕密度渐进放缓：L1-5:2 L6-10:3
         for (var k = 0; k < n; k++) {
-          var ang = Math.PI / 2 + (k - (n - 1) / 2) * 0.28;
-          eshoot(b.x, b.y + 20, Math.cos(ang) * 2.2, Math.sin(ang) * 2.2);
+          var ang = Math.PI / 2 + (k - (n - 1) / 2) * 0.45;
+          eshoot(b.x, b.y + 20, Math.cos(ang) * 1.0, Math.sin(ang) * 1.0);
         }
         beep(300, 0.05, "square", 0.03);
       }
-      // Boss 体碰（贴脸也会受伤）
-      if (g.inv <= 0 && Math.abs(b.x - g.px) < 30 && Math.abs(b.y + 10 - g.py) < 22) hitPlayer();
+      // Boss 体碰：只判舰体核心区（整体碰撞盒太大，玩家离得很远就"被撞"）
+      if (g.inv <= 0 && Math.abs(b.x - g.px) < 16 && Math.abs(b.y + 6 - g.py) < 13) hitPlayer();
     }
     // 粒子 / 冲击波
     g.parts.forEach(function (p) { p.x += p.vx * f; p.y += p.vy * f; p.life -= f; });
@@ -487,8 +487,9 @@
     var e = { type: type, x: x, y: y, hp: d.ehp, t: 0, vy: 1.1 * d.esp, cx: x };
     if (type === "dive") e.vy = 0.9 * d.esp;
     if (type === "hover") { e.stopY = 60 + Math.random() * 100; e.vy = 1.2 * d.esp; }
-    // 掉落 roll：P 火力 / B 炸弹 / 1UP 加命 / STAR 分数星
-    e.drop = rollDrop();
+    // 掉落 roll：本关首杀必掉 P（经典开局送火力），其余按概率
+    if (g.firstDrop) { e.drop = "P"; g.firstDrop = false; }
+    else e.drop = rollDrop();
     g.enemies.push(e);
   }
   function rollDrop() {
@@ -512,7 +513,7 @@
     var g = R.g;
     var dx = g.px - x, dy = g.py - y;
     var len = Math.max(1, Math.sqrt(dx * dx + dy * dy));
-    return { vx: dx / len * 2.1, vy: dy / len * 2.1 };
+    return { vx: dx / len * 1.4, vy: dy / len * 1.4 };
   }
 
   function startWarn() {
@@ -804,6 +805,7 @@
       ctx.fillRect(b.x - 22, b.y + 6, 6, 5);
       ctx.fillRect(b.x + 16, b.y + 6, 6, 5);
       if (b.hp < b.maxHp * 0.5 && Math.random() < 0.02 * f) burst(b.x + (Math.random() - 0.5) * 50, b.y + 12, "#555b70", 2);
+      if (b.hp < b.maxHp * 0.5 && !b.droppedP) { b.droppedP = true; g.enemies.push({ type: "pw", kind: "P", x: b.x, y: b.y + 30, hp: 999, t: 0, vy: 1.6, drop: false }); }
       if (b.hp < b.maxHp * 0.25 && Math.floor(g.t / 5) % 2 === 0) {
         ctx.fillStyle = "rgba(255,85,85,0.35)";
         ctx.fillRect(b.x - 32, b.y - 12, 64, 26);
