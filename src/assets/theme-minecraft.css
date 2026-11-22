@@ -1428,6 +1428,9 @@ body { padding-bottom: 76px !important; }
   display: flex; align-items: center; justify-content: center;
   cursor: pointer;
   color: #fff;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none; /* iOS 长按插旗：禁放大镜/文本选择 */
 }
 .ms-cell:hover { filter: brightness(1.18); }
 .ms-cell.is-open {

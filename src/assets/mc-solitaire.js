@@ -252,6 +252,12 @@
             if (sub === S.cols[ci].length - 1) { card.up = true; SFX.flip(); render(); }
             return;
           }
+          // 已有选中且不是本列 → 点目标牌 = 移动到该列（destCol 成功会清 sel）；不合法则落到 pickCard 切换选中
+          if (S.sel && !(S.sel.loc === "col" && S.sel.idx === ci)) {
+            var selBefore = S.sel;
+            destCol(ci);
+            if (!S.sel || S.sel !== selBefore) return;
+          }
           pickCard("col", ci, sub);
         };
         colEl.appendChild(d);

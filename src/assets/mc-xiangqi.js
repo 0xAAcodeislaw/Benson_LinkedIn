@@ -14,7 +14,7 @@
   };
   var VALUE = { R: 600, N: 270, B: 120, A: 120, K: 6000, C: 285, P: 30 };
   var START = [
-    ["bR","bN",null,"bB","bA","bK","bA","bB","bN","bR"],
+    ["bR","bN","bB","bA","bK","bA","bB","bN","bR"],
     [null,null,null,null,null,null,null,null,null,null],
     [null,"bC",null,null,null,null,null,null,"bC",null],
     ["bP",null,"bP",null,"bP",null,"bP",null,"bP",null],
@@ -23,7 +23,7 @@
     ["rP",null,"rP",null,"rP",null,"rP",null,"rP",null],
     [null,"rC",null,null,null,null,null,null,"rC",null],
     [null,null,null,null,null,null,null,null,null,null],
-    ["rR","rN",null,"rB","rA","rK","rA","rB","rN","rR"]
+    ["rR","rN","rB","rA","rK","rA","rB","rN","rR"]
   ];
   function initBoard() {
     var b = [];
@@ -65,13 +65,14 @@
       for (i = r + 1; i < 10; i++) { if (b[i][c]) { if (jumped) { push(i, c); } break; } if (jumped) push(i, c); else jumped = true; }
     } else if (t === "N") {
       [[-2,-1,1,0],[2,-1,-1,0],[-2,1,1,0],[2,1,-1,0],[-1,-2,0,1],[1,-2,0,1],[-1,2,0,1],[1,2,0,-1]].forEach(function (d) {
-        if (inBoard(r + d[0], c + d[1]) && !b[r + d[2]][c + d[3]]) push(r + d[0], c + d[1]); // 蹩马腿
+        // 蹩马腿：腿坐标也要在盘内（边线马腿越界=不被蹩，否则 b[越界] 读 undefined 崩溃）
+        if (inBoard(r + d[0], c + d[1]) && inBoard(r + d[2], c + d[3]) && !b[r + d[2]][c + d[3]]) push(r + d[0], c + d[1]);
       });
     } else if (t === "B") {
       [[-2,-2],[-2,2],[2,-2],[2,2]].forEach(function (d) {
         var er = red ? r + d[0] : r - d[0]; // 相不过河（红向下，象向上）
         var ec = c + d[1];
-        var br = r + d[0] / 2, bc = c + d[1] / 2;
+        var br = (r + er) / 2, bc = (c + ec) / 2; // 象眼=起点到落点中点（原实现 br 恒按红方向，黑象 er 反向后 br 越界崩溃）
         if (inBoard(er, ec) && !b[br][bc] && (red ? er >= 5 : er <= 4)) push(er, ec); // 塞象眼
       });
     } else if (t === "A") {
@@ -163,9 +164,10 @@
     return s;
   }
   function search(b, depth, alpha, beta, red, forRed) {
+    // depth 传 0 时这里收到 -1，必须 <=0 终止（原 ===0 判断让 -1 无穷递归 → 栈溢出 → bestMove 的 undo 不执行 → 棋盘漂移）
+    if (depth <= 0) return evalBoard(b, forRed);
     var moves = allMoves(b, red);
-    if (!moves.length || depth === 0) return evalBoard(b, forRed);
-    if (depth === 0) return evalBoard(b, forRed);
+    if (!moves.length) return evalBoard(b, forRed);
     var best = red === forRed ? -1e9 : 1e9;
     for (var i = 0; i < moves.length; i++) {
       var p = makeMove(b, moves[i]);
@@ -303,12 +305,11 @@
       d.className = "cc-cell" + ((r + c) % 2 ? " alt" : "") +
         (G.sel && G.sel[0] === r && G.sel[1] === c ? " is-sel" : "") +
         (p && p.red ? " red" : " blk") + (p ? " has" : "");
-      if (p) {
-        d.textContent = CHAR[p.t][p.red ? 1 : 0];
-        if (G.sel) {
-          var ms = pseudoMoves(G.b, G.sel[0], G.sel[1]);
-          for (var i = 0; i < ms.length; i++) if (ms[i][0] === r && ms[i][1] === c) d.classList.add("can");
-        }
+      if (p) d.textContent = CHAR[p.t][p.red ? 1 : 0];
+      // 走位提示：空格目标也显示（原实现包在 if(p) 里，兵/车移动到空格无提示）
+      if (G.sel) {
+        var ms = pseudoMoves(G.b, G.sel[0], G.sel[1]);
+        for (var i = 0; i < ms.length; i++) if (ms[i][0] === r && ms[i][1] === c) d.classList.add("can");
       }
       (function (rr, cc) {
         d.addEventListener("click", function () { onCell(rr, cc); });
@@ -330,7 +331,7 @@
           var mv = { fr: [G.sel[0], G.sel[1]], to: [r, c], cap: G.b[r][c] };
           var pc = makeMove(G.b, mv);
           var bad = inCheck(G.b, true);
-          G.b[mv.fr[0]][mv.fr[1]] = mv.cap; G.b[G.sel[0]][G.sel[1]] = pc;
+          G.b[mv.to[0]][mv.to[1]] = mv.cap; G.b[mv.fr[0]][mv.fr[1]] = pc; // 恢复目标格与源格（原实现把 cap 写回源格，目标格残留棋子 → 棋子复制）
           if (bad) { G.noteEl.textContent = "\u7981\u624B\uFF1A\u8FD9\u6B65\u4F1A\u88AB\u5C06\u519B\uFF01"; setTimeout(function () { if (G) G.noteEl.textContent = ""; }, 1200); return; }
           doMove(mv, true);
           return;
@@ -359,10 +360,13 @@
     G.noteEl.textContent = "";
     G.timer = setTimeout(function () {
       if (!G || G.over) return;
-      var mv = bestMove(G.b, false, G.depth, G.jitter);
-      if (!mv) { win(); return; } // AI 困毙 → 你赢
-      doMove(mv, false);
-      G.thinking = false;
+      try {
+        var mv = bestMove(G.b, false, G.depth, G.jitter);
+        if (!mv) { win(); return; } // AI 困毙 → 你赢
+        doMove(mv, false);
+      } finally {
+        G.thinking = false; // 无论 AI 内部是否异常都复位，防"思考中"卡死
+      }
       if (inCheck(G.b, true)) { G.noteEl.textContent = "\u4F60\u88AB\u5C06\u519B\uFF01"; }
     }, 220); // 思考延迟：走棋有"电脑在想"的手感
   }
@@ -416,7 +420,12 @@
       start: function (lv) { start(lv); },
       card: function (lv) { showCard(lv); },
       move: function (fr, to) { G.b[fr[0]][fr[1]] && doMove({ fr: fr, to: to, cap: G.b[to[0]][to[1]] }, true); },
-      aiMove: function () { aiThink(); }
+      aiMove: function () { aiThink(); },
+      // 调试：规则内核（测试误报用）
+      pseudoMoves: function (r, c) { return pseudoMoves(G.b, r, c); },
+      makeMove: function (b, mv) { return makeMove(b, mv); },
+      inCheck: function (b, red) { return inCheck(b, red); },
+      attacked: function (r, c, byRed) { return attacked(G.b, r, c, byRed); }
     };
   }
   function init() { if (isMC()) injectBtn(); }

@@ -354,8 +354,27 @@
         if (cell.mine && cell.open) d.textContent = "\u{1F4A5}";
         (function (rr, cc) {
           d.addEventListener("click", function (e) { reveal(rr, cc); });
-          d.addEventListener("contextmenu", function (e) { e.preventDefault(); toggleFlag(rr, cc); });
-          // 触屏长按由浏览器原生派发 contextmenu，统一走上面那条路径（不再叠加自定义 timer，避免双插旗）
+          // 触屏长按插旗：自定义 timer（iOS Safari 长按不派发 contextmenu，不能依赖原生）
+          var lpTimer = null, lpFired = false, lpX = 0, lpY = 0;
+          d.addEventListener("pointerdown", function (e) {
+            if (e.pointerType !== "touch") return;
+            lpFired = false; lpX = e.clientX; lpY = e.clientY;
+            lpTimer = setTimeout(function () { lpFired = true; lpTimer = null; toggleFlag(rr, cc); }, 500);
+          });
+          d.addEventListener("pointerup", function () { if (lpTimer) { clearTimeout(lpTimer); lpTimer = null; } });
+          d.addEventListener("pointercancel", function () { if (lpTimer) { clearTimeout(lpTimer); lpTimer = null; } });
+          d.addEventListener("pointerleave", function () { if (lpTimer) { clearTimeout(lpTimer); lpTimer = null; } });
+          d.addEventListener("pointermove", function (e) {
+            if (lpTimer && Math.hypot(e.clientX - lpX, e.clientY - lpY) > 10) { clearTimeout(lpTimer); lpTimer = null; }
+          });
+          d.addEventListener("contextmenu", function (e) {
+            e.preventDefault();
+            // Android 长按会原生触发 contextmenu（早于 timer）——取消 timer 走这条路径，双端各触发一次
+            if (lpTimer) { clearTimeout(lpTimer); lpTimer = null; }
+            if (lpFired) return;
+            lpFired = true;
+            toggleFlag(rr, cc);
+          });
         })(r, c);
         frag.appendChild(d);
       }
