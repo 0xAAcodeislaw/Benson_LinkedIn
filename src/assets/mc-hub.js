@@ -113,8 +113,10 @@
   }
 
   // 根治"过关点下一关/领奖励一点就退出回主页"：胜利/奖励卡在 frame 底部被裁剪（frame 94vh+overflow:auto），
-  // 真机点击命中背板 → e.target===ov → 关闭。面板一出现就把 frame 滚到面板，保证按钮可见可点。
-  // 全局监听，覆盖全部 9 游戏与中心面板（mc-hub 最后注入，先于用户交互）。
+  // 真机点击命中背板 → e.target===ov → 关闭。双保险：
+  // ① 面板一出现就把 frame 滚到面板（MutationObserver）
+  // ② 任何 .mc-game-overlay 的背板点击（e.target===ov）一律忽略——游戏关闭只走 ×/ESC，
+  //    手机上想退出点右上 × 即可，杜绝一切"点面板边缘空白被当成点背板"的误关。
   (function () {
     if (!window.MutationObserver) return;
     var mo = new MutationObserver(function (muts) {
@@ -122,12 +124,19 @@
         var t = muts[i].target;
         if (t.classList && t.classList.contains("mc-panel") && t.classList.contains("is-show")) {
           var frame = t.closest(".mc-game-frame");
-          if (frame) setTimeout(function (f) { f.scrollTop = f.scrollHeight; }, 60, frame);
+          if (frame) setTimeout(function (f) { f.scrollTop = f.scrollHeight; }, 30, frame);
         }
       }
     });
     mo.observe(document.documentElement, { subtree: true, attributes: true, attributeFilter: ["class"] });
   })();
+  // ②背板点击全局拦截（capture 最先跑，在游戏脚本注册的 ov click 之前丢弃）
+  document.addEventListener("click", function (e) {
+    if (e.target && e.target.classList && e.target.classList.contains("mc-game-overlay")) {
+      e.stopPropagation();
+      e.preventDefault();
+    }
+  }, true);
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);
   else init();
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(init);
