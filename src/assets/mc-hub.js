@@ -111,6 +111,23 @@
       else { hideRawButtons(); injectHub(); } // 兜底：超时也上中心（卡片点击时若按钮未注入，60ms 延迟内仍可代理）
     })();
   }
+
+  // 根治"过关点下一关/领奖励一点就退出回主页"：胜利/奖励卡在 frame 底部被裁剪（frame 94vh+overflow:auto），
+  // 真机点击命中背板 → e.target===ov → 关闭。面板一出现就把 frame 滚到面板，保证按钮可见可点。
+  // 全局监听，覆盖全部 9 游戏与中心面板（mc-hub 最后注入，先于用户交互）。
+  (function () {
+    if (!window.MutationObserver) return;
+    var mo = new MutationObserver(function (muts) {
+      for (var i = 0; i < muts.length; i++) {
+        var t = muts[i].target;
+        if (t.classList && t.classList.contains("mc-panel") && t.classList.contains("is-show")) {
+          var frame = t.closest(".mc-game-frame");
+          if (frame) setTimeout(function (f) { f.scrollTop = f.scrollHeight; }, 60, frame);
+        }
+      }
+    });
+    mo.observe(document.documentElement, { subtree: true, attributes: true, attributeFilter: ["class"] });
+  })();
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);
   else init();
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(init);
